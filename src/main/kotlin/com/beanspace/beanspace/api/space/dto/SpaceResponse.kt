@@ -1,4 +1,4 @@
-package com.beanspace.beanspace.domain.space.dto
+package com.beanspace.beanspace.api.space.dto
 
 import com.beanspace.beanspace.domain.space.model.Space
 
