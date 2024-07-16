@@ -1,30 +1,26 @@
 package com.beanspace.beanspace.domain.member.model
 
 import jakarta.persistence.*
-import java.time.LocalDateTime
 
 
 @Entity
 class Member(
 
-    @Column(nullable = false)
+    @Column
     var email: String,
 
-    @Column(nullable = false)
+    @Column
     var password: String,
 
-    @Column(nullable = false)
+    @Column
     var nickname: String,
 
     @Enumerated(EnumType.STRING)
     @Column
     val role: MemberRole = MemberRole.MEMBER,
 
-    @Column(nullable = false)
-    var phoneNumber: Int,
-
-    @Column(nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
+    @Column
+    var phoneNumber: String,
 
 
     ) {
