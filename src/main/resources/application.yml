@@ -1,5 +1,0 @@
-auth:
-  jwt:
-    issuer: BeanSpace
-    secret: PO5o6c72FN672Fd31967VWbAWq4Ws5aZ
-    accessTokenExpirationHour: 100000
