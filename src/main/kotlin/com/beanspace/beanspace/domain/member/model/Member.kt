@@ -18,14 +18,13 @@ class Member(
 
     @Enumerated(EnumType.STRING)
     @Column
-    val role: MemberRole = MemberRole.MEMBER,
+    var role: MemberRole = MemberRole.MEMBER,
 
     @Column
-    var phoneNumber: String,
+    val phoneNumber: String,
 
-
-    ) : BaseTimeEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
-}
+
+) : BaseTimeEntity()
