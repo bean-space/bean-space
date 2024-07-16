@@ -1,5 +1,6 @@
 package com.beanspace.beanspace.domain.member.model
 
+import com.beanspace.beanspace.domain.common.BaseTimeEntity
 import jakarta.persistence.*
 
 
@@ -23,7 +24,7 @@ class Member(
     var phoneNumber: String,
 
 
-    ) {
+    ) : BaseTimeEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
