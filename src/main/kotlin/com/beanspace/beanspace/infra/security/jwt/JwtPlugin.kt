@@ -27,20 +27,20 @@ class JwtPlugin(
 
     fun generateAccessToken(
         subject: String,
-        username: String,
+        email: String,
         role: String
     ): String {
-        return generateToken(subject, username, role, accessTokenExpiration)
+        return generateToken(subject, email, role, accessTokenExpiration)
     }
 
     private fun generateToken(
         subject: String,
-        username: String,
+        email: String,
         role: String,
         accessTokenExpiration: Date
     ): String {
         val claims: Claims = Jwts.claims()
-            .add(mapOf("role" to role, "username" to username))
+            .add(mapOf("role" to role, "email" to email))
             .build()
 
         return Jwts.builder()

@@ -12,9 +12,9 @@ spring:
       hibernate:
         highlight_sql: true
         use_sql_comments: true
-        ddl-auto: create
+        ddl-auto: create-drop
         default_batch_fetch_size: 100
-        dialect: org.hibernate.dialect.MySQLDialect
+
     open-in-view: false
   config:
     import: application-secret.yml
