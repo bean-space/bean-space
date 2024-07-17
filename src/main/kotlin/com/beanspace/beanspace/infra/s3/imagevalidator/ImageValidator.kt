@@ -7,16 +7,18 @@ import javax.imageio.ImageIO
 
 @Component
 class ImageValidator {
+    // 허용되는 이미지 확장자 목록
     private val allowedExtensions = listOf(
-        "jpg", "jpeg", "png", "gif", "bmp", "webp", "tiff", "tif", "svg"
+        "jpg", "jpeg", "png", "gif", "webp", "jfif"
     )
 
+    // 허용되는 MIME 타입 목록
     private val allowedMimeTypes = listOf(
-        "image/jpeg", "image/png", "image/gif", "image/bmp",
-        "image/webp", "image/tiff", "image/svg+xml"
+        "image/jpeg", "image/png", "image/gif", "image/webp"
     )
 
-    private val maxFileSizeBytes = 10 * 1024 * 1024 // 10 MB
+    // 허용되는 최대 이미지 용량 (application.yml 에도 최대 파일 크기가 따로 설정되어있음)
+    private val maxFileSizeBytes = 10 * 1024 * 1024 // 10 메가 바이트
 
     fun isValidImage(file: MultipartFile): ValidationResult {
         val extensionValid = isValidExtension(file.originalFilename)
@@ -27,10 +29,10 @@ class ImageValidator {
             return ValidationResult(
                 isValid = false,
                 reason = buildString {
-                    if (!extensionValid) append("Invalid file extension. ")
-                    if (!mimeTypeValid) append("Invalid MIME type. ")
-                    if (!fileSizeValid) append("File size exceeds limit. ")
-                }.trim()
+                    if (!extensionValid) append("지원하지 않는 이미지 확장자입니다")
+                    if (!mimeTypeValid) append("지원하지 않는 MIME 타입입니다")
+                    if (!fileSizeValid) append("10MB 이상의 이미지를 업로드할 수 없습니다")
+                }
             )
         }
 
@@ -53,15 +55,16 @@ class ImageValidator {
 
     private fun isValidImageContent(bytes: ByteArray): ValidationResult {
         return try {
+            // 이미지의 바이트 데이터를 입력 스트림으로 변환
             val inputStream = ByteArrayInputStream(bytes)
 
-            val bufferedImage =
-                ImageIO.read(inputStream) ?: return ValidationResult(false, "Unable to read image content.")
+            // 실제 이미지 파일인지 검증
+            ImageIO.read(inputStream) ?: return ValidationResult(false, "이미지를 읽을 수 없습니다")
 
-
-            ValidationResult(true, "Image is valid.")
+            ValidationResult(true, "이미지가 유효합니다")
         } catch (e: Exception) {
-            ValidationResult(false, "Error processing image: ${e.message}")
+            // 이미지 처리 중 오류 발생 시
+            ValidationResult(false, "이미지를 처리하는 중 오류가 발생하였습니다: ${e.message}")
         }
     }
 }
