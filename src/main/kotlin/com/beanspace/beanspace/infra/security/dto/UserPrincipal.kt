@@ -11,10 +11,4 @@ data class UserPrincipal(
         id,
         roles.map { SimpleGrantedAuthority("ROLE_$it") }
     )
-
-    val role: String = authorities.first().authority ?: "ROLE_UNKNOWN"
-
-    fun isAdmin(): Boolean {
-        return authorities.any { it.authority == "ROLE_ADMIN" }
-    }
 }
