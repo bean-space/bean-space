@@ -28,4 +28,9 @@ class GlobalExceptionHandler {
     fun handleIllegalStateException(e: IllegalStateException): ResponseEntity<ErrorResponse> {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse("409", e.message))
     }
+
+    @ExceptionHandler(AccessDeniedException::class)
+    fun handleAccessDeniedException(e: AccessDeniedException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ErrorResponse("403", e.message))
+    }
 }
