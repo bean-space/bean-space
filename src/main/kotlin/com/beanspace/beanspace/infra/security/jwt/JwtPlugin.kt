@@ -11,9 +11,9 @@ import java.util.*
 
 @Component
 class JwtPlugin(
-    @Value("BeanSpace") private val issuer: String,
-    @Value("PO5o6c72FN672Fd31967VWbAWq4Ws5aZ") private val secret: String,
-    @Value("100000") private val accessTokenExpirationHour: Long
+    @Value("\${auth.jwt.issuer}") private val issuer: String,
+    @Value("\${auth.jwt.secret}") private val secret: String,
+    @Value("\${auth.jwt.accessTokenExpirationHour}") private val accessTokenExpirationHour: Long
 ) {
     var now = Date()
     val accessTokenExpiration = Date(now.time + accessTokenExpirationHour * 1000 * 1000)

@@ -16,7 +16,8 @@ spring:
         default_batch_fetch_size: 100
         dialect: org.hibernate.dialect.MySQLDialect
     open-in-view: false
-
+  config:
+    import: application-secret.yml
 logging:
   level:
     org:
