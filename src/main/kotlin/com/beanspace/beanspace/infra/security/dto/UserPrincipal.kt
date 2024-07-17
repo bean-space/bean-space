@@ -1,7 +1,20 @@
 package com.beanspace.beanspace.infra.security.dto
 
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+
 data class UserPrincipal(
-    var id: Long,
-    var email: String,
-    var role: String
-)
+    val id: Long,
+    val authorities: Collection<GrantedAuthority>
+) {
+    constructor(id: Long, roles: Set<String>) : this(
+        id,
+        roles.map { SimpleGrantedAuthority("ROLE_$it") }
+    )
+
+    val role: String = authorities.first().authority ?: "ROLE_UNKNOWN"
+
+    fun isAdmin(): Boolean {
+        return authorities.any { it.authority == "ROLE_ADMIN" }
+    }
+}

@@ -10,7 +10,7 @@ data class SignUpResponse(
     val role: String,
 ) {
     companion object {
-        fun fromEntity(saveMember: Member): SignUpResponse {
+        fun from(saveMember: Member): SignUpResponse {
             return SignUpResponse(
                 saveMember.id ?: throw IllegalStateException("저장된 사용자 정보가 유효하지 않습니다."),
                 saveMember.email,

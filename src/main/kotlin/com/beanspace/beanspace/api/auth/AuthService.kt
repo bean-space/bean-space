@@ -2,7 +2,6 @@ package com.beanspace.beanspace.api.auth
 
 import com.beanspace.beanspace.api.auth.dto.SignUpRequest
 import com.beanspace.beanspace.api.auth.dto.SignUpResponse
-import com.beanspace.beanspace.api.auth.dto.toEntity
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -23,7 +22,8 @@ class AuthService(
         if (memberRepository.existsByEmail(request.email))
             throw IllegalArgumentException("이미 존재하는 email 입니다.")
 
-
-        return SignUpResponse.fromEntity(memberRepository.save(request.toEntity(passwordEncoder)))
+        return request.toEntity(passwordEncoder)
+            .also { memberRepository.save(it) }
+            .let { SignUpResponse.from(it) }
     }
 }
