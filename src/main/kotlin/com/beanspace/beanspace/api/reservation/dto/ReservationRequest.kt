@@ -11,8 +11,7 @@ data class ReservationRequest(
     val reservationPeople: Int,
     val couponId: Long
 ) {
-    fun toEntity(space: Space, member: Member): Reservation {
-        val cost = 1L // 가격 계산하기
+    fun toEntity(space: Space, member: Member, cost: Long): Reservation {
         return Reservation(
             checkIn = checkIn,
             checkOut = checkOut,

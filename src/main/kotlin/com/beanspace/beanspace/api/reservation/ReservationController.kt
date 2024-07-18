@@ -2,8 +2,10 @@ package com.beanspace.beanspace.api.reservation
 
 import com.beanspace.beanspace.api.reservation.dto.ReservationRequest
 import com.beanspace.beanspace.api.reservation.dto.ReservationResponse
+import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -18,15 +20,19 @@ class ReservationController(
 ) {
     @PostMapping
     fun reserveSpace(
+        @AuthenticationPrincipal principal: UserPrincipal,
         @PathVariable spaceId: Long,
-        @RequestBody request: ReservationRequest /*인증정보*/
+        @RequestBody request: ReservationRequest
     ): ResponseEntity<ReservationResponse> {
-        return ResponseEntity.ok(reservationService.reserveSpace(spaceId, request /* 인증정보 */))
+        return ResponseEntity.ok(reservationService.reserveSpace(principal, spaceId, request))
     }
 
     @DeleteMapping("{reservationId}")
-    fun cancelReservation(@PathVariable reservationId: Long /*인증정보*/): ResponseEntity<Unit> {
-        reservationService.cancelReservation(reservationId /* 인증정보 */)
+    fun cancelReservation(
+        @AuthenticationPrincipal principal: UserPrincipal,
+        @PathVariable reservationId: Long
+    ): ResponseEntity<Unit> {
+        reservationService.cancelReservation(principal, reservationId)
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 }
