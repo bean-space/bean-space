@@ -8,7 +8,7 @@ import jakarta.persistence.*
 class Member(
 
     @Column
-    var email: String,
+    val phoneNumber: String,
 
     @Column
     var password: String,
@@ -16,12 +16,12 @@ class Member(
     @Column
     var nickname: String,
 
+    @Column
+    var email: String,
+
     @Enumerated(EnumType.STRING)
     @Column
     var role: MemberRole = MemberRole.MEMBER,
-
-    @Column
-    val phoneNumber: String,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
