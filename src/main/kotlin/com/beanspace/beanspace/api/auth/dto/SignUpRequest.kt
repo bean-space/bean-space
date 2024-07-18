@@ -8,12 +8,12 @@ import org.springframework.security.crypto.password.PasswordEncoder
 
 data class SignUpRequest(
 
-    @field:NotBlank(message = "이메일을 입력해주세요.")
+    @field:NotBlank(message = "휴대폰 번호를 입력해주세요.")
     @field:Pattern(
-        regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$",
-        message = "올바른 이메일 형식을 입력해주세요."
+        regexp = "^010\\d{8}\$",
+        message = "휴대폰 번호는 010으로 시작해서 11자로 설정해야합니다."
     )
-    val email: String,
+    val phoneNumber: String,
 
     @field:NotBlank(message = "비밀번호를 입력해주세요.")
     @field:Size(min = 8, max = 20, message = "비밀번호는 8자에서 20자 사이로 설정해야합니다.")
@@ -33,14 +33,14 @@ data class SignUpRequest(
     )
     val nickname: String,
 
-    @field:NotBlank(message = "휴대폰 번호를 입력해주세요.")
+    @field:NotBlank(message = "이메일을 입력해주세요.")
     @field:Pattern(
-        regexp = "^010\\d{8}\$",
-        message = "휴대폰 번호는 010으로 시작해서 11자로 설정해야합니다."
+        regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$",
+        message = "올바른 이메일 형식을 입력해주세요."
     )
-    val phoneNumber: String
+    val email: String,
 
-) {
+    ) {
     fun toEntity(
         passwordEncoder: PasswordEncoder
     ): Member {
