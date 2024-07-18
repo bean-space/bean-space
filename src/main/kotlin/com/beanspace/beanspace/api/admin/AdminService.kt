@@ -68,7 +68,7 @@ class AdminService(
 
     @Transactional
     fun createCoupon(request: CouponRequest): CouponResponse {
-        requestValidation(request)
+        validateRequest(request)
 
         return CouponResponse.from(couponRepository.save(request.toEntity()))
     }
@@ -77,9 +77,17 @@ class AdminService(
     fun updateCoupon(couponId: Long, request: CouponRequest): CouponResponse {
         val coupon = couponRepository.findByIdOrNull(couponId) ?: throw ModelNotFoundException("Coupon", couponId)
 
-        requestValidation(request)
+        validateRequest(request)
 
-        coupon.updateCoupon(request)
+        coupon.update(
+            name = request.name,
+            discountRate = request.discountRate,
+            maxDiscount = request.maxDiscount,
+            issueStartAt = request.issueStartAt,
+            issueEndAt = request.issueEndAt,
+            expirationAt = request.expirationAt,
+            totalQuantity = request.totalQuantity
+        )
 
         return CouponResponse.from(coupon)
     }
@@ -91,27 +99,26 @@ class AdminService(
         couponRepository.delete(coupon)
     }
 
-    private fun requestValidation(request: CouponRequest) {
-        validDiscountRate(request.discountRate)
-        if (dateCompare(LocalDateTime.now(), request.issueStartAt))
-            throw IllegalArgumentException("발급 시작일이 오늘보다 빠를 수 없습니다.")
-        if (dateCompare(request.issueStartAt, request.issueEndAt))
-            throw IllegalArgumentException("발급 마감일이 시작일보다 빠를 수 없습니다.")
-        if (dateCompare(request.issueEndAt, request.expirationAt))
-            throw IllegalArgumentException("쿠폰 만료일이 발급 마감일보다 빠를 수 없습니다.")
-    }
+    private fun validateRequest(request: CouponRequest) {
+        validateDiscountRate(request.discountRate)
 
-    private fun validDiscountRate(discountRate: Int) {
-        val rate = discountRate.toString()
-        if ("^[\\s0-9]{1,3}$".toRegex().matches(rate)) {
-            if (rate[0] == '0' || rate.length == 3 && rate[0] != '1')
-                throw IllegalArgumentException("할인율은 1 ~ 100까지 입력 가능합니다")
-        } else {
-            throw IllegalArgumentException("할인율은 1 ~ 100까지 입력 가능합니다")
+        check(isValidDate(LocalDateTime.now(), request.issueStartAt)) {
+            throw IllegalArgumentException("발급 시작일이 오늘보다 빠를 수 없습니다.")
+        }
+        check(isValidDate(request.issueStartAt, request.issueEndAt)) {
+            throw IllegalArgumentException("발급 마감일이 시작일보다 빠를 수 없습니다.")
+        }
+        check(isValidDate(request.issueEndAt, request.expirationAt)) {
+            throw IllegalArgumentException("쿠폰 만료일이 발급 마감일보다 빠를 수 없습니다.")
         }
     }
 
-    private fun dateCompare(earlyDate: LocalDateTime, lateDate: LocalDateTime): Boolean {
-        return earlyDate.isAfter(lateDate)
+    private fun validateDiscountRate(discountRate: Int) {
+        if (discountRate < 1 || discountRate > 100)
+            throw IllegalArgumentException("할인율은 1 ~ 100까지 입력 가능합니다")
+    }
+
+    private fun isValidDate(earlyDate: LocalDateTime, lateDate: LocalDateTime): Boolean {
+        return earlyDate.isBefore(lateDate)
     }
 }

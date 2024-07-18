@@ -1,6 +1,5 @@
 package com.beanspace.beanspace.domain.coupon.model
 
-import com.beanspace.beanspace.api.coupon.dto.CouponRequest
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
@@ -41,13 +40,21 @@ class Coupon(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 ) {
-    fun updateCoupon(request: CouponRequest) {
-        name = request.name
-        discountRate = request.discountRate
-        maxDiscount = request.maxDiscount
-        issueStartAt = request.issueStartAt
-        issueEndAt = request.issueEndAt
-        expirationAt = request.expirationAt
-        totalQuantity = request.totalQuantity
+    fun update(
+        name: String,
+        discountRate: Int,
+        maxDiscount: Int,
+        issueStartAt: LocalDateTime,
+        issueEndAt: LocalDateTime,
+        expirationAt: LocalDateTime,
+        totalQuantity: Int
+    ) {
+        this.name = name
+        this.discountRate = discountRate
+        this.maxDiscount = maxDiscount
+        this.issueStartAt = issueStartAt
+        this.issueEndAt = issueEndAt
+        this.expirationAt = expirationAt
+        this.totalQuantity = totalQuantity
     }
 }
