@@ -1,4 +1,4 @@
-package com.beanspace.beanspace.api.image
+package com.beanspace.beanspace.api.image.dto
 
 data class PhotoUpdateRequest(
     val photoId: Long?, // 새로운 이미지인 경우 null

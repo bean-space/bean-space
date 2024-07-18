@@ -1,5 +1,10 @@
 package com.beanspace.beanspace.api.image
 
+import com.beanspace.beanspace.api.image.dto.PhotoUpdateRequest
+import com.beanspace.beanspace.api.image.dto.PostPhotoRequest
+import com.beanspace.beanspace.api.image.dto.PostPhotoResponse
+import com.beanspace.beanspace.api.image.dto.PreSignedUrlRequest
+import com.beanspace.beanspace.api.image.dto.PreSignedUrlResponse
 import com.beanspace.beanspace.domain.image.model.Image
 import com.beanspace.beanspace.domain.image.model.ImageType
 import com.beanspace.beanspace.domain.image.model.PhotoPost
