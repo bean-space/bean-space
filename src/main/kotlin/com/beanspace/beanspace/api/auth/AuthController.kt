@@ -1,7 +1,8 @@
 package com.beanspace.beanspace.api.auth
 
+import com.beanspace.beanspace.api.auth.dto.AuthResponse
+import com.beanspace.beanspace.api.auth.dto.LoginRequest
 import com.beanspace.beanspace.api.auth.dto.SignUpRequest
-import com.beanspace.beanspace.api.auth.dto.SignUpResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -19,9 +20,18 @@ class AuthController(
     @PostMapping("/sign-up")
     fun signUp(
         @Valid @RequestBody request: SignUpRequest
-    ): ResponseEntity<SignUpResponse> {
+    ): ResponseEntity<AuthResponse> {
         return ResponseEntity
             .status(HttpStatus.CREATED)
             .body(authService.signUp(request))
+    }
+
+    @PostMapping("/login")
+    fun logIn(
+        @RequestBody request: LoginRequest
+    ): ResponseEntity<AuthResponse> {
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(authService.logIn(request))
     }
 }
