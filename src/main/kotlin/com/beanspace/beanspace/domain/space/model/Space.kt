@@ -55,4 +55,16 @@ class Space(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
-)
+) {
+    fun isProceeded(): Boolean {
+        return status != SpaceStatus.PENDING
+    }
+
+    fun active() {
+        status = SpaceStatus.ACTIVE
+    }
+
+    fun reject() {
+        status = SpaceStatus.REJECTED
+    }
+}
