@@ -81,7 +81,7 @@ class ReservationService(
         reservationRepository.findByIdOrNull(reservationId)
             ?.also { check(it.validateOwner(principal.id)) { throw AccessDeniedException("본인이 한 예약인지 확인해주세요.") } }
             ?.also { check(!it.isCancellationDeadlinePassed()) { throw IllegalStateException("예약 취소 가능 날짜가 지났습니다.") } }
-            ?.also { check(!it.isCancelledReservation()) { throw IllegalStateException("예약 취소가 가능한 상태가 아닙니다.") } }
+            ?.also { check(!it.isCancelledReservation()) { throw IllegalStateException("이미 취소된 예약입니다.") } }
             ?.cancelReservation()
             ?: throw ModelNotFoundException("예약", reservationId)
     }

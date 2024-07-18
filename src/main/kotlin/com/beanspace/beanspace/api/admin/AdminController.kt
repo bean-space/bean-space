@@ -2,6 +2,7 @@ package com.beanspace.beanspace.api.admin
 
 import com.beanspace.beanspace.api.admin.dto.RequestAddSpaceResponse
 import com.beanspace.beanspace.api.admin.dto.UpdateSpaceStatus
+import com.beanspace.beanspace.api.coupon.dto.CouponRequest
 import com.beanspace.beanspace.api.coupon.dto.CouponResponse
 import com.beanspace.beanspace.api.member.dto.MemberListResponse
 import org.springframework.data.domain.Page
@@ -51,13 +52,16 @@ class AdminController(private val adminService: AdminService) {
     }
 
     @PostMapping("/coupons")
-    fun createCoupon(): ResponseEntity<CouponResponse> {
-        return ResponseEntity.status(HttpStatus.CREATED).body(adminService.createCoupon())
+    fun createCoupon(@RequestBody request: CouponRequest): ResponseEntity<CouponResponse> {
+        return ResponseEntity.status(HttpStatus.CREATED).body(adminService.createCoupon(request))
     }
 
     @PutMapping("/coupons/{couponId}")
-    fun updateCoupon(@PathVariable couponId: Long): ResponseEntity<CouponResponse> {
-        return ResponseEntity.ok(adminService.updateCoupon(couponId))
+    fun updateCoupon(
+        @PathVariable couponId: Long,
+        @RequestBody request: CouponRequest
+    ): ResponseEntity<CouponResponse> {
+        return ResponseEntity.ok(adminService.updateCoupon(couponId, request))
     }
 
     @DeleteMapping("/coupons/{couponId}")

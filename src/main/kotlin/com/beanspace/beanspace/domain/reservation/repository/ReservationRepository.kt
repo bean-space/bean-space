@@ -8,7 +8,6 @@ import java.time.LocalDate
 
 @Repository
 interface ReservationRepository : JpaRepository<Reservation, Long> {
-    fun findAllBySpaceIdAndIsCancelled(spaceId: Long, isCancelled: Boolean): List<Reservation>
 
     @Query("SELECT r FROM Reservation r WHERE r.space.id = :spaceId AND r.isCancelled = :isCancelled AND r.checkOut >= :today")
     fun findAllBySpaceIdAndIsCancelledAndCheckOutAfter(
