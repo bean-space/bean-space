@@ -35,7 +35,7 @@ data class SignUpRequest(
 
     @field:NotBlank(message = "전화번호를 입력해주세요.")
     @field:Pattern(
-        regexp = "^[0-9]{11}",
+        regexp = "^010\\d{8}\$",
         message = "전화번호는 숫자 11자로 설정해야합니다."
     )
     val phoneNumber: String
