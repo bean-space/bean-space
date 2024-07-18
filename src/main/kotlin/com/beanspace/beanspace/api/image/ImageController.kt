@@ -1,5 +1,10 @@
 package com.beanspace.beanspace.api.image
 
+import com.beanspace.beanspace.api.image.dto.PhotoUpdateRequest
+import com.beanspace.beanspace.api.image.dto.PostPhotoRequest
+import com.beanspace.beanspace.api.image.dto.PostPhotoResponse
+import com.beanspace.beanspace.api.image.dto.PreSignedUrlRequest
+import com.beanspace.beanspace.api.image.dto.PreSignedUrlResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping

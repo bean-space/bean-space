@@ -1,4 +1,4 @@
-package com.beanspace.beanspace.api.image
+package com.beanspace.beanspace.api.image.dto
 
 data class PreSignedUrlRequest(
     val fileName: String,
