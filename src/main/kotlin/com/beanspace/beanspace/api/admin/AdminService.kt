@@ -2,6 +2,7 @@ package com.beanspace.beanspace.api.admin
 
 import com.beanspace.beanspace.api.admin.dto.RequestAddSpaceResponse
 import com.beanspace.beanspace.api.admin.dto.UpdateSpaceStatus
+import com.beanspace.beanspace.api.coupon.dto.CouponRequest
 import com.beanspace.beanspace.api.coupon.dto.CouponResponse
 import com.beanspace.beanspace.api.member.dto.MemberListResponse
 import com.beanspace.beanspace.domain.coupon.repository.CouponRepository
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class AdminService(
@@ -65,17 +67,51 @@ class AdminService(
     }
 
     @Transactional
-    fun createCoupon(): CouponResponse {
-        TODO()
+    fun createCoupon(request: CouponRequest): CouponResponse {
+        requestValidation(request)
+
+        return CouponResponse.from(couponRepository.save(request.toEntity()))
     }
 
     @Transactional
-    fun updateCoupon(couponId: Long): CouponResponse {
-        TODO()
+    fun updateCoupon(couponId: Long, request: CouponRequest): CouponResponse {
+        val coupon = couponRepository.findByIdOrNull(couponId) ?: throw ModelNotFoundException("Coupon", couponId)
+
+        requestValidation(request)
+
+        coupon.updateCoupon(request)
+
+        return CouponResponse.from(coupon)
     }
 
     @Transactional
     fun deleteCoupon(couponId: Long) {
-        TODO()
+        val coupon = couponRepository.findByIdOrNull(couponId) ?: throw ModelNotFoundException("Coupon", couponId)
+
+        couponRepository.delete(coupon)
+    }
+
+    private fun requestValidation(request: CouponRequest) {
+        validDiscountRate(request.discountRate)
+        if (dateCompare(LocalDateTime.now(), request.issueStartAt))
+            throw IllegalArgumentException("발급 시작일이 오늘보다 빠를 수 없습니다.")
+        if (dateCompare(request.issueStartAt, request.issueEndAt))
+            throw IllegalArgumentException("발급 마감일이 시작일보다 빠를 수 없습니다.")
+        if (dateCompare(request.issueEndAt, request.expirationAt))
+            throw IllegalArgumentException("쿠폰 만료일이 발급 마감일보다 빠를 수 없습니다.")
+    }
+
+    private fun validDiscountRate(discountRate: Int) {
+        val rate = discountRate.toString()
+        if ("^[\\s0-9]{1,3}$".toRegex().matches(rate)) {
+            if (rate[0] == '0' || rate.length == 3 && rate[0] != '1')
+                throw IllegalArgumentException("할인율은 1 ~ 100까지 입력 가능합니다")
+        } else {
+            throw IllegalArgumentException("할인율은 1 ~ 100까지 입력 가능합니다")
+        }
+    }
+
+    private fun dateCompare(earlyDate: LocalDateTime, lateDate: LocalDateTime): Boolean {
+        return earlyDate.isAfter(lateDate)
     }
 }
