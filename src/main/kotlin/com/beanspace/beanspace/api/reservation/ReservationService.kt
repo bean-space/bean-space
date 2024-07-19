@@ -39,7 +39,15 @@ class ReservationService(
                 ?: throw ModelNotFoundException("UserCoupon", request.userCouponId)
         }
 
+        // 자기 자신의 숙소는 예약 불가능
+        check(space.host.id != principal.id) { throw IllegalArgumentException("자기 자신의 공간은 예약할 수 없습니다.") }
+
+        // 체크아웃 날짜가 체크인 날짜 이후인가?
         check(request.checkIn < request.checkOut) { throw IllegalArgumentException("체크인, 체크아웃 날짜가 올바른지 확인해주세요.") }
+
+        // 체크인 날짜가 오늘 이전은 불가능
+        check(request.checkIn.isAfter(LocalDate.now()))
+        { throw IllegalArgumentException("예약이 가능한 날짜인지 확인해주세요.") }
 
         // 체크 아웃 날짜가 오늘로부터 6개월 뒤까지만 가능
         check(request.checkOut.isBefore(LocalDate.now().plusMonths(6)))
@@ -58,7 +66,7 @@ class ReservationService(
         { throw IllegalStateException("이미 사용한 쿠폰입니다.") }
 
         // 쿠폰의 유효기간이 유효한가?
-        check(userCoupon?.coupon?.expirationAt?.isBefore(LocalDateTime.now()) ?: true)
+        check(userCoupon?.coupon?.expirationAt?.isAfter(LocalDateTime.now()) ?: true)
         { throw IllegalStateException("쿠폰의 유효기간을 확인해주세요.") }
 
         // 숙박일수
@@ -68,7 +76,8 @@ class ReservationService(
         val regularPrice = stayDays * space.price
 
         // 추가 인원 가격
-        val extraPersonCharge = ((request.reservationPeople - space.defaultPeople) * space.price).coerceAtLeast(0)
+        val extraPersonCharge =
+            ((request.reservationPeople - space.defaultPeople) * space.pricePerPerson).coerceAtLeast(0)
 
         // 쿠폰 적용 전 가격
         val totalPriceBeforeCoupon = regularPrice + extraPersonCharge
