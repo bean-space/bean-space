@@ -1,5 +1,6 @@
 package com.beanspace.beanspace.domain.member.model
 
+import com.beanspace.beanspace.api.member.dto.ProfileUpdateRequest
 import com.beanspace.beanspace.domain.common.BaseTimeEntity
 import jakarta.persistence.*
 
@@ -27,4 +28,15 @@ class Member(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
-) : BaseTimeEntity()
+) : BaseTimeEntity() {
+
+    fun isAuthorized(userId: Long): Boolean {
+        return id == userId
+    }
+
+    fun updateProfile(profile: ProfileUpdateRequest, password: String) {
+        this.password = password
+        this.nickname = profile.nickname
+        this.email = profile.email
+    }
+}
