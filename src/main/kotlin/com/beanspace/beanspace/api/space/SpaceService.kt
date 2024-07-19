@@ -1,17 +1,26 @@
 package com.beanspace.beanspace.api.space
 
 import com.beanspace.beanspace.api.space.dto.SpaceResponse
+import com.beanspace.beanspace.domain.exception.ModelNotFoundException
+import com.beanspace.beanspace.domain.image.model.ImageType
+import com.beanspace.beanspace.domain.image.repository.ImageRepository
+import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.beanspace.beanspace.domain.space.model.Wishlist
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import com.beanspace.beanspace.domain.space.repository.WishListRepository
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 @Service
 class SpaceService(
     private val spaceRepository: SpaceRepository,
-    private val wishListRepository: WishListRepository
+    private val wishListRepository: WishListRepository,
+    private val imageRepository: ImageRepository,
 ) {
     fun getSpaceList(): List<SpaceResponse> {
         //TODO 이미지 가져와야함
@@ -19,9 +28,19 @@ class SpaceService(
     }
 
     fun getSpace(spaceId: Long): SpaceResponse {
-        val space = spaceRepository.findByIdOrNull(spaceId) ?: throw Exception() //TODO Custom Exception 적용
-        //TODO 이미지 가져와야함
-        return SpaceResponse.from(space)
+        val space =
+            spaceRepository.findByIdOrNull(spaceId) ?: throw ModelNotFoundException(model = "Space", id = spaceId)
+        if (space.status != SpaceStatus.ACTIVE) throw ModelNotFoundException(model = "Space", id = spaceId)
+
+        val imageList = imageRepository.findByTypeAndContentId(ImageType.SPACE, spaceId)
+
+        val reservedDateList = mutableListOf<LocalDate>()
+        // reservationRepository.findBySpaceAndCheckInGreaterThanEqualAndIsCancelledFalse( //TODO isCancelled == false 인 예약만가져오도록 수정하기
+        //     space,
+        //     LocalDate.now()
+        // )
+        //     ?.map { it.checkIn.datesUntil(it.checkOut).forEach { date -> reservedDateList.add(date) } }
+        return SpaceResponse.from(space, imageList.map { it.imageUrl }, reservedDateList)
     }
 
     fun addToWishList(spaceId: Long /*인증정보*/) {
