@@ -1,11 +1,14 @@
 package com.beanspace.beanspace.api.member
 
+import com.beanspace.beanspace.api.member.dto.MemberProfileResponse
+import com.beanspace.beanspace.api.member.dto.UpdateProfileRequest
 import com.beanspace.beanspace.api.space.dto.SpaceResponse
+import com.beanspace.beanspace.infra.security.dto.UserPrincipal
+import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/v1/members")
@@ -14,13 +17,21 @@ class MemberController(
 ) {
 
     @PostMapping("/profile")
-    fun updateProfile() {
-        //TODO 생성자 부분에 추가 HttpServletRequest, UserPrincipal, UpdateProfileDto,
+    fun updateProfile(
+        @AuthenticationPrincipal principal: UserPrincipal,
+        @Valid @RequestBody request: UpdateProfileRequest
+    ): ResponseEntity<MemberProfileResponse> {
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(memberService.updateProfile(principal, request))
     }
 
     @GetMapping("/profile")
-    fun getMemberProfile() {
-        //TODO 프로필 조회 로직
+    fun getProfile(
+        @AuthenticationPrincipal principal: UserPrincipal,
+    ): ResponseEntity<MemberProfileResponse> {
+        return ResponseEntity
+            .ok(memberService.getProfile(principal))
     }
 
     @GetMapping("/wishlist")

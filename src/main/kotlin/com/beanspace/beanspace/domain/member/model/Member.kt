@@ -27,4 +27,9 @@ class Member(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
-) : BaseTimeEntity()
+) : BaseTimeEntity() {
+    fun updateProfile(nickname: String, email: String) {
+        this.nickname = nickname
+        this.email = email
+    }
+}
