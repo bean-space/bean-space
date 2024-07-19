@@ -2,11 +2,12 @@ package com.beanspace.beanspace.api.reservation
 
 import com.beanspace.beanspace.api.reservation.dto.ReservationRequest
 import com.beanspace.beanspace.api.reservation.dto.ReservationResponse
-import com.beanspace.beanspace.domain.coupon.repository.CouponRepository
-import com.beanspace.beanspace.domain.exception.AccessDeniedException
+import com.beanspace.beanspace.domain.coupon.repository.UserCouponRepository
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
+import com.beanspace.beanspace.domain.exception.NoPermissionException
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
 import com.beanspace.beanspace.domain.reservation.repository.ReservationRepository
+import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import org.springframework.data.repository.findByIdOrNull
@@ -21,19 +22,22 @@ class ReservationService(
     private val spaceRepository: SpaceRepository,
     private val reservationRepository: ReservationRepository,
     private val memberRepository: MemberRepository,
-    private val couponRepository: CouponRepository
+    private val userCouponRepository: UserCouponRepository
 ) {
 
     @Transactional
     fun reserveSpace(principal: UserPrincipal, spaceId: Long, request: ReservationRequest): ReservationResponse {
-        val space = spaceRepository.findByIdOrNull(spaceId) // space active 한지 확인하는 부분 추가 예정
+
+        val space = spaceRepository.findByIdAndStatus(spaceId, SpaceStatus.ACTIVE)
             ?: throw ModelNotFoundException("공간", spaceId)
 
         val member = memberRepository.findByIdOrNull(principal.id)
             ?: throw ModelNotFoundException("사용자", principal.id)
 
-        val coupon = couponRepository.findByIdOrNull(request.couponId)
-            ?: throw ModelNotFoundException("쿠폰", request.couponId)
+        val userCoupon = request.userCouponId?.let {
+            userCouponRepository.findByIdOrNull(request.userCouponId)
+                ?: throw ModelNotFoundException("UserCoupon", request.userCouponId)
+        }
 
         check(request.checkIn < request.checkOut) { throw IllegalArgumentException("체크인, 체크아웃 날짜가 올바른지 확인해주세요.") }
 
@@ -41,6 +45,7 @@ class ReservationService(
         check(request.checkOut.isBefore(LocalDate.now().plusMonths(6)))
         { throw IllegalArgumentException("예약이 가능한 날짜인지 확인해주세요.") }
 
+        // 예약 인원이 올바른가?
         check(request.reservationPeople in 1..space.maxPeople)
         { throw IllegalArgumentException("예약 인원이 올바른지 확인해주세요.") }
 
@@ -48,8 +53,12 @@ class ReservationService(
         check(isReservationPossible(space.id!!, request.checkIn, request.checkOut))
         { throw IllegalArgumentException("예약이 이미 완료된 날짜입니다.") }
 
-        // 쿠폰이 유효한가?
-        check(coupon.expirationAt.isBefore(LocalDateTime.now()))
+        // 사용한 쿠폰인가?
+        check(userCoupon?.isCouponUnused() ?: true)
+        { throw IllegalStateException("이미 사용한 쿠폰입니다.") }
+
+        // 쿠폰의 유효기간이 유효한가?
+        check(userCoupon?.coupon?.expirationAt?.isBefore(LocalDateTime.now()) ?: true)
         { throw IllegalStateException("쿠폰의 유효기간을 확인해주세요.") }
 
         // 숙박일수
@@ -65,11 +74,15 @@ class ReservationService(
         val totalPriceBeforeCoupon = regularPrice + extraPersonCharge
 
         // 쿠폰 할인 가격
-        val couponDiscountedPrice =
-            (totalPriceBeforeCoupon * coupon.discountRate / 100).coerceAtMost(coupon.maxDiscount.toLong())
+        val couponDiscountedPrice = userCoupon?.coupon
+            ?.let { (totalPriceBeforeCoupon * it.discountRate / 100).coerceAtMost(it.maxDiscount.toLong()) }
+            ?: 0L
 
         // 최종 가격
         val finalPrice = totalPriceBeforeCoupon - couponDiscountedPrice
+
+        // 쿠폰 사용 처리
+        userCoupon?.useCoupon()
 
         return request.toEntity(space, member, finalPrice)
             .also { reservationRepository.save(it) }
@@ -79,7 +92,7 @@ class ReservationService(
     @Transactional
     fun cancelReservation(principal: UserPrincipal, reservationId: Long) {
         reservationRepository.findByIdOrNull(reservationId)
-            ?.also { check(it.validateOwner(principal.id)) { throw AccessDeniedException("본인이 한 예약인지 확인해주세요.") } }
+            ?.also { check(it.validateOwner(principal.id)) { throw NoPermissionException("본인이 한 예약인지 확인해주세요.") } }
             ?.also { check(!it.isCancellationDeadlinePassed()) { throw IllegalStateException("예약 취소 가능 날짜가 지났습니다.") } }
             ?.also { check(!it.isCancelledReservation()) { throw IllegalStateException("이미 취소된 예약입니다.") } }
             ?.cancelReservation()

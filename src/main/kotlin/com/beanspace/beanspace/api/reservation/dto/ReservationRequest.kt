@@ -9,7 +9,7 @@ data class ReservationRequest(
     val checkIn: LocalDate,
     val checkOut: LocalDate,
     val reservationPeople: Int,
-    val couponId: Long
+    val userCouponId: Long?
 ) {
     fun toEntity(space: Space, member: Member, cost: Long): Reservation {
         return Reservation(
