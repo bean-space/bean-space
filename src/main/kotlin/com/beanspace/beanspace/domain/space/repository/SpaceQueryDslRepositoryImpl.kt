@@ -98,9 +98,7 @@ class SpaceQueryDslRepositoryImpl(
     }
 
     private fun isAvailableHeadCount(headCount: Int?): BooleanExpression? {
-        return if (headCount != null && headCount > 0)
-            space.defaultPeople.loe(headCount)
-                .and(space.maxPeople.goe(headCount)) else null
+        return if (headCount != null && headCount > 0) space.maxPeople.goe(headCount) else null
     }
 
     private fun inAvailableDate(start: LocalDate?, end: LocalDate?): BooleanExpression? {
