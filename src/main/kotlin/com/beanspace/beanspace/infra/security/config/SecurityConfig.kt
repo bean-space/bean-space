@@ -29,7 +29,8 @@ class SecurityConfig(
             .headers { header -> header.frameOptions { it.disable() } }
             .authorizeHttpRequests {
                 it
-                    .requestMatchers(HttpMethod.GET, "/api/v1/spaces", "/api/v1/spaces/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/spaces", "/api/v1/spaces/**", "/api/v1/coupons")
+                    .permitAll()
                     .requestMatchers(
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
