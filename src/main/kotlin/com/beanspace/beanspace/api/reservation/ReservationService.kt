@@ -45,7 +45,7 @@ class ReservationService(
         // 체크아웃 날짜가 체크인 날짜 이후인가?
         check(request.checkIn < request.checkOut) { throw IllegalArgumentException("체크인, 체크아웃 날짜가 올바른지 확인해주세요.") }
 
-        // 체크인 날짜가 오늘 이전은 불가능
+        // 체크인 날짜는 내일 이후로만 가능 (당일 예약 불가)
         check(request.checkIn.isAfter(LocalDate.now()))
         { throw IllegalArgumentException("예약이 가능한 날짜인지 확인해주세요.") }
 
