@@ -8,6 +8,7 @@ import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.beanspace.beanspace.domain.space.model.Wishlist
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import com.beanspace.beanspace.domain.space.repository.WishListRepository
+import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -63,19 +64,23 @@ class SpaceService(
         return SpaceResponse.from(space, imageList.map { it.imageUrl }, reservedDateList)
     }
 
-    fun addToWishList(spaceId: Long /*인증정보*/) {
-        // spaceId 존재 검증
-        val memberId = 1L
-        // 사용자의 Id로 찜을 누른적이 있는지 검증
-        wishListRepository.save(Wishlist(spaceId, memberId))
+    fun addToWishList(spaceId: Long, userPrincipal: UserPrincipal) {
+        check(spaceRepository.existsByIdAndStatus(spaceId, SpaceStatus.ACTIVE))
+        { throw ModelNotFoundException(model = "Space", id = spaceId) }
+
+        check(!wishListRepository.existsBySpaceIdAndMemberId(spaceId, userPrincipal.id))
+        { throw IllegalStateException("이미 찜한 공간입니다.") }
+
+        wishListRepository.save(Wishlist(spaceId, userPrincipal.id))
     }
 
     @Transactional
-    fun deleteFromWishList(spaceId: Long) {
-        // spaceId 존재 검증
-        val memberId = 1L
-        // 사용자의 Id로 찜을 누른적이 있는지 확인
-        wishListRepository.delete(Wishlist(spaceId, memberId))
+    fun deleteFromWishList(spaceId: Long, userPrincipal: UserPrincipal) {
+
+        check(wishListRepository.existsBySpaceIdAndMemberId(spaceId, userPrincipal.id))
+        { throw IllegalStateException("해당 공간에 찜한 내역이 없습니다.") }
+        
+        wishListRepository.delete(Wishlist(spaceId, userPrincipal.id))
     }
 
     fun addReview(spaceId: Long): Unit {
