@@ -1,10 +1,9 @@
 package com.beanspace.beanspace.api.member
 
-import com.beanspace.beanspace.api.member.dto.MemberResponse
-import com.beanspace.beanspace.api.member.dto.ProfileUpdateRequest
+import com.beanspace.beanspace.api.member.dto.MemberProfileResponse
+import com.beanspace.beanspace.api.member.dto.UpdateProfileRequest
 import com.beanspace.beanspace.api.space.dto.SpaceResponse
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
-import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -19,21 +18,20 @@ class MemberController(
 
     @PostMapping("/profile")
     fun updateProfile(
-        request: HttpServletRequest,
         @AuthenticationPrincipal principal: UserPrincipal,
-        @Valid @RequestBody profile: ProfileUpdateRequest
-    ): ResponseEntity<MemberResponse> {
+        @Valid @RequestBody request: UpdateProfileRequest
+    ): ResponseEntity<MemberProfileResponse> {
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(memberService.updateProfile(profile, principal.id))
+            .body(memberService.updateProfile(principal, request))
     }
 
     @GetMapping("/profile")
-    fun getMyProfile(
+    fun getProfile(
         @AuthenticationPrincipal principal: UserPrincipal,
-    ): ResponseEntity<MemberResponse> {
+    ): ResponseEntity<MemberProfileResponse> {
         return ResponseEntity
-            .ok(memberService.getMyProfile(principal))
+            .ok(memberService.getProfile(principal))
     }
 
     @GetMapping("/wishlist")

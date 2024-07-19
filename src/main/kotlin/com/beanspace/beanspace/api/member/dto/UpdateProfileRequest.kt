@@ -4,10 +4,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 
-data class ProfileUpdateRequest(
-    val password: String,
-
-    val confirmPassword: String,
+data class UpdateProfileRequest(
 
     @field:NotBlank(message = "닉네임을 입력해주세요.")
     @field:Size(min = 2, max = 12, message = "닉네임은 2자에서 12자 사이로 설정해야합니다.")
@@ -22,5 +19,5 @@ data class ProfileUpdateRequest(
         regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$",
         message = "올바른 이메일 형식을 입력해주세요."
     )
-    val email: String,
+    val email: String
 )
