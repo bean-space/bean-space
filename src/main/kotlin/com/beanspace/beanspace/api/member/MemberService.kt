@@ -3,7 +3,6 @@ package com.beanspace.beanspace.api.member
 import com.beanspace.beanspace.api.member.dto.MemberResponse
 import com.beanspace.beanspace.api.member.dto.ProfileUpdateRequest
 import com.beanspace.beanspace.api.space.dto.SpaceResponse
-import com.beanspace.beanspace.domain.exception.AccessDeniedException
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
@@ -33,13 +32,9 @@ class MemberService(
         return MemberResponse.fromEntity(member)
     }
 
-    fun getMemberProfile(principal: UserPrincipal, memberId: Long): MemberResponse {
-        val member = memberRepository.findByIdOrNull(memberId)
-            ?: throw ModelNotFoundException("User", memberId)
-
-        if (!member.isAuthorized(principal.id)) {
-            throw AccessDeniedException("해당하는 프로필을 조회할 권한이 없습니다.")
-        }
+    fun getMyProfile(principal: UserPrincipal): MemberResponse {
+        val member = memberRepository.findByIdOrNull(principal.id)
+            ?: throw ModelNotFoundException("Member", principal.id)
 
         return MemberResponse.fromEntity(member)
     }

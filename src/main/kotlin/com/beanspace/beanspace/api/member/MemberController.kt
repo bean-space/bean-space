@@ -28,13 +28,12 @@ class MemberController(
             .body(memberService.updateProfile(profile, principal.id))
     }
 
-    @GetMapping("/profile/{memberId}")
-    fun getMemberProfile(
+    @GetMapping("/profile")
+    fun getMyProfile(
         @AuthenticationPrincipal principal: UserPrincipal,
-        @PathVariable memberId: Long
     ): ResponseEntity<MemberResponse> {
         return ResponseEntity
-            .ok(memberService.getMemberProfile(principal, memberId))
+            .ok(memberService.getMyProfile(principal))
     }
 
     @GetMapping("/wishlist")

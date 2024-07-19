@@ -30,10 +30,6 @@ class Member(
 
 ) : BaseTimeEntity() {
 
-    fun isAuthorized(userId: Long): Boolean {
-        return id == userId
-    }
-
     fun updateProfile(profile: ProfileUpdateRequest, password: String) {
         this.password = password
         this.nickname = profile.nickname
