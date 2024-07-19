@@ -4,8 +4,6 @@ import com.beanspace.beanspace.domain.member.model.Member
 import com.beanspace.beanspace.domain.space.model.Space
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -22,14 +20,14 @@ class Reservation(
     @Column
     val checkOut: LocalDate,
 
-    @Enumerated(EnumType.STRING)
-    var status: ReservationStatus = ReservationStatus.RESERVED,
-
     @Column
     val reservationPeople: Int,
 
     @Column
     val cost: Long,
+
+    @Column
+    var isCancelled: Boolean = false,
 
     @Column(updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
@@ -42,4 +40,21 @@ class Reservation(
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
-)
+) {
+    fun validateOwner(memberId: Long) = (member.id == memberId)
+
+    fun isBeforeCancellationDeadline(): Boolean {
+        val today = LocalDate.now()
+
+        // 예약 취소는 체크인 날짜 이틀 전까지 가능
+        val cancellationDeadline = checkIn.minusDays(2)
+
+        return today <= cancellationDeadline
+    }
+
+    fun isActiveReservation() = !isCancelled
+
+    fun cancelReservation() {
+        isCancelled = true
+    }
+}
