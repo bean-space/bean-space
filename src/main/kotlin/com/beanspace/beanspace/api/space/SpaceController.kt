@@ -1,12 +1,14 @@
 package com.beanspace.beanspace.api.space
 
 import com.beanspace.beanspace.api.space.dto.SpaceResponse
+import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -50,12 +52,18 @@ class SpaceController(private val spaceService: SpaceService) {
     }
 
     @PostMapping("/{spaceId}/wishlist")
-    fun addSpaceToWishList(@PathVariable spaceId: Long /*인증 정보*/): ResponseEntity<Unit> {
-        return ResponseEntity.ok(spaceService.addToWishList(spaceId))
+    fun addSpaceToWishList(
+        @PathVariable spaceId: Long,
+        @AuthenticationPrincipal userPrincipal: UserPrincipal
+    ): ResponseEntity<Unit> {
+        return ResponseEntity.ok(spaceService.addToWishList(spaceId, userPrincipal))
     }
 
     @DeleteMapping("/{spaceId}/wishlist")
-    fun deleteSpaceFromWishList(@PathVariable spaceId: Long /*인증 정보*/): ResponseEntity<Unit> {
-        return ResponseEntity.ok(spaceService.deleteFromWishList(spaceId))
+    fun deleteSpaceFromWishList(
+        @PathVariable spaceId: Long,
+        @AuthenticationPrincipal userPrincipal: UserPrincipal
+    ): ResponseEntity<Unit> {
+        return ResponseEntity.ok(spaceService.deleteFromWishList(spaceId, userPrincipal))
     }
 }
