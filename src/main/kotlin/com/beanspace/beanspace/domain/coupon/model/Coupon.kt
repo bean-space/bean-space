@@ -56,5 +56,19 @@ class Coupon(
         this.issueEndAt = issueEndAt
         this.expirationAt = expirationAt
         this.totalQuantity = totalQuantity
+        this.stock = totalQuantity
+    }
+
+    fun isCouponStockAvailable(): Boolean {
+        return stock > 0
+    }
+
+    fun isIssuePeriodValid(): Boolean {
+        val now = LocalDateTime.now()
+        return now.isAfter(issueStartAt) && now.isBefore(issueEndAt)
+    }
+
+    fun issueCoupon() {
+        stock -= 1
     }
 }

@@ -1,6 +1,7 @@
 package com.beanspace.beanspace.api.space.dto
 
 import com.beanspace.beanspace.domain.space.model.Space
+import java.time.LocalDate
 
 data class SpaceResponse(
     val id: Long,
@@ -16,11 +17,11 @@ data class SpaceResponse(
     val bedRoomCount: Int,
     val bedCount: Int,
     val bathRoomCount: Int,
-    //TODO val imageUrlList: List<String>
-
+    val imageUrlList: List<String>,
+    val reservedDateList: List<LocalDate>? = null,
 ) {
     companion object {
-        fun from(space: Space): SpaceResponse {
+        fun from(space: Space, imageUrlList: List<String>, reservedDateList: List<LocalDate>? = null): SpaceResponse {
             return SpaceResponse(
                 id = space.id!!,
                 listingName = space.listingName,
@@ -34,7 +35,9 @@ data class SpaceResponse(
                 pricePerPerson = space.pricePerPerson,
                 bedRoomCount = space.bedRoomCount,
                 bedCount = space.bedCount,
-                bathRoomCount = space.bathRoomCount
+                bathRoomCount = space.bathRoomCount,
+                imageUrlList = imageUrlList,
+                reservedDateList = reservedDateList,
             )
         }
     }

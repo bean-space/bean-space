@@ -11,7 +11,8 @@ data class CouponResponse(
     val issueStartAt: LocalDateTime,
     val issueEndAt: LocalDateTime,
     val expirationAt: LocalDateTime,
-    val totalQuantity: Int
+    val totalQuantity: Int,
+    val stock: Int
 ) {
     companion object {
         fun from(coupon: Coupon): CouponResponse {
@@ -23,7 +24,8 @@ data class CouponResponse(
                 coupon.issueStartAt,
                 coupon.issueEndAt,
                 coupon.expirationAt,
-                coupon.totalQuantity
+                coupon.totalQuantity,
+                coupon.stock
             )
         }
     }
