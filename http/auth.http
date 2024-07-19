@@ -1,0 +1,24 @@
+### 회원가입
+POST http://localhost:8080/api/v1/auth/sign-up
+Content-Type: application/json
+
+{
+  "phoneNumber": "01012345678",
+  "password": "asdf1234!",
+  "passwordConfirmation": "asdf1234!",
+  "nickname": "host",
+  "email": "host@test.com"
+}
+
+### 로그인
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "phoneNumber": "01012345678",
+  "password": "asdf1234!"
+}
+
+> {%
+    client.global.set("ACCESS_TOKEN", response.body["accessToken"])
+%}
