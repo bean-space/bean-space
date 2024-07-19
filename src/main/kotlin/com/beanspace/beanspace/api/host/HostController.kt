@@ -29,9 +29,13 @@ class HostController(private val hostService: HostService) {
         return ResponseEntity.status(HttpStatus.CREATED).body(hostService.createSpace(request, userPrincipal.id))
     }
 
-    @PutMapping("/space/{spaceId}")
-    fun updateSpace(@PathVariable spaceId: Long): ResponseEntity<SpaceResponse> {
-        return ResponseEntity.ok(hostService.updateSpace(spaceId))
+    @PutMapping("/spaces/{spaceId}")
+    fun updateSpace(
+        @PathVariable spaceId: Long,
+        @RequestBody request: UpdateSpaceRequest,
+        @AuthenticationPrincipal userPrincipal: UserPrincipal
+    ): ResponseEntity<SpaceResponse> {
+        return ResponseEntity.ok(hostService.updateSpace(spaceId, request, userPrincipal.id))
     }
 
     @DeleteMapping("/space/{spaceId}")

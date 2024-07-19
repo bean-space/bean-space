@@ -76,4 +76,35 @@ class Space(
     fun reject() {
         status = SpaceStatus.REJECTED
     }
+
+    fun update(
+        listingName: String,
+        price: Int,
+        content: String,
+        defaultPeople: Int,
+        maxPeople: Int,
+        pricePerPerson: Int,
+        bedRoomCount: Int,
+        bedCount: Int,
+        bathRoomCount: Int
+    ) {
+        this.listingName = listingName
+        this.price = price
+        this.content = content
+        this.defaultPeople = defaultPeople
+        this.maxPeople = maxPeople
+        this.pricePerPerson = pricePerPerson
+        this.bedRoomCount = bedRoomCount
+        this.bedCount = bedCount
+        this.bathRoomCount = bathRoomCount
+    }
+
+    fun hasPermission(hostId: Long): Boolean {
+        return this.host.id == hostId
+    }
+
+    fun delete() {
+        this.isDeleted = true
+        this.deletedAt = LocalDateTime.now()
+    }
 }

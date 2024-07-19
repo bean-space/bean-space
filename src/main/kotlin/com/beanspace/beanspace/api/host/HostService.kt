@@ -43,8 +43,38 @@ class HostService(
     }
 
     @Transactional
-    fun updateSpace(spaceId: Long): SpaceResponse {
-        TODO("Not yet implemented")
+    fun updateSpace(spaceId: Long, request: UpdateSpaceRequest, hostId: Long): SpaceResponse {
+        return spaceRepository.findByIdOrNull(spaceId)
+            ?.also { check(it.hasPermission(hostId)) { throw NoPermissionException() } }
+            ?.also {
+                it.update(
+                    listingName = request.listingName,
+                    price = request.price,
+                    content = request.content,
+                    defaultPeople = request.defaultPeople,
+                    maxPeople = request.maxPeople,
+                    pricePerPerson = request.pricePerPerson,
+                    bedRoomCount = request.bedRoomCount,
+                    bedCount = request.bedCount,
+                    bathRoomCount = request.bathRoomCount,
+                )
+            }
+            ?.also { imageRepository.deleteByTypeAndContentId(ImageType.SPACE, spaceId) }
+            ?.also {
+                request.imageUrlList.forEachIndexed { index, imageUrl ->
+                    imageRepository.save(
+                        Image(
+                            type = ImageType.SPACE,
+                            contentId = spaceId,
+                            imageUrl = imageUrl,
+                            orderIndex = index
+                        )
+                    )
+                }
+            }
+            ?.let {
+                SpaceResponse.from(it, request.imageUrlList)
+            } ?: throw ModelNotFoundException(model = "Space", id = spaceId)
     }
 
     @Transactional
