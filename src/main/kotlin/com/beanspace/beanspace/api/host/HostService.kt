@@ -78,7 +78,11 @@ class HostService(
     }
 
     @Transactional
-    fun deleteSpace(spaceId: Long) {
-        TODO("Not yet implemented")
+    fun deleteSpace(spaceId: Long, hostId: Long) {
+        spaceRepository.findByIdOrNull(spaceId)
+            ?.also { check(it.hasPermission(hostId)) { throw NoPermissionException() } }
+            ?.also { imageRepository.deleteByTypeAndContentId(ImageType.SPACE, spaceId) }
+            ?.also { it.delete() }
+            ?: throw ModelNotFoundException(model = "Space", id = spaceId)
     }
 }
