@@ -34,10 +34,18 @@ class ReservationService(
         val member = memberRepository.findByIdOrNull(principal.id)
             ?: throw ModelNotFoundException("사용자", principal.id)
 
-        val userCoupon = request.userCouponId?.let {
-            userCouponRepository.findByIdOrNull(request.userCouponId)
-                ?: throw ModelNotFoundException("UserCoupon", request.userCouponId)
-        }
+        val userCoupon = request.userCouponId
+            ?.let {
+                userCouponRepository.findByIdOrNull(request.userCouponId)
+                    ?: throw ModelNotFoundException("UserCoupon", request.userCouponId)
+            }
+            ?.also {
+                check(it.isCouponUnused()) { throw IllegalStateException("이미 사용한 쿠폰입니다.") }
+            }
+            ?.also {
+                check(it.coupon.expirationAt.isAfter(LocalDateTime.now()))
+                { throw IllegalStateException("쿠폰의 유효기간을 확인해주세요.") }
+            }
 
         // 자기 자신의 숙소는 예약 불가능
         check(space.host.id != principal.id) { throw IllegalArgumentException("자기 자신의 공간은 예약할 수 없습니다.") }
@@ -60,14 +68,6 @@ class ReservationService(
         // 해당 날짜에 예약이 가능한가?
         check(isReservationPossible(space.id!!, request.checkIn, request.checkOut))
         { throw IllegalArgumentException("예약이 이미 완료된 날짜입니다.") }
-
-        // 사용한 쿠폰인가?
-        check(userCoupon?.isCouponUnused() ?: true)
-        { throw IllegalStateException("이미 사용한 쿠폰입니다.") }
-
-        // 쿠폰의 유효기간이 유효한가?
-        check(userCoupon?.coupon?.expirationAt?.isAfter(LocalDateTime.now()) ?: true)
-        { throw IllegalStateException("쿠폰의 유효기간을 확인해주세요.") }
 
         // 숙박일수
         val stayDays = ChronoUnit.DAYS.between(request.checkIn, request.checkOut)
@@ -102,8 +102,8 @@ class ReservationService(
     fun cancelReservation(principal: UserPrincipal, reservationId: Long) {
         reservationRepository.findByIdOrNull(reservationId)
             ?.also { check(it.validateOwner(principal.id)) { throw NoPermissionException("본인이 한 예약인지 확인해주세요.") } }
-            ?.also { check(!it.isCancellationDeadlinePassed()) { throw IllegalStateException("예약 취소 가능 날짜가 지났습니다.") } }
-            ?.also { check(!it.isCancelledReservation()) { throw IllegalStateException("이미 취소된 예약입니다.") } }
+            ?.also { check(it.isBeforeCancellationDeadline()) { throw IllegalStateException("예약 취소 가능 날짜가 지났습니다.") } }
+            ?.also { check(it.isActiveReservation()) { throw IllegalStateException("이미 취소된 예약입니다.") } }
             ?.cancelReservation()
             ?: throw ModelNotFoundException("예약", reservationId)
     }
