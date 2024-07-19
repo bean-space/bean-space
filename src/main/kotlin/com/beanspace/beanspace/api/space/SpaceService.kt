@@ -22,9 +22,29 @@ class SpaceService(
     private val wishListRepository: WishListRepository,
     private val imageRepository: ImageRepository,
 ) {
-    fun getSpaceList(): List<SpaceResponse> {
-        //TODO 이미지 가져와야함
-        return spaceRepository.findAll().map { SpaceResponse.from(it) }
+    fun getSpaceList(
+        sido: String?,
+        checkIn: LocalDate?,
+        checkOut: LocalDate?,
+        headCount: Int?,
+        pageable: Pageable
+    ): Page<SpaceResponse> {
+        val searchResult = spaceRepository.search(
+            sido = sido,
+            checkIn = checkIn,
+            checkOut = checkOut,
+            headCount = headCount,
+            pageable = pageable
+        )
+
+        val (contents, totalCount) = searchResult
+
+        if (contents.isEmpty() || totalCount == 0L) {
+            return Page.empty()
+        }
+        val response = contents.map { SpaceResponse.from(it.key!!, it.value) }
+
+        return PageImpl(response, pageable, totalCount)
     }
 
     fun getSpace(spaceId: Long): SpaceResponse {
