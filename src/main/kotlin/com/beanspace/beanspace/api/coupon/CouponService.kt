@@ -35,6 +35,9 @@ class CouponService(
 
         check(coupon.isIssuePeriodValid()) { throw IllegalStateException("쿠폰 발급 가능 시간을 확인해주세요.") }
 
+        check(!userCouponRepository.existsByCouponIdAndMemberId(couponId, principal.id))
+        { throw IllegalStateException("이미 발급 받은 쿠폰입니다.") }
+
         coupon.issueCoupon()
 
         UserCoupon(member, coupon)
