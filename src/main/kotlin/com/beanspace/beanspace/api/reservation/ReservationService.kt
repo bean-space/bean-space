@@ -73,11 +73,11 @@ class ReservationService(
         val stayDays = ChronoUnit.DAYS.between(request.checkIn, request.checkOut)
 
         // 기본 가격
-        val regularPrice = stayDays * space.price
+        val regularPrice = space.price * stayDays
 
         // 추가 인원 가격
         val extraPersonCharge =
-            ((request.reservationPeople - space.defaultPeople) * space.pricePerPerson).coerceAtLeast(0)
+            ((request.reservationPeople - space.defaultPeople) * space.pricePerPerson * stayDays).coerceAtLeast(0)
 
         // 쿠폰 적용 전 가격
         val totalPriceBeforeCoupon = regularPrice + extraPersonCharge
