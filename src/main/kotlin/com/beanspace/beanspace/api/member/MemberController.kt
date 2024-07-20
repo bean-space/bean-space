@@ -2,7 +2,7 @@ package com.beanspace.beanspace.api.member
 
 import com.beanspace.beanspace.api.member.dto.MemberProfileResponse
 import com.beanspace.beanspace.api.member.dto.UpdateProfileRequest
-import com.beanspace.beanspace.api.member.dto.WishListedSpaceResponse
+import com.beanspace.beanspace.api.space.dto.WishListedSpaceResponse
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
