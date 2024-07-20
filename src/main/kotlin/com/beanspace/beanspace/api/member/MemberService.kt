@@ -38,11 +38,9 @@ class MemberService(
         // 유저가 찜한 공간 리스트 조회하기
         TODO()
     }
-
+    
     fun getCouponList(userPrincipal: UserPrincipal): List<UserCouponResponse> {
-        return userCouponRepository.findAllByMemberId(userPrincipal.id)
+        return userCouponRepository.getMemberCouponList(userPrincipal)
             .map { UserCouponResponse.from(it) }
-            .let { response -> response.sortedBy { it.expirationAt } }
-        // ↑ 쿠폰을 만료에 가까운 순서대로 정렬
     }
 }
