@@ -55,7 +55,7 @@ class MemberService(
 
     fun getWishListedSpaceList(userPrincipal: UserPrincipal): List<WishListedSpaceResponse> {
         return spaceRepository.getWishListedSpaceList(userPrincipal.id)
-            .map { WishListedSpaceResponse.fromEntity(it.key!!, it.value) 
+            .map { WishListedSpaceResponse.fromEntity(it.key!!, it.value) }
     }
 
     fun getCouponList(userPrincipal: UserPrincipal): List<UserCouponResponse> {
