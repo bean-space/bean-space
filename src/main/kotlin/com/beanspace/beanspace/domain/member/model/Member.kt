@@ -32,4 +32,8 @@ class Member(
         this.nickname = nickname
         this.email = email
     }
+
+    fun updateRoleToHost() {
+        this.role = MemberRole.HOST
+    }
 }

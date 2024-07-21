@@ -1,16 +1,17 @@
 package com.beanspace.beanspace.api.member
 
+import com.beanspace.beanspace.api.auth.dto.LoginResponse
 import com.beanspace.beanspace.api.coupon.dto.UserCouponResponse
 import com.beanspace.beanspace.api.member.dto.MemberProfileResponse
 import com.beanspace.beanspace.api.member.dto.UpdateProfileRequest
 import com.beanspace.beanspace.api.space.dto.WishListedSpaceResponse
 import com.beanspace.beanspace.domain.coupon.repository.UserCouponRepository
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
-import com.beanspace.beanspace.domain.member.model.Member
 import com.beanspace.beanspace.domain.member.model.MemberRole
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
+import com.beanspace.beanspace.infra.security.jwt.JwtPlugin
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -19,7 +20,8 @@ import org.springframework.transaction.annotation.Transactional
 class MemberService(
     private val memberRepository: MemberRepository,
     private val userCouponRepository: UserCouponRepository,
-    private val spaceRepository: SpaceRepository
+    private val spaceRepository: SpaceRepository,
+    private val jwtPlugin: JwtPlugin
 ) {
 
     @Transactional
@@ -39,18 +41,22 @@ class MemberService(
     }
 
     @Transactional
-    fun requestRoleChange(principal: UserPrincipal): Member {
+    fun updateRoleToHost(principal: UserPrincipal): LoginResponse {
 
         return memberRepository.findByIdOrNull(principal.id)
-            ?.let { member ->
-                if (member.role == MemberRole.HOST)
-                    throw IllegalArgumentException("이미 요청한 역할을 갖고 있습니다.")
-
-                member.role = MemberRole.HOST
-                memberRepository.save(member)
-
-            } ?: throw IllegalArgumentException("유효하지 않는 맴버 ID입니다.")
-
+            ?.also {
+                check(it.role == MemberRole.MEMBER)
+                { throw IllegalArgumentException("이미 요청한 역할을 갖고 있습니다.") }
+            }
+            ?.also { it.updateRoleToHost() }
+            ?.let {
+                jwtPlugin.generateAccessToken(
+                    subject = it.id.toString(),
+                    role = it.role.name
+                )
+            }
+            ?.let { LoginResponse(it) }
+            ?: throw ModelNotFoundException("Member", principal.id)
     }
 
     fun getWishListedSpaceList(userPrincipal: UserPrincipal): List<WishListedSpaceResponse> {
