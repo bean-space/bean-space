@@ -1,8 +1,10 @@
 package com.beanspace.beanspace.api.member
 
 import com.beanspace.beanspace.api.member.dto.MemberProfileResponse
+import com.beanspace.beanspace.api.member.dto.RoleChangeRequest
 import com.beanspace.beanspace.api.member.dto.UpdateProfileRequest
 import com.beanspace.beanspace.api.space.dto.SpaceResponse
+import com.beanspace.beanspace.domain.member.model.Member
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -32,6 +34,16 @@ class MemberController(
     ): ResponseEntity<MemberProfileResponse> {
         return ResponseEntity
             .ok(memberService.getProfile(principal))
+    }
+
+    @PostMapping("/{memberId}/request-role")
+    fun requestRoleChange(
+        @PathVariable memberId: Long,
+        @RequestBody request: RoleChangeRequest
+    ): ResponseEntity<Member> {
+        val updatedMember = memberService.requestRoleChange(memberId, request.requestedRole)
+
+        return ResponseEntity.ok(updatedMember)
     }
 
     @GetMapping("/wishlist")
