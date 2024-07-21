@@ -4,6 +4,7 @@ import com.beanspace.beanspace.domain.image.model.ImageType
 import com.beanspace.beanspace.domain.image.model.QImage
 import com.beanspace.beanspace.domain.reservation.model.QReservation
 import com.beanspace.beanspace.domain.space.model.QSpace
+import com.beanspace.beanspace.domain.space.model.QWishlist
 import com.beanspace.beanspace.domain.space.model.Space
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.querydsl.core.BooleanBuilder
@@ -31,6 +32,7 @@ class SpaceQueryDslRepositoryImpl(
     private val space = QSpace.space
     private val reservation = QReservation.reservation
     private val image = QImage.image
+    private val wishlist = QWishlist.wishlist
 
     override fun findByStatus(pageable: Pageable, spaceStatus: SpaceStatus): Page<Space> {
         val totalCount = queryFactory.select(space.count())
@@ -95,6 +97,27 @@ class SpaceQueryDslRepositoryImpl(
             .from(reservation)
             .join(space).on(reservation.space.id.eq(spaceId))
             .fetch()
+    }
+
+    override fun getWishListedSpaceList(memberId: Long): Map<Space?, List<String>> {
+
+        val wishListedSpaceIds = queryFactory
+            .select(wishlist.spaceId)
+            .from(wishlist)
+            .where(wishlist.memberId.eq(memberId))
+            .fetch()
+
+        val result = queryFactory.select(space, image.imageUrl)
+            .from(space)
+            .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
+            .where(space.id.`in`(wishListedSpaceIds))
+            .fetch()
+
+        val contents = result.groupBy { it.get(QSpace.space) }
+            .mapKeys { (space, _) -> space }
+            .mapValues { it.value.map { tuple -> tuple.get(QImage.image.imageUrl) ?: "" } }
+
+        return contents
     }
 
     private fun isAvailableHeadCount(headCount: Int?): BooleanExpression? {

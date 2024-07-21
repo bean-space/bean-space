@@ -18,4 +18,5 @@ interface SpaceQueryDslRepository {
     ): Pair<Map<Space?, List<String>>, Long>
 
     fun getReservedDateList(spaceId: Long): MutableList<Tuple>?
+    fun getWishListedSpaceList(memberId: Long): Map<Space?, List<String>>
 }
