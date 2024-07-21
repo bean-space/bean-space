@@ -38,9 +38,9 @@ class MemberService(
         // 유저가 찜한 공간 리스트 조회하기
         TODO()
     }
-    
+
     fun getCouponList(userPrincipal: UserPrincipal): List<UserCouponResponse> {
-        return userCouponRepository.getMemberCouponList(userPrincipal)
+        return userCouponRepository.getMemberCouponList(userPrincipal.id)
             .map { UserCouponResponse.from(it) }
     }
 }
