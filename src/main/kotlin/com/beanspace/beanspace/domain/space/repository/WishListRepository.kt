@@ -5,5 +5,4 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface WishListRepository : JpaRepository<Wishlist, Long> {
     fun existsBySpaceIdAndMemberId(spaceId: Long, memberId: Long): Boolean
-    fun findAllByMemberId(memberId: Long): List<Wishlist>
 }
