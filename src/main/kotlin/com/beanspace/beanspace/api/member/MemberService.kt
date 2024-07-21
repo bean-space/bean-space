@@ -1,8 +1,10 @@
 package com.beanspace.beanspace.api.member
 
+import com.beanspace.beanspace.api.coupon.dto.UserCouponResponse
 import com.beanspace.beanspace.api.member.dto.MemberProfileResponse
 import com.beanspace.beanspace.api.member.dto.UpdateProfileRequest
 import com.beanspace.beanspace.api.space.dto.WishListedSpaceResponse
+import com.beanspace.beanspace.domain.coupon.repository.UserCouponRepository
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class MemberService(
     private val memberRepository: MemberRepository,
+    private val userCouponRepository: UserCouponRepository,
     private val spaceRepository: SpaceRepository
 ) {
 
@@ -36,5 +39,10 @@ class MemberService(
     fun getWishListedSpaceList(userPrincipal: UserPrincipal): List<WishListedSpaceResponse> {
         return spaceRepository.getWishListedSpaceList(userPrincipal.id)
             .map { WishListedSpaceResponse.fromEntity(it.key!!, it.value) }
+    }
+
+    fun getCouponList(userPrincipal: UserPrincipal): List<UserCouponResponse> {
+        return userCouponRepository.getMemberCouponList(userPrincipal.id)
+            .map { UserCouponResponse.from(it) }
     }
 }

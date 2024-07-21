@@ -1,5 +1,6 @@
 package com.beanspace.beanspace.api.member
 
+import com.beanspace.beanspace.api.coupon.dto.UserCouponResponse
 import com.beanspace.beanspace.api.member.dto.MemberProfileResponse
 import com.beanspace.beanspace.api.member.dto.UpdateProfileRequest
 import com.beanspace.beanspace.api.space.dto.WishListedSpaceResponse
@@ -42,5 +43,11 @@ class MemberController(
     fun getWishListedSpaceList(@AuthenticationPrincipal userPrincipal: UserPrincipal): ResponseEntity<List<WishListedSpaceResponse>> {
         return ResponseEntity
             .ok(memberService.getWishListedSpaceList(userPrincipal))
+    }
+
+    @GetMapping("/couponList")
+    fun getMemberCouponList(@AuthenticationPrincipal userPrincipal: UserPrincipal): ResponseEntity<List<UserCouponResponse>> {
+        return ResponseEntity
+            .ok(memberService.getCouponList(userPrincipal))
     }
 }
