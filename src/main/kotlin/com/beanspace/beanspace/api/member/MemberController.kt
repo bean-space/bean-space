@@ -1,13 +1,11 @@
 package com.beanspace.beanspace.api.member
 
 import com.beanspace.beanspace.api.member.dto.MemberProfileResponse
-import com.beanspace.beanspace.api.member.dto.RoleChangeRequest
 import com.beanspace.beanspace.api.member.dto.UpdateProfileRequest
 import com.beanspace.beanspace.api.space.dto.SpaceResponse
 import com.beanspace.beanspace.domain.member.model.Member
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import jakarta.validation.Valid
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -24,7 +22,7 @@ class MemberController(
         @Valid @RequestBody request: UpdateProfileRequest
     ): ResponseEntity<MemberProfileResponse> {
         return ResponseEntity
-            .status(HttpStatus.OK)
+            .ok()
             .body(memberService.updateProfile(principal, request))
     }
 
@@ -36,15 +34,14 @@ class MemberController(
             .ok(memberService.getProfile(principal))
     }
 
-    @PostMapping("/{memberId}/request-role")
+    @PatchMapping("/request-host")
     fun requestRoleChange(
-        @PathVariable memberId: Long,
-        @RequestBody request: RoleChangeRequest
+        @AuthenticationPrincipal principal: UserPrincipal,
     ): ResponseEntity<Member> {
-        val updatedMember = memberService.requestRoleChange(memberId, request.requestedRole)
-
-        return ResponseEntity.ok(updatedMember)
+        return ResponseEntity
+            .ok(memberService.requestRoleChange(principal))
     }
+
 
     @GetMapping("/wishlist")
     fun getWishListedSpaceList(): ResponseEntity<List<SpaceResponse>> {

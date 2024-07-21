@@ -38,17 +38,17 @@ class MemberService(
     }
 
     @Transactional
-    fun requestRoleChange(memberId: Long, requestedRole: MemberRole): Member {
+    fun requestRoleChange(principal: UserPrincipal): Member {
 
-        val member = memberRepository.findByIdOrNull(memberId)
-            ?: throw IllegalArgumentException("유효하지 않는 맴버 ID입니다.")
+        return memberRepository.findByIdOrNull(principal.id)
+            ?.let { member ->
+                if (member.role == MemberRole.HOST)
+                    throw IllegalArgumentException("이미 요청한 역할을 갖고 있습니다.")
 
-        if (member.role == requestedRole) {
-            throw IllegalArgumentException("이미 요청한 역할을 갖고 있습니다.")
-        }
+                member.role = MemberRole.HOST
+                memberRepository.save(member)
 
-        member.role = requestedRole
-        return memberRepository.save(member)
+            } ?: throw IllegalArgumentException("유효하지 않는 맴버 ID입니다.")
 
     }
 
