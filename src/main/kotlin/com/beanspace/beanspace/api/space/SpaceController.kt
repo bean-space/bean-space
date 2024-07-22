@@ -82,6 +82,14 @@ class SpaceController(private val spaceService: SpaceService) {
         return ResponseEntity.ok().build()
     }
 
+    @DeleteMapping("/{spaceId}/reviews/{reviewId}")
+    fun deleteReview(
+        @PathVariable spaceId: Long,
+        @PathVariable reviewId: Long,
+        @AuthenticationPrincipal userPrincipal: UserPrincipal
+    ): ResponseEntity<Unit> {
+        spaceService.deleteReview(spaceId, reviewId, userPrincipal)
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
     @PostMapping("/{spaceId}/wishlist")
