@@ -30,7 +30,6 @@ class S3Service(
 
         // S3 저장소에 저장할 이미지 경로 (imageType에 따라 정해짐)
         val directory = when (imageType) {
-            ImageType.PROFILE -> "profiles"
             ImageType.REVIEW -> "reviews"
             ImageType.SPACE -> "spaces"
         }
@@ -59,7 +58,6 @@ class S3Service(
         val expiration = Date(System.currentTimeMillis() + 900000) // 15분 뒤에 URL 만료
 
         val directory = when (imageType) {
-            ImageType.PROFILE -> "profiles"
             ImageType.REVIEW -> "reviews"
             ImageType.SPACE -> "spaces"
         }
