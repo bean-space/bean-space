@@ -18,7 +18,7 @@ data class ReviewResponse @QueryProjection constructor(
                 content = review.content,
                 rating = review.rating,
                 reviewerName = review.member.nickname,
-                reviewerProfileUrl = "",
+                reviewerProfileUrl = review.member.profileImageUrl,
                 imageUrlList = imageUrlList
             )
         }
