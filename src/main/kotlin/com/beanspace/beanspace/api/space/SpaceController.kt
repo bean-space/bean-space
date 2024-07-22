@@ -1,6 +1,8 @@
 package com.beanspace.beanspace.api.space
 
 import com.beanspace.beanspace.api.space.dto.AddReviewRequest
+import com.beanspace.beanspace.api.space.dto.ReviewResponse
+import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
 import com.beanspace.beanspace.api.space.dto.SpaceResponse
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import org.springframework.data.domain.Page
@@ -48,9 +50,6 @@ class SpaceController(private val spaceService: SpaceService) {
         return ResponseEntity.ok(spaceService.getSpace(spaceId))
     }
 
-    @PostMapping("/{spaceId}/review")
-    fun addReview(@PathVariable spaceId: Long /*TODO request 받기 */): ResponseEntity<Unit> {
-        return ResponseEntity.status(HttpStatus.CREATED).body(spaceService.addReview(spaceId))
     @PostMapping("/{spaceId}/reviews")
     fun addReview(
         @PathVariable spaceId: Long,
@@ -58,6 +57,11 @@ class SpaceController(private val spaceService: SpaceService) {
         @AuthenticationPrincipal userPrincipal: UserPrincipal
     ): ResponseEntity<Unit> {
         return ResponseEntity.status(HttpStatus.CREATED).body(spaceService.addReview(spaceId, request, userPrincipal))
+    }
+
+    @GetMapping("/{spaceId}/reviews")
+    fun getAllReviews(@PathVariable spaceId: Long): ResponseEntity<List<ReviewResponse>> {
+        return ResponseEntity.ok(spaceService.getReviews(spaceId))
     }
 
     }

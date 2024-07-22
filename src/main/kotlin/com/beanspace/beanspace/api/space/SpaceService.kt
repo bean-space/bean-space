@@ -1,6 +1,8 @@
 package com.beanspace.beanspace.api.space
 
 import com.beanspace.beanspace.api.space.dto.AddReviewRequest
+import com.beanspace.beanspace.api.space.dto.ReviewResponse
+import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
 import com.beanspace.beanspace.api.space.dto.SpaceResponse
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
 import com.beanspace.beanspace.domain.exception.NoPermissionException
@@ -88,12 +90,21 @@ class SpaceService(
 
         check(wishListRepository.existsBySpaceIdAndMemberId(spaceId, userPrincipal.id))
         { throw IllegalStateException("해당 공간에 찜한 내역이 없습니다.") }
-        
+
         wishListRepository.delete(Wishlist(spaceId, userPrincipal.id))
     }
 
-    fun addReview(spaceId: Long): Unit {
-        TODO()
+    fun getReviews(spaceId: Long): List<ReviewResponse> {
+        val reviewList = reviewRepository.findBySpaceId(spaceId)
+
+        val imageUrlListMap = imageRepository.findAllByContentIdInAndTypeOrderByOrderIndexAsc(
+            reviewList.map { it.id!! },
+            contentType = ImageType.REVIEW
+        ).groupBy { it.contentId }.mapValues { it.value.map { image -> image.imageUrl } }
+
+        return reviewList.map { ReviewResponse.from(it, imageUrlListMap[it.id] ?: emptyList()) }
+    }
+
     @Transactional
     fun addReview(spaceId: Long, request: AddReviewRequest, userPrincipal: UserPrincipal): Unit {
         val member = memberRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException(
