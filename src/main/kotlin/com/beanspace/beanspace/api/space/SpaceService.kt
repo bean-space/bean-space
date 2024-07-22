@@ -1,11 +1,17 @@
 package com.beanspace.beanspace.api.space
 
+import com.beanspace.beanspace.api.space.dto.AddReviewRequest
 import com.beanspace.beanspace.api.space.dto.SpaceResponse
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
+import com.beanspace.beanspace.domain.exception.NoPermissionException
+import com.beanspace.beanspace.domain.image.model.Image
 import com.beanspace.beanspace.domain.image.model.ImageType
 import com.beanspace.beanspace.domain.image.repository.ImageRepository
+import com.beanspace.beanspace.domain.member.repository.MemberRepository
+import com.beanspace.beanspace.domain.reservation.repository.ReservationRepository
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.beanspace.beanspace.domain.space.model.Wishlist
+import com.beanspace.beanspace.domain.space.repository.ReviewRepository
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import com.beanspace.beanspace.domain.space.repository.WishListRepository
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
@@ -22,6 +28,9 @@ class SpaceService(
     private val spaceRepository: SpaceRepository,
     private val wishListRepository: WishListRepository,
     private val imageRepository: ImageRepository,
+    private val reservationRepository: ReservationRepository,
+    private val reviewRepository: ReviewRepository,
+    private val memberRepository: MemberRepository,
 ) {
     fun getSpaceList(
         sido: String?,
@@ -85,5 +94,36 @@ class SpaceService(
 
     fun addReview(spaceId: Long): Unit {
         TODO()
+    @Transactional
+    fun addReview(spaceId: Long, request: AddReviewRequest, userPrincipal: UserPrincipal): Unit {
+        val member = memberRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException(
+            model = "Member",
+            id = userPrincipal.id
+        )
+        val space =
+            spaceRepository.findByIdOrNull(spaceId) ?: throw ModelNotFoundException(model = "Space", id = spaceId)
+        val reservation = reservationRepository.findByIdOrNull(request.reservationId)
+            ?.also { check(it.validateOwner(userPrincipal.id)) { throw NoPermissionException() } }
+            ?.also { check(it.space.id == spaceId) { throw IllegalArgumentException("해당 공간에 대한 예약이 아닙니다.") } }
+            ?.also { check(it.isReviewAllowed()) { throw IllegalStateException("아직 후기를 작성할 수 없습니다. (체크아웃 당일 12:00 부터 작성 가능)") } }
+            ?: throw ModelNotFoundException(model = "Reservation", id = request.reservationId)
+
+        if (reviewRepository.existsByReservation(reservation)) throw IllegalStateException("해당 예약에 대한 후기를 이미 남겼습니다.")
+
+        reviewRepository.save(request.toEntity(member, space, reservation))
+            .also {
+                request.imageUrlList.forEachIndexed { index, imageUrl ->
+                    imageRepository.save(
+                        Image(
+                            type = ImageType.REVIEW,
+                            contentId = it.id!!,
+                            imageUrl = imageUrl,
+                            orderIndex = index
+                        )
+                    )
+                }
+            }
+    }
+
     }
 }

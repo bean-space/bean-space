@@ -20,11 +20,14 @@ class Review(
     @Column
     var rating: Int,
 
-    @ManyToOne
+    @Column
+    var isDeleted: Boolean = false,
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     val member: Member,
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "space_id")
     val space: Space,
 

@@ -1,5 +1,6 @@
 package com.beanspace.beanspace.api.space
 
+import com.beanspace.beanspace.api.space.dto.AddReviewRequest
 import com.beanspace.beanspace.api.space.dto.SpaceResponse
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import org.springframework.data.domain.Page
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -49,6 +51,15 @@ class SpaceController(private val spaceService: SpaceService) {
     @PostMapping("/{spaceId}/review")
     fun addReview(@PathVariable spaceId: Long /*TODO request 받기 */): ResponseEntity<Unit> {
         return ResponseEntity.status(HttpStatus.CREATED).body(spaceService.addReview(spaceId))
+    @PostMapping("/{spaceId}/reviews")
+    fun addReview(
+        @PathVariable spaceId: Long,
+        @RequestBody request: AddReviewRequest,
+        @AuthenticationPrincipal userPrincipal: UserPrincipal
+    ): ResponseEntity<Unit> {
+        return ResponseEntity.status(HttpStatus.CREATED).body(spaceService.addReview(spaceId, request, userPrincipal))
+    }
+
     }
 
     @PostMapping("/{spaceId}/wishlist")
