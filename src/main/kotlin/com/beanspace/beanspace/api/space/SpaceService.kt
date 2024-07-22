@@ -4,6 +4,7 @@ import com.beanspace.beanspace.api.space.dto.AddReviewRequest
 import com.beanspace.beanspace.api.space.dto.ReviewResponse
 import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
 import com.beanspace.beanspace.api.space.dto.SpaceResponse
+import com.beanspace.beanspace.api.space.dto.UpdateReviewRequest
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
 import com.beanspace.beanspace.domain.exception.NoPermissionException
 import com.beanspace.beanspace.domain.image.model.Image
@@ -128,6 +129,34 @@ class SpaceService(
                         Image(
                             type = ImageType.REVIEW,
                             contentId = it.id!!,
+                            imageUrl = imageUrl,
+                            orderIndex = index
+                        )
+                    )
+                }
+            }
+    }
+
+    @Transactional
+    fun updateReview(spaceId: Long, reviewId: Long, request: UpdateReviewRequest, userPrincipal: UserPrincipal) {
+        val member = memberRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException(
+            model = "Member",
+            id = userPrincipal.id
+        )
+        val space =
+            spaceRepository.findByIdOrNull(spaceId) ?: throw ModelNotFoundException(model = "Space", id = spaceId)
+
+        val review = reviewRepository.findByIdOrNull(reviewId)
+            ?.also { check(it.space.id == spaceId) { throw IllegalArgumentException("해당 공간에 대한 후기가 아닙니다.") } }
+            ?.also { check(it.member.id == userPrincipal.id) { throw NoPermissionException() } }
+            ?.also { it.update(request.content, request.rating) }
+            ?.also { imageRepository.deleteByTypeAndContentId(ImageType.REVIEW, reviewId) }
+            ?.also {
+                request.imageUrlList.forEachIndexed { index, imageUrl ->
+                    imageRepository.save(
+                        Image(
+                            type = ImageType.REVIEW,
+                            contentId = reviewId,
                             imageUrl = imageUrl,
                             orderIndex = index
                         )

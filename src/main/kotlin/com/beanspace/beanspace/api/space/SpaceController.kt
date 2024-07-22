@@ -4,6 +4,7 @@ import com.beanspace.beanspace.api.space.dto.AddReviewRequest
 import com.beanspace.beanspace.api.space.dto.ReviewResponse
 import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
 import com.beanspace.beanspace.api.space.dto.SpaceResponse
+import com.beanspace.beanspace.api.space.dto.UpdateReviewRequest
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -62,6 +64,22 @@ class SpaceController(private val spaceService: SpaceService) {
     @GetMapping("/{spaceId}/reviews")
     fun getAllReviews(@PathVariable spaceId: Long): ResponseEntity<List<ReviewResponse>> {
         return ResponseEntity.ok(spaceService.getReviews(spaceId))
+    }
+
+    @PutMapping("/{spaceId}/reviews/{reviewId}")
+    fun updateReview(
+        @PathVariable spaceId: Long,
+        @PathVariable reviewId: Long,
+        @RequestBody request: UpdateReviewRequest,
+        @AuthenticationPrincipal userPrincipal: UserPrincipal
+    ): ResponseEntity<Unit> {
+        spaceService.updateReview(
+            spaceId = spaceId,
+            reviewId = reviewId,
+            request = request,
+            userPrincipal = userPrincipal
+        )
+        return ResponseEntity.ok().build()
     }
 
     }

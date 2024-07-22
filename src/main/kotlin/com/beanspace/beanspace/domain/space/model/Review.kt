@@ -39,4 +39,10 @@ class Review(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
-) : BaseTimeEntity()
+) : BaseTimeEntity() {
+
+    fun update(content: String, rating: Int) {
+        this.content = content
+        this.rating = rating
+    }
+}
