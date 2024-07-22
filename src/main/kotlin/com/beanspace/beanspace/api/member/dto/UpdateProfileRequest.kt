@@ -19,5 +19,7 @@ data class UpdateProfileRequest(
         regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$",
         message = "올바른 이메일 형식을 입력해주세요."
     )
-    val email: String
+    val email: String,
+
+    val profileImageUrl: String?
 )
