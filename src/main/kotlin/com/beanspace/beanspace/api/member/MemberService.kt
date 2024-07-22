@@ -28,7 +28,13 @@ class MemberService(
     fun updateProfile(principal: UserPrincipal, request: UpdateProfileRequest): MemberProfileResponse {
 
         return memberRepository.findByIdOrNull(principal.id)
-            ?.also { it.updateProfile(nickname = request.nickname, email = request.email) }
+            ?.also {
+                it.updateProfile(
+                    nickname = request.nickname,
+                    email = request.email,
+                    profileImageUrl = request.profileImageUrl
+                )
+            }
             ?.let { MemberProfileResponse.fromEntity(it) }
             ?: throw ModelNotFoundException("Member", principal.id)
     }

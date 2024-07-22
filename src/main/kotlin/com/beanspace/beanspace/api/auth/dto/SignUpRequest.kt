@@ -40,15 +40,18 @@ data class SignUpRequest(
     )
     val email: String,
 
-    ) {
+    val profileImageUrl: String?
+
+) {
     fun toEntity(
         passwordEncoder: PasswordEncoder
     ): Member {
         return Member(
+            phoneNumber = this.phoneNumber,
             email = this.email,
             password = passwordEncoder.encode(this.password),
             nickname = this.nickname,
-            phoneNumber = this.phoneNumber,
+            profileImageUrl = profileImageUrl
         )
     }
 }
