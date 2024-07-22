@@ -44,7 +44,7 @@ class MemberController(
             .ok(memberService.updateRoleToHost(principal))
     }
 
-    @GetMapping("/reservation-list")
+    @GetMapping("/reservations")
     fun getMemberReservationList(
         @AuthenticationPrincipal principal: UserPrincipal,
     ): ResponseEntity<List<ReservationResponse>> {
