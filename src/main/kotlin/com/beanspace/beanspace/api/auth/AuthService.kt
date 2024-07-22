@@ -3,7 +3,9 @@ package com.beanspace.beanspace.api.auth
 import com.beanspace.beanspace.api.auth.dto.LoginRequest
 import com.beanspace.beanspace.api.auth.dto.LoginResponse
 import com.beanspace.beanspace.api.auth.dto.SignUpRequest
+import com.beanspace.beanspace.api.oauth.dto.KakaoLoginUserInfoResponse
 import com.beanspace.beanspace.domain.exception.AuthenticationException
+import com.beanspace.beanspace.domain.member.model.Member
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
 import com.beanspace.beanspace.infra.security.jwt.JwtPlugin
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -27,7 +29,6 @@ class AuthService(
 
         request.toEntity(passwordEncoder)
             .also { memberRepository.save(it) }
-
     }
 
     fun logIn(request: LoginRequest): LoginResponse {
@@ -44,6 +45,10 @@ class AuthService(
         )
 
         return LoginResponse(token)
+    }
 
+    fun registerIfAbsent(userInfo: KakaoLoginUserInfoResponse): Member {
+        return memberRepository.findByProviderAndProviderId("KAKAO", userInfo.id)
+            ?: memberRepository.save(userInfo.toEntity())
     }
 }
