@@ -48,7 +48,7 @@ class SpaceController(private val spaceService: SpaceService) {
     }
 
     @GetMapping("/{spaceId}")
-    fun getSpace(@PathVariable spaceId: Long): ResponseEntity<SpaceResponse> {
+    fun getSpace(@PathVariable spaceId: Long): ResponseEntity<SpaceDetailResponse> {
         return ResponseEntity.ok(spaceService.getSpace(spaceId))
     }
 

@@ -60,7 +60,7 @@ class SpaceQueryDslRepositoryImpl(
 
         val conditions = BooleanBuilder()
             .and(eqStatus(SpaceStatus.ACTIVE))
-            .and(eqSido(sido))
+            .and(containsSido(sido))
             .and(inAvailableDate(checkIn, checkOut))
             .and(isAvailableHeadCount(headCount))
 
@@ -82,7 +82,7 @@ class SpaceQueryDslRepositoryImpl(
             .from(space)
             .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
             .where(space.id.`in`(paginatedSpaceId))
-            .orderBy(*getOrderSpecifier(pageable, space))
+            .orderBy(*getOrderSpecifier(pageable, space), image.orderIndex.asc())
             .fetch()
 
         val contents = result.groupBy { it.get(QSpace.space) }
@@ -139,8 +139,8 @@ class SpaceQueryDslRepositoryImpl(
         return if (spaceStatus != null) space.status.eq(spaceStatus) else null
     }
 
-    private fun eqSido(sido: String?): BooleanExpression? {
-        return if (!StringUtils.isNullOrEmpty(sido)) space.address.sido.eq(sido) else null
+    private fun containsSido(sido: String?): BooleanExpression? {
+        return if (!StringUtils.isNullOrEmpty(sido)) space.address.sido.contains(sido) else null
     }
 
     private fun getOrderSpecifier(pageable: Pageable, path: EntityPathBase<*>): Array<OrderSpecifier<*>> {

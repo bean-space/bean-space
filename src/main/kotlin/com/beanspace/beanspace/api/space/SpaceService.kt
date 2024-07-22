@@ -60,20 +60,39 @@ class SpaceService(
         return PageImpl(response, pageable, totalCount)
     }
 
-    fun getSpace(spaceId: Long): SpaceResponse {
+    fun getSpace(spaceId: Long): SpaceDetailResponse {
         val space =
             spaceRepository.findByIdOrNull(spaceId) ?: throw ModelNotFoundException(model = "Space", id = spaceId)
         if (space.status != SpaceStatus.ACTIVE) throw ModelNotFoundException(model = "Space", id = spaceId)
 
-        val imageList = imageRepository.findByTypeAndContentId(ImageType.SPACE, spaceId)
+        val spaceImageList = imageRepository.findAllByContentIdAndTypeOrderByOrderIndexAsc(spaceId, ImageType.SPACE)
 
-        val reservedDateList = mutableListOf<LocalDate>()
-        // reservationRepository.findBySpaceAndCheckInGreaterThanEqualAndIsCancelledFalse( //TODO isCancelled == false 인 예약만가져오도록 수정하기
-        //     space,
-        //     LocalDate.now()
-        // )
-        //     ?.map { it.checkIn.datesUntil(it.checkOut).forEach { date -> reservedDateList.add(date) } }
-        return SpaceResponse.from(space, imageList.map { it.imageUrl }, reservedDateList)
+        val reviewList = reviewRepository.getLast3Reviews(spaceId)
+            .map {
+                ReviewResponse(
+                    id = it.first?.id!!,
+                    content = it.first?.content!!,
+                    rating = it.first?.rating!!,
+                    reviewerName = it.first?.member!!.nickname,
+                    reviewerProfileUrl = it.first?.member!!.profileImageUrl,
+                    imageUrlList = it.second
+
+                )
+            }
+
+        val today = LocalDate.now()
+
+        val reservedDateList = reservationRepository.findBySpaceAndCheckOutGreaterThanEqualAndIsCancelled(
+            space,
+            today,
+            false
+        ).flatMap { it.checkIn.datesUntil(it.checkOut).toList() }.filter { it.isEqual(today) || it.isAfter(today) }
+
+        return SpaceDetailResponse.from(
+            SpaceResponse.from(space, spaceImageList.map { it.imageUrl }),
+            reservedDateList,
+            reviewList
+        )
     }
 
     fun addToWishList(spaceId: Long, userPrincipal: UserPrincipal) {
