@@ -27,7 +27,7 @@ class ReviewQueryDslRepositoryImpl(
             .join(review.member, member).fetchJoin()
             .leftJoin(image).on(image.contentId.eq(review.id).and(image.type.eq(ImageType.REVIEW)))
             .where(review.space.id.eq(spaceId))
-            .orderBy(review.createdAt.desc(), image.updatedAt.asc())
+            .orderBy(review.createdAt.desc(), image.orderIndex.asc())
             .limit(3)
             .fetch()
 
