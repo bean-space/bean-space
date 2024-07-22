@@ -15,4 +15,10 @@ interface ReservationRepository : JpaRepository<Reservation, Long> {
         isCancelled: Boolean,
         today: LocalDate
     ): List<Reservation>
+
+    fun findByMemberIdAndCheckOutGreaterThanEqual(
+        memberId: Long,
+        checkOut: LocalDate
+    ): List<Reservation>
+
 }

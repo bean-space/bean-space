@@ -4,6 +4,7 @@ import com.beanspace.beanspace.api.auth.dto.LoginResponse
 import com.beanspace.beanspace.api.coupon.dto.UserCouponResponse
 import com.beanspace.beanspace.api.member.dto.MemberProfileResponse
 import com.beanspace.beanspace.api.member.dto.UpdateProfileRequest
+import com.beanspace.beanspace.api.reservation.dto.ReservationResponse
 import com.beanspace.beanspace.api.space.dto.WishListedSpaceResponse
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import jakarta.validation.Valid
@@ -41,6 +42,14 @@ class MemberController(
     ): ResponseEntity<LoginResponse> {
         return ResponseEntity
             .ok(memberService.updateRoleToHost(principal))
+    }
+
+    @GetMapping("/reservation-list")
+    fun getMemberReservationList(
+        @AuthenticationPrincipal principal: UserPrincipal,
+    ): ResponseEntity<List<ReservationResponse>> {
+        return ResponseEntity
+            .ok(memberService.getMemberReservationList(principal))
     }
 
     @GetMapping("/wishlist")
