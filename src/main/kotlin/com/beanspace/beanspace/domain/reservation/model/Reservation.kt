@@ -9,8 +9,10 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.ManyToOne
+import org.hibernate.annotations.CreationTimestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 @Entity
 class Reservation(
@@ -29,8 +31,9 @@ class Reservation(
     @Column
     var isCancelled: Boolean = false,
 
-    @Column(updatable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    val createdAt: LocalDateTime? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     val space: Space,
@@ -56,5 +59,9 @@ class Reservation(
 
     fun cancelReservation() {
         isCancelled = true
+    }
+
+    fun isReviewAllowed(): Boolean {
+        return LocalDateTime.now().isAfter(LocalDateTime.of(checkOut, LocalTime.NOON))
     }
 }

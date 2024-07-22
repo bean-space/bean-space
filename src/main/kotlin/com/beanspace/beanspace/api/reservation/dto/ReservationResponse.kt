@@ -23,7 +23,7 @@ data class ReservationResponse(
                 checkOut = reservation.checkOut,
                 reservationPeople = reservation.reservationPeople,
                 cost = reservation.cost,
-                createdAt = reservation.createdAt,
+                createdAt = reservation.createdAt!!,
                 spaceId = reservation.space.id!!
             )
         }
