@@ -47,10 +47,10 @@ data class SignUpRequest(
         passwordEncoder: PasswordEncoder
     ): Member {
         return Member(
-            phoneNumber = this.phoneNumber,
-            email = this.email,
-            password = passwordEncoder.encode(this.password),
-            nickname = this.nickname,
+            phoneNumber = phoneNumber,
+            email = email,
+            password = passwordEncoder.encode(password),
+            nickname = nickname,
             profileImageUrl = profileImageUrl
         )
     }
