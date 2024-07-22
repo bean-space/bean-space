@@ -4,23 +4,27 @@ import com.beanspace.beanspace.api.auth.dto.LoginResponse
 import com.beanspace.beanspace.api.coupon.dto.UserCouponResponse
 import com.beanspace.beanspace.api.member.dto.MemberProfileResponse
 import com.beanspace.beanspace.api.member.dto.UpdateProfileRequest
+import com.beanspace.beanspace.api.reservation.dto.ReservationResponse
 import com.beanspace.beanspace.api.space.dto.WishListedSpaceResponse
 import com.beanspace.beanspace.domain.coupon.repository.UserCouponRepository
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
 import com.beanspace.beanspace.domain.member.model.MemberRole
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
+import com.beanspace.beanspace.domain.reservation.repository.ReservationRepository
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import com.beanspace.beanspace.infra.security.jwt.JwtPlugin
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 @Service
 class MemberService(
     private val memberRepository: MemberRepository,
     private val userCouponRepository: UserCouponRepository,
     private val spaceRepository: SpaceRepository,
+    private val reservationRepository: ReservationRepository,
     private val jwtPlugin: JwtPlugin
 ) {
 
@@ -63,6 +67,12 @@ class MemberService(
             }
             ?.let { LoginResponse(it) }
             ?: throw ModelNotFoundException("Member", principal.id)
+    }
+
+    fun getMemberReservationList(principal: UserPrincipal): List<ReservationResponse> {
+        val today = LocalDate.now()
+        return reservationRepository.findByMemberIdAndCheckOutGreaterThanEqual(principal.id, today)
+            .map { ReservationResponse.from(it) }
     }
 
     fun getWishListedSpaceList(userPrincipal: UserPrincipal): List<WishListedSpaceResponse> {
