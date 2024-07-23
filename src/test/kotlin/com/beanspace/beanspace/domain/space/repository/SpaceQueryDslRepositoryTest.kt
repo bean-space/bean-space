@@ -78,14 +78,7 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
 
                     val keyword = "충청"
 
-                    val searchResult = spaceRepository.search(
-                        sido = keyword,
-                        checkIn = null,
-                        checkOut = null,
-                        headCount = null,
-                        pageable = defaultPageable
-                    )
-                    val (contents, totalCount) = searchResult
+                    val (contents, totalCount) = spaceRepository.search(sido = keyword, pageable = defaultPageable)
 
                     contents.size shouldBeLessThanOrEqual defaultPageable.pageSize
                     contents.forEach {
@@ -112,14 +105,11 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
                     val reservations = getReservationFixtures(50, guest, space, baseDate)
                     reservationRepository.saveAllAndFlush(reservations)
 
-                    val searchResult = spaceRepository.search(
-                        sido = null,
+                    val (contents, _) = spaceRepository.search(
                         checkIn = LocalDate.of(2024, 7, 1),
-                        checkOut = null,
-                        headCount = null,
                         pageable = defaultPageable
                     )
-                    val (contents, totalCount) = searchResult
+
                     contents.size shouldBe 0
                 }
             }
@@ -138,14 +128,10 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
                     val reservations = getReservationFixtures(50, guest, space, baseDate)
                     reservationRepository.saveAllAndFlush(reservations)
 
-                    val searchResult = spaceRepository.search(
-                        sido = null,
+                    val (contents, _) = spaceRepository.search(
                         checkIn = LocalDate.of(2024, 7, 3),
-                        checkOut = null,
-                        headCount = null,
                         pageable = defaultPageable
                     )
-                    val (contents, totalCount) = searchResult
                     contents.size shouldNotBe 0
                 }
             }
@@ -166,14 +152,10 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
                     val reservations = getReservationFixtures(50, guest, space, baseDate)
                     reservationRepository.saveAllAndFlush(reservations)
 
-                    val searchResult = spaceRepository.search(
-                        sido = null,
-                        checkIn = null,
+                    val (contents, _) = spaceRepository.search(
                         checkOut = LocalDate.of(2024, 7, 3),
-                        headCount = null,
                         pageable = defaultPageable
                     )
-                    val (contents, totalCount) = searchResult
                     contents.size shouldBe 0
                 }
             }
@@ -192,14 +174,10 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
                     val reservations = getReservationFixtures(50, guest, space, baseDate)
                     reservationRepository.saveAllAndFlush(reservations)
 
-                    val searchResult = spaceRepository.search(
-                        sido = null,
-                        checkIn = null,
+                    val (contents, _) = spaceRepository.search(
                         checkOut = LocalDate.of(2024, 7, 4),
-                        headCount = null,
                         pageable = defaultPageable
                     )
-                    val (contents, totalCount) = searchResult
                     contents.size shouldNotBe 0
                 }
             }
@@ -216,14 +194,10 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
 
                     val headCount = 4
 
-                    val searchResult = spaceRepository.search(
-                        sido = null,
-                        checkIn = null,
-                        checkOut = null,
+                    val (contents, totalCount) = spaceRepository.search(
                         headCount = headCount,
                         pageable = defaultPageable
                     )
-                    val (contents, totalCount) = searchResult
 
                     contents.size shouldBeLessThanOrEqual defaultPageable.pageSize
                     contents.forEach {
@@ -254,14 +228,12 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
                     val reservations = getReservationFixtures(50, guest, space, baseDate)
                     reservationRepository.saveAllAndFlush(reservations)
 
-                    val searchResult = spaceRepository.search(
-                        sido = null,
+                    val (contents, _) = spaceRepository.search(
                         checkIn = LocalDate.of(2024, 7, 3),
                         checkOut = LocalDate.of(2024, 7, 4),
-                        headCount = null,
                         pageable = defaultPageable
                     )
-                    val (contents, totalCount) = searchResult
+
                     contents.size shouldNotBe 0
                 }
             }
@@ -280,14 +252,12 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
                     val reservations = getReservationFixtures(50, guest, space, baseDate)
                     reservationRepository.saveAllAndFlush(reservations)
 
-                    val searchResult = spaceRepository.search(
-                        sido = null,
+                    val (contents, _) = spaceRepository.search(
                         checkIn = LocalDate.of(2024, 7, 1),
                         checkOut = LocalDate.of(2024, 7, 4),
-                        headCount = null,
                         pageable = defaultPageable
                     )
-                    val (contents, totalCount) = searchResult
+
                     contents.size shouldBe 0
                 }
             }
@@ -311,14 +281,7 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
 
                     val pageable = PageRequest.of(0, pageSize)
 
-                    val searchResult = spaceRepository.search(
-                        sido = null,
-                        checkIn = null,
-                        checkOut = null,
-                        headCount = null,
-                        pageable = pageable
-                    )
-                    val (contents, totalCount) = searchResult
+                    val (contents, totalCount) = spaceRepository.search(pageable = pageable)
 
                     contents.size shouldBe pageSize
                     totalCount shouldBe totalSpaceCount
@@ -336,24 +299,8 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
                     val page1 = PageRequest.of(0, 12)
                     val page2 = PageRequest.of(1, 12)
 
-                    val searchResultOfPage1 = spaceRepository.search(
-                        sido = null,
-                        checkIn = null,
-                        checkOut = null,
-                        headCount = null,
-                        pageable = page1
-                    )
-
-                    val searchResultOfPage2 = spaceRepository.search(
-                        sido = null,
-                        checkIn = null,
-                        checkOut = null,
-                        headCount = null,
-                        pageable = page2
-                    )
-
-                    val (contents1, totalCount1) = searchResultOfPage1
-                    val (contents2, totalCount2) = searchResultOfPage2
+                    val (contents1, _) = spaceRepository.search(pageable = page1)
+                    val (contents2, _) = spaceRepository.search(pageable = page2)
 
                     contents1 shouldNotContainValue contents2
                 }
