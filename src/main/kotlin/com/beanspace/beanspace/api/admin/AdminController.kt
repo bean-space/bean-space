@@ -4,12 +4,12 @@ import com.beanspace.beanspace.api.admin.dto.RequestAddSpaceResponse
 import com.beanspace.beanspace.api.admin.dto.UpdateSpaceStatus
 import com.beanspace.beanspace.api.coupon.dto.CouponRequest
 import com.beanspace.beanspace.api.coupon.dto.CouponResponse
-import com.beanspace.beanspace.api.member.dto.MemberListResponse
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
+@PreAuthorize("hasAnyRole('ADMIN')")
 @RestController
 @RequestMapping("/api/v1/admin")
 class AdminController(private val adminService: AdminService) {
@@ -39,11 +40,6 @@ class AdminController(private val adminService: AdminService) {
         @RequestBody request: UpdateSpaceStatus
     ): ResponseEntity<Unit> {
         return ResponseEntity.ok(adminService.updateSpaceStatus(spaceId, request))
-    }
-
-    @GetMapping("/members")
-    fun getMemberList(): ResponseEntity<List<MemberListResponse>> {
-        return ResponseEntity.ok(adminService.getMemberList())
     }
 
     @GetMapping("/coupons")
