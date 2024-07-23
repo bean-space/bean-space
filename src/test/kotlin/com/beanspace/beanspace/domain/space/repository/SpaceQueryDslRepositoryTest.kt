@@ -57,6 +57,11 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
                             status = fixture(listOf(SpaceStatus.ACTIVE, SpaceStatus.PENDING, SpaceStatus.REJECTED))
                         )
                     spaceRepository.saveAllAndFlush(spaceFixtures)
+
+                    val (contents, totalCount) = spaceRepository.search(pageable = defaultPageable)
+
+                    contents.forEach { it.key?.status shouldBe SpaceStatus.ACTIVE }
+                    totalCount shouldBe spaceFixtures.filter { it.status == SpaceStatus.ACTIVE }.size
                 }
             }
         }
@@ -396,7 +401,7 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
                     property(Address::sido) { sidoFixture }
                     property(Space::defaultPeople) { minFixture }
                     property(Space::maxPeople) { maxFixture }
-                    property(Space::status) { SpaceStatus.ACTIVE }
+                    property(Space::status) { status }
                     property(Space::host) { host }
                 }
             }
