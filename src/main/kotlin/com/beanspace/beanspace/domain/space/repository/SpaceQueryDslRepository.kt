@@ -10,10 +10,10 @@ import java.time.LocalDate
 interface SpaceQueryDslRepository {
     fun findByStatus(pageable: Pageable, spaceStatus: SpaceStatus): Page<Space>
     fun search(
-        sido: String?,
-        checkIn: LocalDate?,
-        checkOut: LocalDate?,
-        headCount: Int?,
+        sido: String? = null,
+        checkIn: LocalDate? = null,
+        checkOut: LocalDate? = null,
+        headCount: Int? = null,
         pageable: Pageable
     ): Pair<Map<Space?, List<String>>, Long>
 
