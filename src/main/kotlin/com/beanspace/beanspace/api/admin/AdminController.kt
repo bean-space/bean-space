@@ -4,7 +4,6 @@ import com.beanspace.beanspace.api.admin.dto.RequestAddSpaceResponse
 import com.beanspace.beanspace.api.admin.dto.UpdateSpaceStatus
 import com.beanspace.beanspace.api.coupon.dto.CouponRequest
 import com.beanspace.beanspace.api.coupon.dto.CouponResponse
-import com.beanspace.beanspace.api.member.dto.MemberListResponse
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -39,11 +38,6 @@ class AdminController(private val adminService: AdminService) {
         @RequestBody request: UpdateSpaceStatus
     ): ResponseEntity<Unit> {
         return ResponseEntity.ok(adminService.updateSpaceStatus(spaceId, request))
-    }
-
-    @GetMapping("/members")
-    fun getMemberList(): ResponseEntity<List<MemberListResponse>> {
-        return ResponseEntity.ok(adminService.getMemberList())
     }
 
     @GetMapping("/coupons")

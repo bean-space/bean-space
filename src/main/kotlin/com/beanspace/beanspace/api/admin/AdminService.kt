@@ -4,7 +4,6 @@ import com.beanspace.beanspace.api.admin.dto.RequestAddSpaceResponse
 import com.beanspace.beanspace.api.admin.dto.UpdateSpaceStatus
 import com.beanspace.beanspace.api.coupon.dto.CouponRequest
 import com.beanspace.beanspace.api.coupon.dto.CouponResponse
-import com.beanspace.beanspace.api.member.dto.MemberListResponse
 import com.beanspace.beanspace.domain.coupon.repository.CouponRepository
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
@@ -55,10 +54,6 @@ class AdminService(
                 throw IllegalArgumentException("유효하지 않은 요청 입니다.")
             }
         }
-    }
-
-    fun getMemberList(): List<MemberListResponse> {
-        return memberRepository.findAll().map { MemberListResponse.from(it) }
     }
 
     fun getCouponList(): List<CouponResponse> {
