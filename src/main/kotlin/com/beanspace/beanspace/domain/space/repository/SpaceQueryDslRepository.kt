@@ -2,7 +2,6 @@ package com.beanspace.beanspace.domain.space.repository
 
 import com.beanspace.beanspace.domain.space.model.Space
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
-import com.querydsl.core.Tuple
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import java.time.LocalDate
@@ -17,6 +16,5 @@ interface SpaceQueryDslRepository {
         pageable: Pageable
     ): Pair<Map<Space?, List<String>>, Long>
 
-    fun getReservedDateList(spaceId: Long): MutableList<Tuple>?
     fun getWishListedSpaceList(memberId: Long): Map<Space?, List<String>>
 }

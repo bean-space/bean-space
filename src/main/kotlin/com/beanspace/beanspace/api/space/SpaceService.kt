@@ -42,15 +42,13 @@ class SpaceService(
         headCount: Int?,
         pageable: Pageable
     ): Page<SpaceResponse> {
-        val searchResult = spaceRepository.search(
+        val (contents, totalCount) = spaceRepository.search(
             sido = sido,
             checkIn = checkIn,
             checkOut = checkOut,
             headCount = headCount,
             pageable = pageable
         )
-
-        val (contents, totalCount) = searchResult
 
         if (contents.isEmpty() || totalCount == 0L) {
             return Page.empty()
