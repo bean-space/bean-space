@@ -52,6 +52,7 @@ class SecurityConfig(
                         "/api/v1/auth/login",
                         "/error",
                         "/api/v1/spaces/**",
+                        "/oauth2/login/**"
                     ).permitAll()
                     .requestMatchers(PathRequest.toH2Console()).permitAll()
                     .anyRequest().authenticated()

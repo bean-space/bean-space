@@ -31,6 +31,12 @@ class Member(
     @Column
     var role: MemberRole = MemberRole.MEMBER,
 
+    @Column(nullable = true)
+    var provider: String? = null,
+
+    @Column(nullable = true)
+    var providerId: String? = null,
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null

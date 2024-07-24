@@ -8,4 +8,6 @@ interface MemberRepository : JpaRepository<Member, Long> {
     fun findByPhoneNumber(phoneNumber: String): Member?
 
     fun existsByPhoneNumber(phoneNumber: String): Boolean
+
+    fun findByProviderAndProviderId(provider: String, providerId: String): Member?
 }
