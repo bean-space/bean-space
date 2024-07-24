@@ -15,11 +15,11 @@ data class KakaoLoginUserInfoResponse(
             provider = "KAKAO",
             providerId = id,
             nickname = properties.nickname,
-            email = null.toString(),
-            phoneNumber = null.toString(),
-            password = null.toString(),
+            email = "EMPTY",
+            phoneNumber = "EMPTY",
+            password = "EMPTY",
             role = MemberRole.MEMBER,
-            profileImageUrl = null.toString()
+            profileImageUrl = properties.profileImageUrl
         )
     }
 }
