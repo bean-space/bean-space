@@ -5,6 +5,7 @@ import com.beanspace.beanspace.domain.member.model.Member
 import com.beanspace.beanspace.domain.reservation.model.Reservation
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -20,11 +21,14 @@ class Review(
     @Column
     var rating: Int,
 
-    @ManyToOne
+    @Column
+    var isDeleted: Boolean = false,
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     val member: Member,
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "space_id")
     val space: Space,
 
@@ -35,4 +39,10 @@ class Review(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
-) : BaseTimeEntity()
+) : BaseTimeEntity() {
+
+    fun update(content: String, rating: Int) {
+        this.content = content
+        this.rating = rating
+    }
+}

@@ -8,5 +8,5 @@ interface ImageRepository : JpaRepository<Image, Long> {
     fun findAllByContentIdAndTypeOrderByOrderIndexAsc(contentId: Long, contentType: ImageType): List<Image>
     fun findByContentIdOrderByOrderIndex(contentId: Long): List<Image>
     fun deleteByTypeAndContentId(type: ImageType, id: Long)
-    fun findByTypeAndContentId(space: ImageType, spaceId: Long): List<Image>
+    fun findAllByContentIdInAndTypeOrderByOrderIndexAsc(map: List<Long>, contentType: ImageType): List<Image>
 }

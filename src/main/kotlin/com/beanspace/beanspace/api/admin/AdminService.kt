@@ -4,10 +4,8 @@ import com.beanspace.beanspace.api.admin.dto.RequestAddSpaceResponse
 import com.beanspace.beanspace.api.admin.dto.UpdateSpaceStatus
 import com.beanspace.beanspace.api.coupon.dto.CouponRequest
 import com.beanspace.beanspace.api.coupon.dto.CouponResponse
-import com.beanspace.beanspace.api.member.dto.MemberListResponse
 import com.beanspace.beanspace.domain.coupon.repository.CouponRepository
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
-import com.beanspace.beanspace.domain.member.repository.MemberRepository
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import org.springframework.data.domain.Page
@@ -20,11 +18,9 @@ import java.time.LocalDateTime
 @Service
 class AdminService(
     private val spaceRepository: SpaceRepository,
-    private val memberRepository: MemberRepository,
     private val couponRepository: CouponRepository
 ) {
     fun getRequestAddSpace(pageable: Pageable, status: String): Page<RequestAddSpaceResponse> {
-        // 권한 확인 추가
         val spaceStatus = when (status) {
             "PENDING" -> SpaceStatus.PENDING
             "REJECTED" -> SpaceStatus.REJECTED
@@ -57,12 +53,7 @@ class AdminService(
         }
     }
 
-    fun getMemberList(): List<MemberListResponse> {
-        return memberRepository.findAll().map { MemberListResponse.from(it) }
-    }
-
     fun getCouponList(): List<CouponResponse> {
-        // 권한 확인 추가
         return couponRepository.findAll().map { CouponResponse.from(it) }
     }
 
@@ -103,13 +94,13 @@ class AdminService(
         validateDiscountRate(request.discountRate)
 
         check(isValidDate(LocalDateTime.now(), request.issueStartAt)) {
-            throw IllegalArgumentException("발급 시작일이 오늘보다 빠를 수 없습니다.")
+            throw IllegalArgumentException("발급 시작일을 오늘 이후로 설정하세요.")
         }
         check(isValidDate(request.issueStartAt, request.issueEndAt)) {
-            throw IllegalArgumentException("발급 마감일이 시작일보다 빠를 수 없습니다.")
+            throw IllegalArgumentException("발급 마감일을 시작일 이후로 설정하세요")
         }
         check(isValidDate(request.issueEndAt, request.expirationAt)) {
-            throw IllegalArgumentException("쿠폰 만료일이 발급 마감일보다 빠를 수 없습니다.")
+            throw IllegalArgumentException("쿠폰 만료일은 발급 마감일보다 빠를 수 없습니다.")
         }
     }
 

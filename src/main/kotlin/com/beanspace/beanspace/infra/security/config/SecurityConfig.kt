@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.web.cors.CorsConfiguration
 
 @Configuration
 @EnableWebSecurity
@@ -25,6 +26,17 @@ class SecurityConfig(
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         return http
+            .cors { cors ->
+                cors.configurationSource {
+                    val configuration = CorsConfiguration()
+                    configuration.allowedOrigins =
+                        listOf("http://localhost:5173", "https://bean-space-front.vercel.app/")
+                    configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                    configuration.allowedHeaders = listOf("*")
+                    configuration.allowCredentials = true
+                    configuration
+                }
+            }
             .httpBasic { it.disable() }
             .formLogin { it.disable() }
             .csrf { it.disable() }
