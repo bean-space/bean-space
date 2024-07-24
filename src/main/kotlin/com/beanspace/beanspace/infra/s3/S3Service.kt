@@ -32,6 +32,7 @@ class S3Service(
         val directory = when (imageType) {
             ImageType.REVIEW -> "reviews"
             ImageType.SPACE -> "spaces"
+            ImageType.PROFILE -> "profile"
         }
 
         // UUID를 이용해서 파일 이름이 겹치지 않도록 함
@@ -58,8 +59,9 @@ class S3Service(
         val expiration = Date(System.currentTimeMillis() + 900000) // 15분 뒤에 URL 만료
 
         val directory = when (imageType) {
-            ImageType.REVIEW -> "reviews"
-            ImageType.SPACE -> "spaces"
+            ImageType.REVIEW -> "review"
+            ImageType.SPACE -> "space"
+            ImageType.PROFILE -> "profile"
         }
 
         val filename = "${UUID.randomUUID()}-${fileName}"
