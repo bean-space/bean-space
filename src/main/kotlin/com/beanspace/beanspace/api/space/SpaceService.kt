@@ -58,7 +58,7 @@ class SpaceService(
         return PageImpl(response, pageable, totalCount)
     }
 
-    fun getSpace(spaceId: Long): SpaceDetailResponse {
+    fun getSpace(spaceId: Long, today: LocalDate): SpaceDetailResponse {
         val space =
             spaceRepository.findByIdOrNull(spaceId) ?: throw ModelNotFoundException(model = "Space", id = spaceId)
         if (space.status != SpaceStatus.ACTIVE) throw ModelNotFoundException(model = "Space", id = spaceId)
@@ -77,8 +77,6 @@ class SpaceService(
 
                 )
             }
-
-        val today = LocalDate.now()
 
         val reservedDateList = reservationRepository.findBySpaceAndCheckOutGreaterThanEqualAndIsCancelled(
             space,
@@ -124,15 +122,15 @@ class SpaceService(
     }
 
     @Transactional
-    fun addReview(spaceId: Long, request: AddReviewRequest, userPrincipal: UserPrincipal): Unit {
-        val member = memberRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException(
+    fun addReview(spaceId: Long, request: AddReviewRequest, reviewerId: Long): Unit {
+        val member = memberRepository.findByIdOrNull(reviewerId) ?: throw ModelNotFoundException(
             model = "Member",
-            id = userPrincipal.id
+            id = reviewerId
         )
         val space =
             spaceRepository.findByIdOrNull(spaceId) ?: throw ModelNotFoundException(model = "Space", id = spaceId)
         val reservation = reservationRepository.findByIdOrNull(request.reservationId)
-            ?.also { check(it.validateOwner(userPrincipal.id)) { throw NoPermissionException() } }
+            ?.also { check(it.validateOwner(reviewerId)) { throw NoPermissionException() } }
             ?.also { check(it.space.id == spaceId) { throw IllegalArgumentException("해당 공간에 대한 예약이 아닙니다.") } }
             ?.also { check(it.isReviewAllowed()) { throw IllegalStateException("아직 후기를 작성할 수 없습니다. (체크아웃 당일 12:00 부터 작성 가능)") } }
             ?: throw ModelNotFoundException(model = "Reservation", id = request.reservationId)

@@ -49,7 +49,7 @@ class SpaceController(private val spaceService: SpaceService) {
 
     @GetMapping("/{spaceId}")
     fun getSpace(@PathVariable spaceId: Long): ResponseEntity<SpaceDetailResponse> {
-        return ResponseEntity.ok(spaceService.getSpace(spaceId))
+        return ResponseEntity.ok(spaceService.getSpace(spaceId, LocalDate.now()))
     }
 
     @PostMapping("/{spaceId}/reviews")
@@ -58,7 +58,8 @@ class SpaceController(private val spaceService: SpaceService) {
         @RequestBody request: AddReviewRequest,
         @AuthenticationPrincipal userPrincipal: UserPrincipal
     ): ResponseEntity<Unit> {
-        return ResponseEntity.status(HttpStatus.CREATED).body(spaceService.addReview(spaceId, request, userPrincipal))
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(spaceService.addReview(spaceId, request, userPrincipal.id))
     }
 
     @GetMapping("/{spaceId}/reviews")
