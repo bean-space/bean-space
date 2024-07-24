@@ -1,6 +1,7 @@
 package com.beanspace.beanspace.api.oauth
 
 import com.beanspace.beanspace.api.auth.AuthService
+import com.beanspace.beanspace.api.auth.dto.LoginResponse
 import com.beanspace.beanspace.infra.security.jwt.JwtPlugin
 import org.springframework.stereotype.Service
 
@@ -14,10 +15,11 @@ class OAuth2LoginService(
         return kakaoOAuth2Client.getOAuth2LoginPage()
     }
 
-    fun login(code: String): String {
+    fun login(code: String): LoginResponse {
         return kakaoOAuth2Client.getAccessToken(code)
             .let { kakaoOAuth2Client.retrieveUserInfo(it) }
             .let { authService.registerIfAbsent(it) }
             .let { jwtPlugin.generateAccessToken(it.id.toString(), it.role.toString()) }
+            .let { LoginResponse(it) }
     }
 }

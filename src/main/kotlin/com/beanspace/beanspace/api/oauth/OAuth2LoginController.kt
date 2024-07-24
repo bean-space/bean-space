@@ -1,5 +1,6 @@
 package com.beanspace.beanspace.api.oauth
 
+import com.beanspace.beanspace.api.auth.dto.LoginResponse
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,8 +23,7 @@ class OAuth2LoginController(
     @GetMapping("/callback")
     fun callback(
         @RequestParam code: String
-    ): ResponseEntity<String> {
-        val accessToken = oAuth2LoginService.login(code)
-        return ResponseEntity.ok(accessToken)
+    ): ResponseEntity<LoginResponse> {
+        return ResponseEntity.ok(oAuth2LoginService.login(code))
     }
 }

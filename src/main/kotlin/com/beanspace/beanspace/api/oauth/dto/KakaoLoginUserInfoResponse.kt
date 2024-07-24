@@ -19,7 +19,7 @@ data class KakaoLoginUserInfoResponse(
             phoneNumber = "EMPTY",
             password = "EMPTY",
             role = MemberRole.MEMBER,
-            profileImageUrl = properties.profileImageUrl
+            profileImageUrl = properties.profileImage
         )
     }
 }
