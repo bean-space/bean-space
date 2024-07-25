@@ -89,7 +89,6 @@ class SpaceServiceTest : BehaviorSpec({
                     val space = getSpaceFixtures(1, defaultHost, SpaceStatus.ACTIVE)[0]
                     val imageList = getImageFixtures(5, ImageType.SPACE)
                     val reviewList = getReviewFixtures(3, space)
-                    val today = LocalDate.of(2024, 7, 10)
 
                     every { spaceRepository.findByIdOrNull(1L) } returns space
                     every {
@@ -101,11 +100,14 @@ class SpaceServiceTest : BehaviorSpec({
                     every { reviewRepository.getLast3Reviews(1L) } returns reviewList.map {
                         Pair(it, listOf(textFixture))
                     }
+
+                    val today = LocalDate.of(2024, 7, 10)
+
                     every {
-                        reservationRepository.findBySpaceAndCheckOutGreaterThanEqualAndIsCancelled(
-                            space,
-                            any(),
-                            false
+                        reservationRepository.findAllBySpaceIdAndIsCancelledAndCheckOutAfter(
+                            space.id!!,
+                            false,
+                            today,
                         )
                     } returns listOf(
                         mockk<Reservation> {
@@ -126,7 +128,6 @@ class SpaceServiceTest : BehaviorSpec({
 
                     result.shouldBeTypeOf<SpaceDetailResponse>()
                     result.reservedDateList shouldBeEqual listOf(
-                        LocalDate.of(2024, 7, 10),
                         LocalDate.of(2024, 7, 11),
                         LocalDate.of(2024, 7, 12),
                         LocalDate.of(2024, 7, 15),

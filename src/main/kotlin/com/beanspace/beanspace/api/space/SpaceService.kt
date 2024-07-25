@@ -78,11 +78,11 @@ class SpaceService(
                 )
             }
 
-        val reservedDateList = reservationRepository.findBySpaceAndCheckOutGreaterThanEqualAndIsCancelled(
-            space,
-            today,
-            false
-        ).flatMap { it.checkIn.datesUntil(it.checkOut).toList() }.filter { it.isEqual(today) || it.isAfter(today) }
+        val reservedDateList = reservationRepository.findAllBySpaceIdAndIsCancelledAndCheckOutAfter(
+            spaceId,
+            false,
+            today
+        ).flatMap { it.checkIn.datesUntil(it.checkOut).toList() }.filter { it.isAfter(today) }
 
         return SpaceDetailResponse.from(
             SpaceResponse.from(space, spaceImageList.map { it.imageUrl }),

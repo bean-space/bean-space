@@ -1,7 +1,6 @@
 package com.beanspace.beanspace.domain.reservation.repository
 
 import com.beanspace.beanspace.domain.reservation.model.Reservation
-import com.beanspace.beanspace.domain.space.model.Space
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
@@ -15,12 +14,6 @@ interface ReservationRepository : JpaRepository<Reservation, Long> {
         spaceId: Long,
         isCancelled: Boolean,
         today: LocalDate
-    ): List<Reservation>
-
-    fun findBySpaceAndCheckOutGreaterThanEqualAndIsCancelled(
-        space: Space,
-        now: LocalDate?,
-        isCancelled: Boolean
     ): List<Reservation>
 
     fun findByMemberIdAndCheckOutGreaterThanEqual(
