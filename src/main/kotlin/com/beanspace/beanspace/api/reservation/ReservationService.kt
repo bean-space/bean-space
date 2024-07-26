@@ -9,12 +9,10 @@ import com.beanspace.beanspace.domain.member.repository.MemberRepository
 import com.beanspace.beanspace.domain.reservation.repository.ReservationRepository
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
-import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 @Service
@@ -26,13 +24,13 @@ class ReservationService(
 ) {
 
     @Transactional
-    fun reserveSpace(principal: UserPrincipal, spaceId: Long, request: ReservationRequest): ReservationResponse {
+    fun reserveSpace(guestId: Long, spaceId: Long, request: ReservationRequest): ReservationResponse {
 
         val space = spaceRepository.findByIdAndStatus(spaceId, SpaceStatus.ACTIVE)
             ?: throw ModelNotFoundException("공간", spaceId)
 
-        val member = memberRepository.findByIdOrNull(principal.id)
-            ?: throw ModelNotFoundException("사용자", principal.id)
+        val guest = memberRepository.findByIdOrNull(guestId)
+            ?: throw ModelNotFoundException("사용자", guestId)
 
         val userCoupon = request.userCouponId
             ?.let {
@@ -43,12 +41,11 @@ class ReservationService(
                 check(it.isCouponUnused()) { throw IllegalStateException("이미 사용한 쿠폰입니다.") }
             }
             ?.also {
-                check(it.coupon.expirationAt.isAfter(LocalDateTime.now()))
-                { throw IllegalStateException("쿠폰의 유효기간을 확인해주세요.") }
+                check(it.coupon.isNotExpired()) { throw IllegalStateException("쿠폰의 유효기간을 확인해주세요.") }
             }
 
         // 자기 자신의 숙소는 예약 불가능
-        check(space.host.id != principal.id) { throw IllegalArgumentException("자기 자신의 공간은 예약할 수 없습니다.") }
+        check(space.host.id != guestId) { throw IllegalArgumentException("자기 자신의 공간은 예약할 수 없습니다.") }
 
         // 체크아웃 날짜가 체크인 날짜 이후인가?
         check(request.checkIn < request.checkOut) { throw IllegalArgumentException("체크인, 체크아웃 날짜가 올바른지 확인해주세요.") }
@@ -72,36 +69,22 @@ class ReservationService(
         // 숙박일수
         val stayDays = ChronoUnit.DAYS.between(request.checkIn, request.checkOut)
 
-        // 기본 가격
-        val regularPrice = space.price * stayDays
-
-        // 추가 인원 가격
-        val extraPersonCharge =
-            ((request.reservationPeople - space.defaultPeople) * space.pricePerPerson * stayDays).coerceAtLeast(0)
-
-        // 쿠폰 적용 전 가격
-        val totalPriceBeforeCoupon = regularPrice + extraPersonCharge
-
-        // 쿠폰 할인 가격
-        val couponDiscountedPrice = userCoupon?.coupon
-            ?.let { (totalPriceBeforeCoupon * it.discountRate / 100).coerceAtMost(it.maxDiscount.toLong()) }
-            ?: 0L
-
-        // 최종 가격
-        val finalPrice = totalPriceBeforeCoupon - couponDiscountedPrice
+        // 결제 금액
+        val cost = space.calculateTotalCost(request.reservationPeople, stayDays)
+            .let { it - (userCoupon?.coupon?.calculateDiscountAmount(it) ?: 0L) }
 
         // 쿠폰 사용 처리
         userCoupon?.useCoupon()
 
-        return request.toEntity(space, member, finalPrice)
-            .also { reservationRepository.save(it) }
+        return request.toEntity(space, guest, cost)
+            .let { reservationRepository.save(it) }
             .let { ReservationResponse.from(it) }
     }
 
     @Transactional
-    fun cancelReservation(principal: UserPrincipal, reservationId: Long) {
+    fun cancelReservation(guestId: Long, reservationId: Long) {
         reservationRepository.findByIdOrNull(reservationId)
-            ?.also { check(it.validateOwner(principal.id)) { throw NoPermissionException("본인이 한 예약인지 확인해주세요.") } }
+            ?.also { check(it.validateOwner(guestId)) { throw NoPermissionException("본인이 한 예약인지 확인해주세요.") } }
             ?.also { check(it.isBeforeCancellationDeadline()) { throw IllegalStateException("예약 취소 가능 날짜가 지났습니다.") } }
             ?.also { check(it.isActiveReservation()) { throw IllegalStateException("이미 취소된 예약입니다.") } }
             ?.cancelReservation()
