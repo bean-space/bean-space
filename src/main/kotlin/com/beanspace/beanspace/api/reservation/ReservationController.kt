@@ -24,7 +24,7 @@ class ReservationController(
         @PathVariable spaceId: Long,
         @RequestBody request: ReservationRequest
     ): ResponseEntity<ReservationResponse> {
-        return ResponseEntity.ok(reservationService.reserveSpace(principal, spaceId, request))
+        return ResponseEntity.ok(reservationService.reserveSpace(principal.id, spaceId, request))
     }
 
     @DeleteMapping("{reservationId}")
@@ -32,7 +32,7 @@ class ReservationController(
         @AuthenticationPrincipal principal: UserPrincipal,
         @PathVariable reservationId: Long
     ): ResponseEntity<Unit> {
-        reservationService.cancelReservation(principal, reservationId)
+        reservationService.cancelReservation(principal.id, reservationId)
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 }

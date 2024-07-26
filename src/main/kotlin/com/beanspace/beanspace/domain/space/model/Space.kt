@@ -107,4 +107,8 @@ class Space(
         this.isDeleted = true
         this.deletedAt = LocalDateTime.now()
     }
+
+    fun calculateTotalCost(headCount: Int, stayDays: Long): Long {
+        return (this.price + (headCount - this.defaultPeople).coerceAtLeast(0) * this.pricePerPerson) * stayDays
+    }
 }
