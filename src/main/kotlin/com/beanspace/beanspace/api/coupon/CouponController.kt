@@ -21,7 +21,7 @@ class CouponController(
         return ResponseEntity.ok(couponService.getCouponList())
     }
 
-    @PostMapping("{couponId}/")
+    @PostMapping("/{couponId}")
     fun issueCoupon(
         @AuthenticationPrincipal principal: UserPrincipal,
         @PathVariable couponId: Long
