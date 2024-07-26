@@ -29,6 +29,7 @@ repositories {
 val jjwtVersion = "0.12.6"
 val queryDslVersion = "5.0.0"
 val kotestVersion = "5.8.1"
+val mockkVersion = "1.13.8"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -59,6 +60,7 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("com.appmattus.fixture:fixture:1.2.0")
     testImplementation("com.appmattus.fixture:fixture-kotest:1.2.0")
+    testImplementation("io.mockk:mockk:$mockkVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

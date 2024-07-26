@@ -8,7 +8,6 @@ import com.beanspace.beanspace.domain.space.model.QWishlist
 import com.beanspace.beanspace.domain.space.model.Space
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.querydsl.core.BooleanBuilder
-import com.querydsl.core.Tuple
 import com.querydsl.core.types.Expression
 import com.querydsl.core.types.Order
 import com.querydsl.core.types.OrderSpecifier
@@ -90,13 +89,6 @@ class SpaceQueryDslRepositoryImpl(
             .mapValues { it.value.map { tuple -> tuple.get(QImage.image.imageUrl) ?: "" } }
 
         return Pair(contents, totalCount)
-    }
-
-    override fun getReservedDateList(spaceId: Long): MutableList<Tuple>? {
-        return queryFactory.select(reservation.checkIn, reservation.checkOut)
-            .from(reservation)
-            .join(space).on(reservation.space.id.eq(spaceId))
-            .fetch()
     }
 
     override fun getWishListedSpaceList(memberId: Long): Map<Space?, List<String>> {
