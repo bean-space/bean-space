@@ -71,4 +71,12 @@ class Coupon(
     fun issueCoupon() {
         stock -= 1
     }
+
+    fun calculateDiscountAmount(cost: Long): Long {
+        return (cost * (1 - this.discountRate / 100)).coerceAtMost(maxDiscount.toLong())
+    }
+
+    fun isNotExpired(): Boolean {
+        return this.expirationAt.isAfter(LocalDateTime.now())
+    }
 }
