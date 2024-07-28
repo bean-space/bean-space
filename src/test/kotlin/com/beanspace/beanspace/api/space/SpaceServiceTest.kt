@@ -97,9 +97,6 @@ class SpaceServiceTest : BehaviorSpec({
                             ImageType.SPACE
                         )
                     } returns imageList
-                    every { reviewRepository.getLast3Reviews(1L) } returns reviewList.map {
-                        Pair(it, listOf(textFixture))
-                    }
 
                     val today = LocalDate.of(2024, 7, 10)
 

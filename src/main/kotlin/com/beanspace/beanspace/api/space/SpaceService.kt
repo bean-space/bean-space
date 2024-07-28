@@ -65,19 +65,6 @@ class SpaceService(
 
         val spaceImageList = imageRepository.findAllByContentIdAndTypeOrderByOrderIndexAsc(spaceId, ImageType.SPACE)
 
-        val reviewList = reviewRepository.getLast3Reviews(spaceId)
-            .map {
-                ReviewResponse(
-                    id = it.first?.id!!,
-                    content = it.first?.content!!,
-                    rating = it.first?.rating!!,
-                    reviewerName = it.first?.member!!.nickname,
-                    reviewerProfileUrl = it.first?.member!!.profileImageUrl,
-                    imageUrlList = it.second
-
-                )
-            }
-
         val reservedDateList = reservationRepository.findAllBySpaceIdAndIsCancelledAndCheckOutAfter(
             spaceId,
             false,
