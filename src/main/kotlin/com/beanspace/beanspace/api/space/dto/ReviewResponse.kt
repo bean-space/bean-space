@@ -1,12 +1,13 @@
 package com.beanspace.beanspace.api.space.dto
 
 import com.beanspace.beanspace.domain.space.model.Review
-import com.querydsl.core.annotations.QueryProjection
+import java.time.LocalDateTime
 
-data class ReviewResponse @QueryProjection constructor(
+data class ReviewResponse(
     val id: Long,
     var content: String,
     var rating: Int,
+    val createdAt: LocalDateTime,
     val reviewerName: String,
     val reviewerProfileUrl: String? = null,
     var imageUrlList: List<String>? = null
@@ -17,6 +18,7 @@ data class ReviewResponse @QueryProjection constructor(
                 id = review.id!!,
                 content = review.content,
                 rating = review.rating,
+                createdAt = review.createdAt!!,
                 reviewerName = review.member.nickname,
                 reviewerProfileUrl = review.member.profileImageUrl,
                 imageUrlList = imageUrlList
