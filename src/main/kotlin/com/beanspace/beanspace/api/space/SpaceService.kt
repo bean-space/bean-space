@@ -1,6 +1,7 @@
 package com.beanspace.beanspace.api.space
 
 import com.beanspace.beanspace.api.space.dto.AddReviewRequest
+import com.beanspace.beanspace.api.space.dto.HostResponse
 import com.beanspace.beanspace.api.space.dto.ReviewResponse
 import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
 import com.beanspace.beanspace.api.space.dto.SpaceResponse
@@ -75,6 +76,12 @@ class SpaceService(
             SpaceResponse.from(space, spaceImageList.map { it.imageUrl }),
             reservedDateList,
             reviewList
+            spaceResponse = SpaceResponse.from(space, spaceImageList.map { it.imageUrl }),
+            hostResponse = HostResponse(
+                nickname = space.host.nickname,
+                profileImageUrl = space.host.profileImageUrl
+            ),
+            reservedDateList = reservedDateList,
         )
     }
 
