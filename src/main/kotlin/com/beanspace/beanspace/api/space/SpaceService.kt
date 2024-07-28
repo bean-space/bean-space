@@ -110,15 +110,21 @@ class SpaceService(
         wishListRepository.delete(Wishlist(spaceId, userPrincipal.id))
     }
 
-    fun getReviews(spaceId: Long): List<ReviewResponse> {
-        val reviewList = reviewRepository.findBySpaceId(spaceId)
+    fun getReviews(spaceId: Long, pageable: Pageable): Page<ReviewResponse> {
+        val reviewPage = reviewRepository.findAllBySpaceId(spaceId, pageable)
+        val reviewList = reviewPage.content
 
         val imageUrlListMap = imageRepository.findAllByContentIdInAndTypeOrderByOrderIndexAsc(
             reviewList.map { it.id!! },
             contentType = ImageType.REVIEW
         ).groupBy { it.contentId }.mapValues { it.value.map { image -> image.imageUrl } }
 
-        return reviewList.map { ReviewResponse.from(it, imageUrlListMap[it.id] ?: emptyList()) }
+
+        return PageImpl(
+            reviewList.map { ReviewResponse.from(it, imageUrlListMap[it.id] ?: emptyList()) },
+            pageable,
+            reviewPage.totalElements
+        )
     }
 
     @Transactional
