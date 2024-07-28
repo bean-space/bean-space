@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.text.DecimalFormat
 import java.time.LocalDate
 
 @Service
@@ -65,6 +66,7 @@ class SpaceService(
         if (space.status != SpaceStatus.ACTIVE) throw ModelNotFoundException(model = "Space", id = spaceId)
 
         val spaceImageList = imageRepository.findAllByContentIdAndTypeOrderByOrderIndexAsc(spaceId, ImageType.SPACE)
+        val averageRating = DecimalFormat("#.#").format(reviewRepository.getAverageRating(spaceId) ?: 0.0).toDouble()
 
         val reservedDateList = reservationRepository.findAllBySpaceIdAndIsCancelledAndCheckOutAfter(
             spaceId,
@@ -73,10 +75,8 @@ class SpaceService(
         ).flatMap { it.checkIn.datesUntil(it.checkOut).toList() }.filter { it.isAfter(today) }
 
         return SpaceDetailResponse.from(
-            SpaceResponse.from(space, spaceImageList.map { it.imageUrl }),
-            reservedDateList,
-            reviewList
             spaceResponse = SpaceResponse.from(space, spaceImageList.map { it.imageUrl }),
+            averageRating = averageRating,
             hostResponse = HostResponse(
                 nickname = space.host.nickname,
                 profileImageUrl = space.host.profileImageUrl
