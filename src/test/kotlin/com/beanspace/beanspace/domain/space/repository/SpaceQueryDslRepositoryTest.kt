@@ -34,7 +34,7 @@ import java.time.LocalDate
 class SpaceQueryDslRepositoryTest @Autowired constructor(
     private val spaceRepository: SpaceRepository,
     private val reservationRepository: ReservationRepository,
-    private val membersRepository: MemberRepository,
+    private val memberRepository: MemberRepository,
 ) : BehaviorSpec({
 
     context("SpaceQueryDslRepository.search()") {
@@ -42,13 +42,13 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
         beforeEach {
             reservationRepository.deleteAll()
             spaceRepository.deleteAll()
-            membersRepository.deleteAll()
+            memberRepository.deleteAll()
         }
 
         given("저장된 Space의 status가 각각 다를 때") {
             `when`("search()시") {
                 then("space.status==SpaceStatus.ACTIVE인 Space만 반환된다.") {
-                    val host = membersRepository.saveAndFlush(defaultHost)
+                    val host = memberRepository.saveAndFlush(defaultHost)
 
                     val spaceFixtures =
                         generateSpaceFixtures(
@@ -70,7 +70,7 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
             `when`("특정 키워드를 보내면") {
                 then("Space.adress.sido가 키워드를 포함한 Space만 반환된다.") {
 
-                    val host = membersRepository.saveAndFlush(defaultHost)
+                    val host = memberRepository.saveAndFlush(defaultHost)
 
                     val spaceFixtures =
                         generateSpaceFixtures(numberOfFixtures = 50, host = host, status = SpaceStatus.ACTIVE)
@@ -93,8 +93,8 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
         given("checkIn으로 search()시") {
             `when`("checkIn 날짜가 이미 reservation이 있는 날짜이면") {
                 then("반환되는 Space가 없어야 한다.") {
-                    val guest = membersRepository.saveAndFlush(defaultGuest)
-                    val host = membersRepository.saveAndFlush(defaultHost)
+                    val guest = memberRepository.saveAndFlush(defaultGuest)
+                    val host = memberRepository.saveAndFlush(defaultHost)
 
                     val spaceFixture =
                         generateSpaceFixtures(numberOfFixtures = 1, host = host, status = SpaceStatus.ACTIVE)
@@ -116,8 +116,8 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
 
             `when`("checkIn 날짜가 reservation이 없는 날짜이면") {
                 then("반환되는 Space가 있어야 한다.") {
-                    val guest = membersRepository.saveAndFlush(defaultGuest)
-                    val host = membersRepository.saveAndFlush(defaultHost)
+                    val guest = memberRepository.saveAndFlush(defaultGuest)
+                    val host = memberRepository.saveAndFlush(defaultHost)
 
                     val spaceFixture =
                         generateSpaceFixtures(numberOfFixtures = 1, host = host, status = SpaceStatus.ACTIVE)
@@ -140,8 +140,8 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
         given("checkOut으로 search()시") {
             `when`("checkOut 날짜가 이미 reservation이 있는 날짜이면") {
                 then("반환되는 Space가 없어야 한다.") {
-                    val guest = membersRepository.saveAndFlush(defaultGuest)
-                    val host = membersRepository.saveAndFlush(defaultHost)
+                    val guest = memberRepository.saveAndFlush(defaultGuest)
+                    val host = memberRepository.saveAndFlush(defaultHost)
 
                     val spaceFixture =
                         generateSpaceFixtures(numberOfFixtures = 1, host = host, status = SpaceStatus.ACTIVE)
@@ -162,8 +162,8 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
 
             `when`("checkOut 날짜가 reservation이 없는 날짜이면") {
                 then("반환되는 Space가 있어야 한다.") {
-                    val guest = membersRepository.saveAndFlush(defaultGuest)
-                    val host = membersRepository.saveAndFlush(defaultHost)
+                    val guest = memberRepository.saveAndFlush(defaultGuest)
+                    val host = memberRepository.saveAndFlush(defaultHost)
 
                     val spaceFixture =
                         generateSpaceFixtures(numberOfFixtures = 1, host = host, status = SpaceStatus.ACTIVE)
@@ -186,7 +186,7 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
         given("headCount로 search()시 ") {
             `when`("defaultPeople <= headCount <= maxPeople") {
                 then("조건을 만족하는 Space만 반환된다.") {
-                    val host = membersRepository.saveAndFlush(defaultHost)
+                    val host = memberRepository.saveAndFlush(defaultHost)
 
                     val spaceFixture =
                         generateSpaceFixtures(numberOfFixtures = 50, host = host, status = SpaceStatus.ACTIVE)
@@ -216,8 +216,8 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
         given("checkIn과 CheckOut으로 search()시") {
             `when`("두 날짜의 범위에 reservation이 없으면") {
                 then("반환되는 Space가 있어야 한다") {
-                    val guest = membersRepository.saveAndFlush(defaultGuest)
-                    val host = membersRepository.saveAndFlush(defaultHost)
+                    val guest = memberRepository.saveAndFlush(defaultGuest)
+                    val host = memberRepository.saveAndFlush(defaultHost)
 
                     val spaceFixture =
                         generateSpaceFixtures(numberOfFixtures = 1, host = host, status = SpaceStatus.ACTIVE)
@@ -240,8 +240,8 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
 
             `when`("두 날짜의 범위에 reservation이 있으면") {
                 then("반환되는 Space가 없어야 한다") {
-                    val guest = membersRepository.saveAndFlush(defaultGuest)
-                    val host = membersRepository.saveAndFlush(defaultHost)
+                    val guest = memberRepository.saveAndFlush(defaultGuest)
+                    val host = memberRepository.saveAndFlush(defaultHost)
 
                     val spaceFixture =
                         generateSpaceFixtures(numberOfFixtures = 1, host = host, status = SpaceStatus.ACTIVE)
@@ -270,7 +270,7 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
                     val totalSpaceCount = 50
                     val pageSize = 12
 
-                    val host = membersRepository.saveAndFlush(defaultHost)
+                    val host = memberRepository.saveAndFlush(defaultHost)
 
                     val spaceFixture = generateSpaceFixtures(
                         numberOfFixtures = totalSpaceCount,
@@ -290,7 +290,7 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
 
             `when`("pageCount가 다르면") {
                 then("다른 Space 목록을 반환한다.") {
-                    val host = membersRepository.saveAndFlush(defaultHost)
+                    val host = memberRepository.saveAndFlush(defaultHost)
 
                     val spaceFixture =
                         generateSpaceFixtures(numberOfFixtures = 50, host = host, status = SpaceStatus.ACTIVE)
@@ -315,24 +315,10 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
         val fixture = kotlinFixture()
 
         private val costFixture = fixture<Long> {
-            filter<Long> {
-                filter { it < 10000000 }
+            factory<Long> {
+                range(100000L..10000000L)
             }
         }
-
-        private val minFixture = fixture<Int> {
-            factory<Int> {
-                range(2..4)
-            }
-        }
-
-        private val maxFixture = fixture<Int> {
-            factory<Int> {
-                range(4..8)
-            }
-        }
-
-        private val sidoFixture = fixture(listOf("사울특별시", "경기도", "제주도", "충청북도", "충청남도"))
 
         val defaultGuest = fixture<Member> {
             property(Member::role) { MemberRole.MEMBER }
@@ -345,9 +331,9 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
         fun generateSpaceFixtures(numberOfFixtures: Int, host: Member, status: SpaceStatus): List<Space> {
             return (1..numberOfFixtures).map {
                 fixture<Space> {
-                    property(Address::sido) { sidoFixture }
-                    property(Space::defaultPeople) { minFixture }
-                    property(Space::maxPeople) { maxFixture }
+                    property(Address::sido) { fixture(listOf("사울특별시", "경기도", "제주도", "충청북도", "충청남도")) }
+                    property(Space::defaultPeople) { fixture<Int> { factory<Int> { range(2..4) } } }
+                    property(Space::maxPeople) { fixture<Int> { factory<Int> { range(4..8) } } }
                     property(Space::status) { status }
                     property(Space::host) { host }
                 }
