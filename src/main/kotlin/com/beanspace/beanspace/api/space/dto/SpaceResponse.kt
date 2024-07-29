@@ -1,6 +1,7 @@
 package com.beanspace.beanspace.api.space.dto
 
 import com.beanspace.beanspace.domain.space.model.Space
+import com.beanspace.beanspace.domain.space.model.SpaceStatus
 
 data class SpaceResponse(
     val id: Long,
@@ -16,6 +17,7 @@ data class SpaceResponse(
     val bedRoomCount: Int,
     val bedCount: Int,
     val bathRoomCount: Int,
+    val status: SpaceStatus,
     val imageUrlList: List<String>
 ) {
     companion object {
@@ -37,6 +39,7 @@ data class SpaceResponse(
                 bedRoomCount = space.bedRoomCount,
                 bedCount = space.bedCount,
                 bathRoomCount = space.bathRoomCount,
+                status = space.status,
                 imageUrlList = imageUrlList
             )
         }

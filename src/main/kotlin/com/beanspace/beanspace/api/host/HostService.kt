@@ -85,4 +85,18 @@ class HostService(
             ?.also { it.delete() }
             ?: throw ModelNotFoundException(model = "Space", id = spaceId)
     }
+
+    fun getSpaceList(hostId: Long): List<SpaceResponse> {
+        return memberRepository.findByIdOrNull(hostId)
+            ?.let { spaceRepository.findAllByHost(it) }
+            ?.let {
+                it.map { space ->
+                    SpaceResponse.from(
+                        space,
+                        imageRepository.findAllByContentIdAndTypeOrderByOrderIndexAsc(space.id!!, ImageType.SPACE)
+                            .map { image -> image.imageUrl })
+                }
+            }
+            ?: listOf()
+    }
 }
