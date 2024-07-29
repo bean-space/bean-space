@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -20,6 +21,11 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/host")
 class HostController(private val hostService: HostService) {
+
+    @GetMapping("/spaces")
+    fun getSpaceList(@AuthenticationPrincipal userPrincipal: UserPrincipal): ResponseEntity<List<SpaceResponse>> {
+        return ResponseEntity.ok(hostService.getSpaceList(userPrincipal.id))
+    }
 
     @PostMapping("/spaces")
     fun createSpace(
