@@ -1,6 +1,7 @@
 package com.beanspace.beanspace.api.space
 
 import com.beanspace.beanspace.api.space.dto.AddReviewRequest
+import com.beanspace.beanspace.api.space.dto.HostResponse
 import com.beanspace.beanspace.api.space.dto.ReviewResponse
 import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
 import com.beanspace.beanspace.api.space.dto.SpaceResponse
@@ -24,6 +25,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.text.DecimalFormat
 import java.time.LocalDate
 
 @Service
@@ -64,19 +66,7 @@ class SpaceService(
         if (space.status != SpaceStatus.ACTIVE) throw ModelNotFoundException(model = "Space", id = spaceId)
 
         val spaceImageList = imageRepository.findAllByContentIdAndTypeOrderByOrderIndexAsc(spaceId, ImageType.SPACE)
-
-        val reviewList = reviewRepository.getLast3Reviews(spaceId)
-            .map {
-                ReviewResponse(
-                    id = it.first?.id!!,
-                    content = it.first?.content!!,
-                    rating = it.first?.rating!!,
-                    reviewerName = it.first?.member!!.nickname,
-                    reviewerProfileUrl = it.first?.member!!.profileImageUrl,
-                    imageUrlList = it.second
-
-                )
-            }
+        val averageRating = DecimalFormat("#.#").format(reviewRepository.getAverageRating(spaceId) ?: 0.0).toDouble()
 
         val reservedDateList = reservationRepository.findAllBySpaceIdAndIsCancelledAndCheckOutAfter(
             spaceId,
@@ -85,9 +75,13 @@ class SpaceService(
         ).flatMap { it.checkIn.datesUntil(it.checkOut).toList() }.filter { it.isAfter(today) }
 
         return SpaceDetailResponse.from(
-            SpaceResponse.from(space, spaceImageList.map { it.imageUrl }),
-            reservedDateList,
-            reviewList
+            spaceResponse = SpaceResponse.from(space, spaceImageList.map { it.imageUrl }),
+            averageRating = averageRating,
+            hostResponse = HostResponse(
+                nickname = space.host.nickname,
+                profileImageUrl = space.host.profileImageUrl
+            ),
+            reservedDateList = reservedDateList,
         )
     }
 
@@ -110,15 +104,21 @@ class SpaceService(
         wishListRepository.delete(Wishlist(spaceId, userPrincipal.id))
     }
 
-    fun getReviews(spaceId: Long): List<ReviewResponse> {
-        val reviewList = reviewRepository.findBySpaceId(spaceId)
+    fun getReviews(spaceId: Long, pageable: Pageable): Page<ReviewResponse> {
+        val reviewPage = reviewRepository.findAllBySpaceId(spaceId, pageable)
+        val reviewList = reviewPage.content
 
         val imageUrlListMap = imageRepository.findAllByContentIdInAndTypeOrderByOrderIndexAsc(
             reviewList.map { it.id!! },
             contentType = ImageType.REVIEW
         ).groupBy { it.contentId }.mapValues { it.value.map { image -> image.imageUrl } }
 
-        return reviewList.map { ReviewResponse.from(it, imageUrlListMap[it.id] ?: emptyList()) }
+
+        return PageImpl(
+            reviewList.map { ReviewResponse.from(it, imageUrlListMap[it.id] ?: emptyList()) },
+            pageable,
+            reviewPage.totalElements
+        )
     }
 
     @Transactional

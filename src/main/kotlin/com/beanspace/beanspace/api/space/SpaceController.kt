@@ -8,6 +8,7 @@ import com.beanspace.beanspace.api.space.dto.UpdateReviewRequest
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
@@ -34,7 +35,7 @@ class SpaceController(private val spaceService: SpaceService) {
         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") checkIn: LocalDate?,
         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") checkOut: LocalDate?,
         @RequestParam(required = false) headCount: Int?,
-        @PageableDefault(page = 0, size = 10) pageable: Pageable,
+        @PageableDefault(page = 0, size = 10, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable,
     ): ResponseEntity<Page<SpaceResponse>> {
         return ResponseEntity.ok(
             spaceService.getSpaceList(
@@ -63,8 +64,11 @@ class SpaceController(private val spaceService: SpaceService) {
     }
 
     @GetMapping("/{spaceId}/reviews")
-    fun getAllReviews(@PathVariable spaceId: Long): ResponseEntity<List<ReviewResponse>> {
-        return ResponseEntity.ok(spaceService.getReviews(spaceId))
+    fun getAllReviews(
+        @PathVariable spaceId: Long,
+        @PageableDefault(page = 0, size = 5, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable,
+    ): ResponseEntity<Page<ReviewResponse>> {
+        return ResponseEntity.ok(spaceService.getReviews(spaceId, pageable))
     }
 
     @PutMapping("/{spaceId}/reviews/{reviewId}")
