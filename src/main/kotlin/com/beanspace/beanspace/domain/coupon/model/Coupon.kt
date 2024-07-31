@@ -73,7 +73,7 @@ class Coupon(
     }
 
     fun calculateDiscountAmount(cost: Long): Long {
-        return (cost * (1 - this.discountRate / 100)).coerceAtMost(maxDiscount.toLong())
+        return (cost * (this.discountRate / 100.0)).toLong().coerceAtMost(maxDiscount.toLong())
     }
 
     fun isNotExpired(): Boolean {
