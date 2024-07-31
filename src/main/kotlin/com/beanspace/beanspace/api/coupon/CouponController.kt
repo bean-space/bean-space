@@ -26,7 +26,7 @@ class CouponController(
         @AuthenticationPrincipal principal: UserPrincipal,
         @PathVariable couponId: Long
     ): ResponseEntity<Unit> {
-        couponService.issueCoupon(principal, couponId)
+        couponService.issueCoupon(principal.id, couponId)
         return ResponseEntity.ok().build()
     }
 }

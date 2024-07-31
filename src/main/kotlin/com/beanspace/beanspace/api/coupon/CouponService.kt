@@ -6,7 +6,6 @@ import com.beanspace.beanspace.domain.coupon.repository.CouponRepository
 import com.beanspace.beanspace.domain.coupon.repository.UserCouponRepository
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
-import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -24,9 +23,9 @@ class CouponService(
     }
 
     @Transactional
-    fun issueCoupon(principal: UserPrincipal, couponId: Long) {
-        val member = memberRepository.findByIdOrNull(principal.id)
-            ?: throw ModelNotFoundException("멤버", principal.id)
+    fun issueCoupon(memberId: Long, couponId: Long) {
+        val member = memberRepository.findByIdOrNull(memberId)
+            ?: throw ModelNotFoundException("멤버", memberId)
 
         val coupon = couponRepository.findByIdOrNull(couponId)
             ?: throw ModelNotFoundException("쿠폰", couponId)
@@ -35,7 +34,7 @@ class CouponService(
 
         check(coupon.isIssuePeriodValid()) { throw IllegalStateException("쿠폰 발급 가능 시간을 확인해주세요.") }
 
-        check(!userCouponRepository.existsByCouponIdAndMemberId(couponId, principal.id))
+        check(!userCouponRepository.existsByCouponIdAndMemberId(couponId, memberId))
         { throw IllegalStateException("이미 발급 받은 쿠폰입니다.") }
 
         coupon.issueCoupon()
