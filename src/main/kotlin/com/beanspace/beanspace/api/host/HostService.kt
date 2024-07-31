@@ -88,7 +88,7 @@ class HostService(
 
     fun getSpaceList(hostId: Long): List<SpaceResponse> {
         return memberRepository.findByIdOrNull(hostId)
-            ?.let { spaceRepository.findAllByHost(it) }
+            ?.let { spaceRepository.findAllByHostAndIsDeleted(it, false) }
             ?.let {
                 it.map { space ->
                     SpaceResponse.from(
