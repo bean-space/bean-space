@@ -7,42 +7,24 @@ import com.beanspace.beanspace.domain.coupon.repository.UserCouponRepository
 import com.beanspace.beanspace.domain.member.model.Member
 import com.beanspace.beanspace.domain.member.model.MemberRole
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
-import com.beanspace.beanspace.infra.querydsl.QueryDslConfig
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
-import org.springframework.context.annotation.Import
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
 import java.util.concurrent.CyclicBarrier
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(value = [QueryDslConfig::class])
-@ActiveProfiles("test")
+@SpringBootTest
 class CouponServiceDBTest @Autowired constructor(
+    private val couponService: CouponService,
     private val couponRepository: CouponRepository,
     private val userCouponRepository: UserCouponRepository,
     private val memberRepository: MemberRepository
 ) : BehaviorSpec({
-
-    beforeEach {
-        couponRepository.deleteAll()
-        userCouponRepository.deleteAll()
-        memberRepository.deleteAll()
-    }
-
-    val couponService = CouponService(
-        userCouponRepository = userCouponRepository,
-        memberRepository = memberRepository,
-        couponRepository = couponRepository
-    )
 
     context("CouponService.issueCoupon()") {
         given("300명의 유저가") {
@@ -66,7 +48,7 @@ class CouponServiceDBTest @Autowired constructor(
                         executor.submit {
                             try {
                                 barrier.await()
-                                couponService.issueCoupon(i.toLong() + 1, coupon.id!!)
+                                couponService.issueCoupon(i.toLong(), coupon.id!!)
                                 successCnt++
                             } catch (e: Exception) {
                                 exceptionCnt++
@@ -76,12 +58,12 @@ class CouponServiceDBTest @Autowired constructor(
                     executor.shutdown()
                     executor.awaitTermination(1, TimeUnit.MINUTES)
 
-                    couponRepository.flush()
-
                     val couponUserSize = userCouponRepository.findAll().size
                     val stock = couponRepository.findByIdOrNull(1L)?.stock
                     println("userCouponRepository.size: $couponUserSize")
                     println("couponRepository.stock: $stock")
+                    println("successCnt: $successCnt")
+                    println("exceptionCnt: $exceptionCnt")
 
                     successCnt shouldBe couponQuantity
                     exceptionCnt shouldBe tryCouponIssue - couponQuantity
@@ -96,12 +78,11 @@ class CouponServiceDBTest @Autowired constructor(
                     val tryCouponIssue = 300
                     var successCnt = 0
 
-                    val coupon = testCoupon(couponQuantity)
                     for (i in 1..tryCouponIssue) {
                         memberRepository.saveAndFlush(getMember())
                     }
 
-                    couponRepository.saveAndFlush(coupon)
+                    val coupon = couponRepository.saveAndFlush(testCoupon(couponQuantity))
 
                     val executor = Executors.newFixedThreadPool(tryCouponIssue)
                     val barrier = CyclicBarrier(tryCouponIssue)
@@ -110,7 +91,7 @@ class CouponServiceDBTest @Autowired constructor(
                         executor.submit {
                             try {
                                 barrier.await()
-                                couponService.issueCoupon(i.toLong() + 1, 1L)
+                                couponService.issueCoupon(i.toLong(), coupon.id!!)
                                 successCnt++
                             } catch (e: Exception) {
                                 println("Error: ${e.message}")
@@ -124,6 +105,7 @@ class CouponServiceDBTest @Autowired constructor(
                     val stock = couponRepository.findByIdOrNull(1L)?.stock
                     println("userCouponRepository.size: $couponUserSize")
                     println("couponRepository.stock: $stock")
+                    println("successCnt: $successCnt")
 
                     successCnt shouldBe couponQuantity
                     couponUserSize shouldBe tryCouponIssue
@@ -142,12 +124,11 @@ class CouponServiceDBTest @Autowired constructor(
                     var exceptionCnt = 0
                     val exceptionList = mutableListOf<Exception>()
 
-                    val coupon = testCoupon(couponQuantity)
                     for (i in 1..tryCouponIssue) {
                         memberRepository.saveAndFlush(getMember())
                     }
 
-                    couponRepository.saveAndFlush(coupon)
+                    val coupon = couponRepository.saveAndFlush(testCoupon(couponQuantity))
 
                     val executor = Executors.newFixedThreadPool(tryCouponIssue)
                     val barrier = CyclicBarrier(tryCouponIssue)
@@ -156,7 +137,7 @@ class CouponServiceDBTest @Autowired constructor(
                         executor.submit {
                             try {
                                 barrier.await()
-                                couponService.issueCoupon(i.toLong() + 1, 1L)
+                                couponService.issueCoupon(i.toLong(), coupon.id!!)
                                 successCnt++
                             } catch (e: Exception) {
                                 exceptionList.add(e)
@@ -171,6 +152,9 @@ class CouponServiceDBTest @Autowired constructor(
                     val stock = couponRepository.findByIdOrNull(1L)?.stock
                     println("userCouponRepository.size: $couponUserSize")
                     println("couponRepository.stock: $stock")
+                    println("successCnt: $successCnt")
+                    println("exceptionCnt: $exceptionCnt")
+
 
                     successCnt shouldBe couponQuantity
                     exceptionCnt shouldBe exceptionQuantity
@@ -189,12 +173,11 @@ class CouponServiceDBTest @Autowired constructor(
                     val tryCouponIssue = 250
                     var successCnt = 0
 
-                    val coupon = testCoupon(couponQuantity)
                     for (i in 1..tryCouponIssue) {
                         memberRepository.saveAndFlush(getMember())
                     }
 
-                    couponRepository.saveAndFlush(coupon)
+                    val coupon = couponRepository.saveAndFlush(testCoupon(couponQuantity))
 
                     val executor = Executors.newFixedThreadPool(tryCouponIssue)
                     val barrier = CyclicBarrier(tryCouponIssue)
@@ -203,7 +186,7 @@ class CouponServiceDBTest @Autowired constructor(
                         executor.submit {
                             try {
                                 barrier.await()
-                                couponService.issueCoupon(i.toLong() + 1, 1L)
+                                couponService.issueCoupon(i.toLong(), coupon.id!!)
                                 successCnt++
                             } catch (e: Exception) {
                                 println("Error: ${e.message}")
@@ -234,16 +217,17 @@ class CouponServiceDBTest @Autowired constructor(
         }
 
         fun testCoupon(couponQuantity: Int): Coupon {
-            return fixture<Coupon> {
-                property(Coupon::name) { "test" }
-                property(Coupon::discountRate) { 10 }
-                property(Coupon::issueStartAt) { LocalDateTime.of(2024, 6, 30, 0, 0, 0) }
-                property(Coupon::issueEndAt) { LocalDateTime.of(2026, 6, 30, 0, 0, 0) }
-                property(Coupon::expirationAt) { LocalDateTime.of(2026, 7, 30, 0, 0, 0) }
-                property(Coupon::createdAt) { LocalDateTime.of(2024, 5, 30, 0, 0, 0) }
-                property(Coupon::totalQuantity) { couponQuantity }
-                property(Coupon::stock) { couponQuantity }
-            }
+            return Coupon(
+                name = "test",
+                discountRate = 10,
+                maxDiscount = 5000,
+                issueStartAt = LocalDateTime.of(2024, 6, 30, 0, 0, 0),
+                issueEndAt = LocalDateTime.of(2026, 6, 30, 0, 0, 0),
+                expirationAt = LocalDateTime.of(2026, 7, 30, 0, 0, 0),
+                createdAt = LocalDateTime.of(2024, 5, 30, 0, 0, 0),
+                totalQuantity = couponQuantity,
+                stock = couponQuantity
+            )
         }
     }
 }
