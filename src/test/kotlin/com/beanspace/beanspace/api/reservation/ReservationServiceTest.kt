@@ -15,11 +15,15 @@ import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import org.redisson.api.RLock
+import org.redisson.api.RedissonClient
 import org.springframework.data.repository.findByIdOrNull
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -29,18 +33,30 @@ class ReservationServiceTest : BehaviorSpec({
     val reservationRepository: ReservationRepository = mockk()
     val memberRepository: MemberRepository = mockk()
     val userCouponRepository: UserCouponRepository = mockk()
+    val redissonClient: RedissonClient = mockk()
 
     val reservationService = spyk(
         ReservationService(
             spaceRepository = spaceRepository,
             reservationRepository = reservationRepository,
             memberRepository = memberRepository,
-            userCouponRepository = userCouponRepository
+            userCouponRepository = userCouponRepository,
+            redissonClient = redissonClient
         ),
         recordPrivateCalls = true
     )
 
-    afterContainer { clearAllMocks() }
+    afterContainer {
+        clearAllMocks()
+
+        val lock = mockk<RLock> {
+            every { tryLock(any(), any(), any()) } returns true
+            every { isHeldByCurrentThread } returns true
+            every { unlock() } just Runs
+        }
+
+        every { redissonClient.getLock(any<String>()) } returns lock
+    }
 
     context("ReservationService.reserveSpace()") {
         given("예약하려는 공간이") {

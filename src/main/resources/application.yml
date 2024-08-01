@@ -8,21 +8,27 @@ spring:
     console:
       enabled: true
   jpa:
+    open-in-view: false
     properties:
       hibernate:
         highlight_sql: true
         use_sql_comments: true
         ddl-auto: create-drop
         default_batch_fetch_size: 100
-
-    open-in-view: false
   config:
     import: application-secret.yml
+  data:
+    redis:
+      host: localhost
+      port: 6379
 logging:
   level:
     org:
       hibernate:
         SQL: debug
+redisson:
+  single-server-config:
+    address: "redis://${spring.data.redis.host}:${spring.data.redis.port}"
 #    root: debug
 #        type.descriptor.sql: trace
 #        orm.jdbc.bind: trace

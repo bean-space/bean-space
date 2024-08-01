@@ -9,76 +9,104 @@ import com.beanspace.beanspace.domain.member.repository.MemberRepository
 import com.beanspace.beanspace.domain.reservation.repository.ReservationRepository
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
+import org.redisson.api.RedissonClient
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.TimeUnit
 
 @Service
 class ReservationService(
     private val spaceRepository: SpaceRepository,
     private val reservationRepository: ReservationRepository,
     private val memberRepository: MemberRepository,
-    private val userCouponRepository: UserCouponRepository
+    private val userCouponRepository: UserCouponRepository,
+    private val redissonClient: RedissonClient
 ) {
 
     @Transactional
     fun reserveSpace(guestId: Long, spaceId: Long, request: ReservationRequest): ReservationResponse {
+        val key = "reservaion:$spaceId"
+        val lock = redissonClient.getLock(key)
 
-        val space = spaceRepository.findByIdAndStatus(spaceId, SpaceStatus.ACTIVE)
-            ?: throw ModelNotFoundException("공간", spaceId)
+        val userCouponKey = "userCoupon:${request.userCouponId}"
+        val userCouponLock = redissonClient.getLock(userCouponKey)
 
-        val guest = memberRepository.findByIdOrNull(guestId)
-            ?: throw ModelNotFoundException("사용자", guestId)
+        try {
+            if (!lock.tryLock(5, 10, TimeUnit.SECONDS)) throw IllegalStateException("이미 예약중인 숙소입니다.")
 
-        val userCoupon = request.userCouponId
-            ?.let {
-                userCouponRepository.findByIdOrNull(request.userCouponId)
-                    ?: throw ModelNotFoundException("UserCoupon", request.userCouponId)
+            val space = spaceRepository.findByIdAndStatus(spaceId, SpaceStatus.ACTIVE)
+                ?: throw ModelNotFoundException("공간", spaceId)
+
+            val guest = memberRepository.findByIdOrNull(guestId)
+                ?: throw ModelNotFoundException("사용자", guestId)
+
+            val userCoupon = request.userCouponId
+                ?.let {
+                    try {
+                        if (!userCouponLock.tryLock(5, 10, TimeUnit.SECONDS)) {
+                            throw IllegalStateException("이미 사용중인 쿠폰입니다.")
+                        }
+
+                        userCouponRepository.findByIdOrNull(request.userCouponId)
+                            ?: throw ModelNotFoundException("UserCoupon", request.userCouponId)
+                    } catch (e: RuntimeException) {
+                        userCouponLock.unlock()
+                        throw e
+                    }
+                }
+                ?.also {
+                    check(it.isCouponUnused()) { throw IllegalStateException("이미 사용한 쿠폰입니다.") }
+                }
+                ?.also {
+                    check(it.coupon.isNotExpired()) { throw IllegalStateException("쿠폰의 유효기간을 확인해주세요.") }
+                }
+
+            // 자기 자신의 숙소는 예약 불가능
+            check(space.host.id != guestId) { throw IllegalArgumentException("자기 자신의 공간은 예약할 수 없습니다.") }
+
+            // 체크아웃 날짜가 체크인 날짜 이후인가?
+            check(request.checkIn < request.checkOut) { throw IllegalArgumentException("체크인, 체크아웃 날짜가 올바른지 확인해주세요.") }
+
+            // 체크인 날짜는 내일 이후로만 가능 (당일 예약 불가)
+            check(request.checkIn.isAfter(LocalDate.now()))
+            { throw IllegalArgumentException("예약이 가능한 날짜인지 확인해주세요.") }
+
+            // 체크 아웃 날짜가 오늘로부터 6개월 뒤까지만 가능
+            check(request.checkOut.isBefore(LocalDate.now().plusMonths(6)))
+            { throw IllegalArgumentException("예약이 가능한 날짜인지 확인해주세요.") }
+
+            // 예약 인원이 올바른가?
+            check(request.reservationPeople in 1..space.maxPeople)
+            { throw IllegalArgumentException("예약 인원이 올바른지 확인해주세요.") }
+
+            // 해당 날짜에 예약이 가능한가?
+            check(isReservationPossible(space.id!!, request.checkIn, request.checkOut))
+            { throw IllegalArgumentException("예약이 이미 완료된 날짜입니다.") }
+
+            // 숙박일수
+            val stayDays = ChronoUnit.DAYS.between(request.checkIn, request.checkOut)
+
+            // 결제 금액
+            val cost = space.calculateTotalCost(request.reservationPeople, stayDays)
+                .let { it - (userCoupon?.coupon?.calculateDiscountAmount(it) ?: 0L) }
+
+            // 쿠폰 사용 처리
+            userCoupon?.useCoupon()
+
+            return request.toEntity(space, guest, cost)
+                .let { reservationRepository.save(it) }
+                .let { ReservationResponse.from(it) }
+        } finally {
+            if (lock.isHeldByCurrentThread) {
+                lock.unlock()
             }
-            ?.also {
-                check(it.isCouponUnused()) { throw IllegalStateException("이미 사용한 쿠폰입니다.") }
+            if (userCouponLock.isHeldByCurrentThread) {
+                userCouponLock.unlock()
             }
-            ?.also {
-                check(it.coupon.isNotExpired()) { throw IllegalStateException("쿠폰의 유효기간을 확인해주세요.") }
-            }
-
-        // 자기 자신의 숙소는 예약 불가능
-        check(space.host.id != guestId) { throw IllegalArgumentException("자기 자신의 공간은 예약할 수 없습니다.") }
-
-        // 체크아웃 날짜가 체크인 날짜 이후인가?
-        check(request.checkIn < request.checkOut) { throw IllegalArgumentException("체크인, 체크아웃 날짜가 올바른지 확인해주세요.") }
-
-        // 체크인 날짜는 내일 이후로만 가능 (당일 예약 불가)
-        check(request.checkIn.isAfter(LocalDate.now()))
-        { throw IllegalArgumentException("예약이 가능한 날짜인지 확인해주세요.") }
-
-        // 체크 아웃 날짜가 오늘로부터 6개월 뒤까지만 가능
-        check(request.checkOut.isBefore(LocalDate.now().plusMonths(6)))
-        { throw IllegalArgumentException("예약이 가능한 날짜인지 확인해주세요.") }
-
-        // 예약 인원이 올바른가?
-        check(request.reservationPeople in 1..space.maxPeople)
-        { throw IllegalArgumentException("예약 인원이 올바른지 확인해주세요.") }
-
-        // 해당 날짜에 예약이 가능한가?
-        check(isReservationPossible(space.id!!, request.checkIn, request.checkOut))
-        { throw IllegalArgumentException("예약이 이미 완료된 날짜입니다.") }
-
-        // 숙박일수
-        val stayDays = ChronoUnit.DAYS.between(request.checkIn, request.checkOut)
-
-        // 결제 금액
-        val cost = space.calculateTotalCost(request.reservationPeople, stayDays)
-            .let { it - (userCoupon?.coupon?.calculateDiscountAmount(it) ?: 0L) }
-
-        // 쿠폰 사용 처리
-        userCoupon?.useCoupon()
-
-        return request.toEntity(space, guest, cost)
-            .let { reservationRepository.save(it) }
-            .let { ReservationResponse.from(it) }
+        }
     }
 
     @Transactional
