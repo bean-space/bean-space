@@ -1,6 +1,7 @@
 package com.beanspace.beanspace.api.reservation
 
 import com.beanspace.beanspace.api.reservation.dto.ReservationRequest
+import com.beanspace.beanspace.api.reservation.dto.ReservationResponse
 import com.beanspace.beanspace.domain.coupon.model.Coupon
 import com.beanspace.beanspace.domain.coupon.model.UserCoupon
 import com.beanspace.beanspace.domain.coupon.repository.UserCouponRepository
@@ -25,6 +26,8 @@ import io.mockk.verify
 import org.redisson.api.RLock
 import org.redisson.api.RedissonClient
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.transaction.support.TransactionCallback
+import org.springframework.transaction.support.TransactionTemplate
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -34,6 +37,7 @@ class ReservationServiceTest : BehaviorSpec({
     val memberRepository: MemberRepository = mockk()
     val userCouponRepository: UserCouponRepository = mockk()
     val redissonClient: RedissonClient = mockk()
+    val transactionTemplate: TransactionTemplate = mockk()
 
     val reservationService = spyk(
         ReservationService(
@@ -41,12 +45,13 @@ class ReservationServiceTest : BehaviorSpec({
             reservationRepository = reservationRepository,
             memberRepository = memberRepository,
             userCouponRepository = userCouponRepository,
-            redissonClient = redissonClient
+            redissonClient = redissonClient,
+            transactionTemplate = transactionTemplate
         ),
         recordPrivateCalls = true
     )
 
-    afterContainer {
+    beforeContainer {
         clearAllMocks()
 
         val lock = mockk<RLock> {
@@ -56,6 +61,11 @@ class ReservationServiceTest : BehaviorSpec({
         }
 
         every { redissonClient.getLock(any<String>()) } returns lock
+
+        every { transactionTemplate.execute(any<TransactionCallback<ReservationResponse>>()) } answers {
+            val callback = firstArg<TransactionCallback<ReservationResponse>>()
+            callback.doInTransaction(mockk())
+        }
     }
 
     context("ReservationService.reserveSpace()") {
