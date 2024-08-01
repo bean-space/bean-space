@@ -19,7 +19,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 @SpringBootTest
-class CouponServiceDBTest @Autowired constructor(
+class CouponConcurrencyTest @Autowired constructor(
     private val couponService: CouponService,
     private val couponRepository: CouponRepository,
     private val userCouponRepository: UserCouponRepository,
@@ -27,6 +27,11 @@ class CouponServiceDBTest @Autowired constructor(
 ) : BehaviorSpec({
 
     context("CouponService.issueCoupon()") {
+        beforeEach {
+            couponRepository.deleteAll()
+            userCouponRepository.deleteAll()
+            memberRepository.deleteAll()
+        }
         given("300명의 유저가") {
             `when`("200개 재고의 쿠폰을 동시에 발급 받을 때") {
                 then("발급된 쿠폰은 200개이다") {
@@ -35,11 +40,11 @@ class CouponServiceDBTest @Autowired constructor(
                     var successCnt = 0
                     var exceptionCnt = 0
 
-                    for (i in 1..tryCouponIssue) {
+                    repeat(tryCouponIssue) {
                         memberRepository.saveAndFlush(getMember())
                     }
 
-                    val coupon = couponRepository.saveAndFlush(testCoupon(couponQuantity))
+                    val coupon = couponRepository.saveAndFlush(getCoupon(couponQuantity))
 
                     val executor = Executors.newFixedThreadPool(tryCouponIssue)
                     val barrier = CyclicBarrier(tryCouponIssue)
@@ -78,11 +83,11 @@ class CouponServiceDBTest @Autowired constructor(
                     val tryCouponIssue = 300
                     var successCnt = 0
 
-                    for (i in 1..tryCouponIssue) {
+                    repeat(tryCouponIssue) {
                         memberRepository.saveAndFlush(getMember())
                     }
 
-                    val coupon = couponRepository.saveAndFlush(testCoupon(couponQuantity))
+                    val coupon = couponRepository.saveAndFlush(getCoupon(couponQuantity))
 
                     val executor = Executors.newFixedThreadPool(tryCouponIssue)
                     val barrier = CyclicBarrier(tryCouponIssue)
@@ -124,11 +129,11 @@ class CouponServiceDBTest @Autowired constructor(
                     var exceptionCnt = 0
                     val exceptionList = mutableListOf<Exception>()
 
-                    for (i in 1..tryCouponIssue) {
+                    repeat(tryCouponIssue) {
                         memberRepository.saveAndFlush(getMember())
                     }
 
-                    val coupon = couponRepository.saveAndFlush(testCoupon(couponQuantity))
+                    val coupon = couponRepository.saveAndFlush(getCoupon(couponQuantity))
 
                     val executor = Executors.newFixedThreadPool(tryCouponIssue)
                     val barrier = CyclicBarrier(tryCouponIssue)
@@ -173,11 +178,11 @@ class CouponServiceDBTest @Autowired constructor(
                     val tryCouponIssue = 250
                     var successCnt = 0
 
-                    for (i in 1..tryCouponIssue) {
+                    repeat(tryCouponIssue) {
                         memberRepository.saveAndFlush(getMember())
                     }
 
-                    val coupon = couponRepository.saveAndFlush(testCoupon(couponQuantity))
+                    val coupon = couponRepository.saveAndFlush(getCoupon(couponQuantity))
 
                     val executor = Executors.newFixedThreadPool(tryCouponIssue)
                     val barrier = CyclicBarrier(tryCouponIssue)
@@ -216,7 +221,7 @@ class CouponServiceDBTest @Autowired constructor(
             }
         }
 
-        fun testCoupon(couponQuantity: Int): Coupon {
+        fun getCoupon(couponQuantity: Int): Coupon {
             return Coupon(
                 name = "test",
                 discountRate = 10,
