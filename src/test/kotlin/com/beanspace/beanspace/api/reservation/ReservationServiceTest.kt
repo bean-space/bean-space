@@ -1,6 +1,7 @@
 package com.beanspace.beanspace.api.reservation
 
 import com.beanspace.beanspace.api.reservation.dto.ReservationRequest
+import com.beanspace.beanspace.api.reservation.dto.ReservationResponse
 import com.beanspace.beanspace.domain.coupon.model.Coupon
 import com.beanspace.beanspace.domain.coupon.model.UserCoupon
 import com.beanspace.beanspace.domain.coupon.repository.UserCouponRepository
@@ -15,12 +16,18 @@ import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import org.redisson.api.RLock
+import org.redisson.api.RedissonClient
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.transaction.support.TransactionCallback
+import org.springframework.transaction.support.TransactionTemplate
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -29,18 +36,37 @@ class ReservationServiceTest : BehaviorSpec({
     val reservationRepository: ReservationRepository = mockk()
     val memberRepository: MemberRepository = mockk()
     val userCouponRepository: UserCouponRepository = mockk()
+    val redissonClient: RedissonClient = mockk()
+    val transactionTemplate: TransactionTemplate = mockk()
 
     val reservationService = spyk(
         ReservationService(
             spaceRepository = spaceRepository,
             reservationRepository = reservationRepository,
             memberRepository = memberRepository,
-            userCouponRepository = userCouponRepository
+            userCouponRepository = userCouponRepository,
+            redissonClient = redissonClient,
+            transactionTemplate = transactionTemplate
         ),
         recordPrivateCalls = true
     )
 
-    afterContainer { clearAllMocks() }
+    beforeContainer {
+        clearAllMocks()
+
+        val lock = mockk<RLock> {
+            every { tryLock(any(), any(), any()) } returns true
+            every { isHeldByCurrentThread } returns true
+            every { unlock() } just Runs
+        }
+
+        every { redissonClient.getLock(any<String>()) } returns lock
+
+        every { transactionTemplate.execute(any<TransactionCallback<ReservationResponse>>()) } answers {
+            val callback = firstArg<TransactionCallback<ReservationResponse>>()
+            callback.doInTransaction(mockk())
+        }
+    }
 
     context("ReservationService.reserveSpace()") {
         given("예약하려는 공간이") {

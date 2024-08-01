@@ -65,7 +65,7 @@ class CouponConcurrencyTest @Autowired constructor(
                         }
                     }
                     executor.shutdown()
-                    executor.awaitTermination(1, TimeUnit.MINUTES)
+                    executor.awaitTermination(10, TimeUnit.SECONDS)
 
                     val couponUserSize = userCouponRepository.findAll().size
                     val stock = couponRepository.findByIdOrNull(coupon.id!!)?.stock
@@ -108,10 +108,10 @@ class CouponConcurrencyTest @Autowired constructor(
                         }
                     }
                     executor.shutdown()
-                    executor.awaitTermination(1, TimeUnit.MINUTES)
+                    executor.awaitTermination(10, TimeUnit.SECONDS)
 
                     val couponUserSize = userCouponRepository.findAll().size
-                    val stock = couponRepository.findByIdOrNull(1L)?.stock
+                    val stock = couponRepository.findByIdOrNull(coupon.id!!)?.stock
                     println("userCouponRepository.size: $couponUserSize")
                     println("couponRepository.stock: $stock")
                     println("successCnt: $successCnt")
@@ -159,10 +159,10 @@ class CouponConcurrencyTest @Autowired constructor(
                         }
                     }
                     executor.shutdown()
-                    executor.awaitTermination(1, TimeUnit.MINUTES)
+                    executor.awaitTermination(10, TimeUnit.SECONDS)
 
                     val couponUserSize = userCouponRepository.findAll().size
-                    val stock = couponRepository.findByIdOrNull(1L)?.stock
+                    val stock = couponRepository.findByIdOrNull(coupon.id!!)?.stock
                     println("userCouponRepository.size: $couponUserSize")
                     println("couponRepository.stock: $stock")
                     println("successCnt: $successCnt")
@@ -211,7 +211,7 @@ class CouponConcurrencyTest @Autowired constructor(
                         }
                     }
                     executor.shutdown()
-                    executor.awaitTermination(1, TimeUnit.MINUTES)
+                    executor.awaitTermination(10, TimeUnit.SECONDS)
 
                     val couponUserSize = userCouponRepository.findAll().size
                     val stock = couponRepository.findByIdOrNull(coupon.id!!)?.stock
