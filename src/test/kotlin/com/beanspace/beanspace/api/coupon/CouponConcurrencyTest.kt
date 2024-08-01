@@ -26,12 +26,13 @@ class CouponConcurrencyTest @Autowired constructor(
     private val memberRepository: MemberRepository
 ) : BehaviorSpec({
 
+    beforeEach {
+        userCouponRepository.deleteAll()
+        couponRepository.deleteAll()
+        memberRepository.deleteAll()
+    }
+
     context("CouponService.issueCoupon()") {
-        beforeEach {
-            couponRepository.deleteAll()
-            userCouponRepository.deleteAll()
-            memberRepository.deleteAll()
-        }
         given("300명의 유저가") {
             `when`("200개 재고의 쿠폰을 동시에 발급 받을 때") {
                 then("발급된 쿠폰은 200개이다") {
@@ -40,7 +41,10 @@ class CouponConcurrencyTest @Autowired constructor(
                     var successCnt = 0
                     var exceptionCnt = 0
 
-                    repeat(tryCouponIssue) {
+                    val firstMemberId = memberRepository.saveAndFlush(getMember())
+                        .let { it.id!! }
+
+                    repeat(tryCouponIssue - 1) {
                         memberRepository.saveAndFlush(getMember())
                     }
 
@@ -49,11 +53,54 @@ class CouponConcurrencyTest @Autowired constructor(
                     val executor = Executors.newFixedThreadPool(tryCouponIssue)
                     val barrier = CyclicBarrier(tryCouponIssue)
 
-                    for (i in 1..tryCouponIssue) {
+                    for (i in firstMemberId..<(firstMemberId + tryCouponIssue)) {
                         executor.submit {
                             try {
                                 barrier.await()
-                                couponService.issueCoupon(i.toLong(), coupon.id!!)
+                                couponService.issueCoupon(i, coupon.id!!)
+                                successCnt++
+                            } catch (e: Exception) {
+                                exceptionCnt++
+                            }
+                        }
+                    }
+                    executor.shutdown()
+                    executor.awaitTermination(1, TimeUnit.MINUTES)
+
+                    val couponUserSize = userCouponRepository.findAll().size
+                    val stock = couponRepository.findByIdOrNull(coupon.id!!)?.stock
+
+                    successCnt shouldBe couponQuantity
+                    exceptionCnt shouldBe tryCouponIssue - couponQuantity
+                    couponUserSize shouldBe couponQuantity
+                    stock shouldBe 0
+                }
+            }
+
+            `when`("300개 재고의 쿠폰을 동시에 발급 받을 때") {
+                then("발급된 쿠폰은 300개이다") {
+                    val couponQuantity = 300
+                    val tryCouponIssue = 300
+                    var successCnt = 0
+                    var exceptionCnt = 0
+
+                    val firstMemberId = memberRepository.saveAndFlush(getMember())
+                        .let { it.id!! }
+
+                    repeat(tryCouponIssue - 1) {
+                        memberRepository.saveAndFlush(getMember())
+                    }
+
+                    val coupon = couponRepository.saveAndFlush(getCoupon(couponQuantity))
+
+                    val executor = Executors.newFixedThreadPool(tryCouponIssue)
+                    val barrier = CyclicBarrier(tryCouponIssue)
+
+                    for (i in firstMemberId..<(firstMemberId + tryCouponIssue)) {
+                        executor.submit {
+                            try {
+                                barrier.await()
+                                couponService.issueCoupon(i, coupon.id!!)
                                 successCnt++
                             } catch (e: Exception) {
                                 exceptionCnt++
@@ -68,51 +115,9 @@ class CouponConcurrencyTest @Autowired constructor(
                     println("userCouponRepository.size: $couponUserSize")
                     println("couponRepository.stock: $stock")
                     println("successCnt: $successCnt")
-                    println("exceptionCnt: $exceptionCnt")
 
                     successCnt shouldBe couponQuantity
-                    exceptionCnt shouldBe tryCouponIssue - couponQuantity
-                    couponUserSize shouldBe couponQuantity
-                    stock shouldBe 0
-                }
-            }
-
-            `when`("300개 재고의 쿠폰을 동시에 발급 받을 때") {
-                then("발급된 쿠폰은 300개이다") {
-                    val couponQuantity = 300
-                    val tryCouponIssue = 300
-                    var successCnt = 0
-
-                    repeat(tryCouponIssue) {
-                        memberRepository.saveAndFlush(getMember())
-                    }
-
-                    val coupon = couponRepository.saveAndFlush(getCoupon(couponQuantity))
-
-                    val executor = Executors.newFixedThreadPool(tryCouponIssue)
-                    val barrier = CyclicBarrier(tryCouponIssue)
-
-                    for (i in 1..tryCouponIssue) {
-                        executor.submit {
-                            try {
-                                barrier.await()
-                                couponService.issueCoupon(i.toLong(), coupon.id!!)
-                                successCnt++
-                            } catch (e: Exception) {
-                                println("Error: ${e.message}")
-                            }
-                        }
-                    }
-                    executor.shutdown()
-                    executor.awaitTermination(1, TimeUnit.MINUTES)
-
-                    val couponUserSize = userCouponRepository.findAll().size
-                    val stock = couponRepository.findByIdOrNull(1L)?.stock
-                    println("userCouponRepository.size: $couponUserSize")
-                    println("couponRepository.stock: $stock")
-                    println("successCnt: $successCnt")
-
-                    successCnt shouldBe couponQuantity
+                    exceptionCnt shouldBe 0
                     couponUserSize shouldBe tryCouponIssue
                     stock shouldBe 0
                 }
@@ -129,7 +134,10 @@ class CouponConcurrencyTest @Autowired constructor(
                     var exceptionCnt = 0
                     val exceptionList = mutableListOf<Exception>()
 
-                    repeat(tryCouponIssue) {
+                    val firstMemberId = memberRepository.saveAndFlush(getMember())
+                        .let { it.id!! }
+
+                    repeat(tryCouponIssue - 1) {
                         memberRepository.saveAndFlush(getMember())
                     }
 
@@ -138,11 +146,11 @@ class CouponConcurrencyTest @Autowired constructor(
                     val executor = Executors.newFixedThreadPool(tryCouponIssue)
                     val barrier = CyclicBarrier(tryCouponIssue)
 
-                    for (i in 1..tryCouponIssue) {
+                    for (i in firstMemberId..<(firstMemberId + tryCouponIssue)) {
                         executor.submit {
                             try {
                                 barrier.await()
-                                couponService.issueCoupon(i.toLong(), coupon.id!!)
+                                couponService.issueCoupon(i, coupon.id!!)
                                 successCnt++
                             } catch (e: Exception) {
                                 exceptionList.add(e)
@@ -177,8 +185,12 @@ class CouponConcurrencyTest @Autowired constructor(
                     val couponQuantity = 500
                     val tryCouponIssue = 250
                     var successCnt = 0
+                    var exceptionCnt = 0
 
-                    repeat(tryCouponIssue) {
+                    val firstMemberId = memberRepository.saveAndFlush(getMember())
+                        .let { it.id!! }
+
+                    repeat(tryCouponIssue - 1) {
                         memberRepository.saveAndFlush(getMember())
                     }
 
@@ -187,14 +199,14 @@ class CouponConcurrencyTest @Autowired constructor(
                     val executor = Executors.newFixedThreadPool(tryCouponIssue)
                     val barrier = CyclicBarrier(tryCouponIssue)
 
-                    for (i in 1..tryCouponIssue) {
+                    for (i in firstMemberId..<(firstMemberId + tryCouponIssue)) {
                         executor.submit {
                             try {
                                 barrier.await()
-                                couponService.issueCoupon(i.toLong(), coupon.id!!)
+                                couponService.issueCoupon(i, coupon.id!!)
                                 successCnt++
                             } catch (e: Exception) {
-                                println("Error: ${e.message}")
+                                exceptionCnt++
                             }
                         }
                     }
@@ -202,9 +214,10 @@ class CouponConcurrencyTest @Autowired constructor(
                     executor.awaitTermination(1, TimeUnit.MINUTES)
 
                     val couponUserSize = userCouponRepository.findAll().size
-                    val stock = couponRepository.findByIdOrNull(1L)?.stock
+                    val stock = couponRepository.findByIdOrNull(coupon.id!!)?.stock
 
                     successCnt shouldBe tryCouponIssue
+                    exceptionCnt shouldBe 0
                     couponUserSize shouldBe tryCouponIssue
                     stock shouldBe couponQuantity - tryCouponIssue
                 }
