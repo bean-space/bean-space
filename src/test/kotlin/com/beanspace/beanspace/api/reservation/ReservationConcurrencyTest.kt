@@ -45,7 +45,7 @@ class ReservationConcurrencyTest @Autowired constructor(
     context("ReservationService.reserveSpace()") {
         given("서로 다른 유저 10명이") {
             `when`("동시에 같은 체크인, 체크아웃 날짜에 같은 숙소를 예약하려고 할 때") {
-                then("한 명만 성공하고 나머지는 IllegalArgumentException이 발생해야 한다.") {
+                then("한 명만 성공하고 나머지는 IllegalArgumentException이 발생한다.") {
                     var exceptionCnt = 0
                     val exceptionList = mutableListOf<Exception>()
 
@@ -91,8 +91,8 @@ class ReservationConcurrencyTest @Autowired constructor(
                 }
             }
 
-            `when`("동시에 같은 기간이 겹치는 체크인, 체크아웃 날짜에 같은 숙소를 예약하려고 할 때") {
-                then("한 명만 성공하고 나머지는 IllegalArgumentException이 발생해야 한다.") {
+            `when`("동시에 기간이 겹치는 체크인, 체크아웃 날짜에 같은 숙소를 예약하려고 할 때") {
+                then("한 명만 성공하고 나머지는 IllegalArgumentException이 발생한다.") {
                     var exceptionCnt = 0
                     val exceptionList = mutableListOf<Exception>()
 
@@ -181,7 +181,7 @@ class ReservationConcurrencyTest @Autowired constructor(
         }
 
         given("유저 1명이") {
-            `when`("동시에 같은 쿠폰으로 예약을 하려고 할 때") {
+            `when`("동시에 같은 쿠폰으로 서로 다른 숙소를 예약을 하려고 할 때") {
                 then("한 예약만 성공하고 나머지는 IllegalStateException이 발생해야 한다.") {
                     val exceptionList = mutableListOf<Exception>()
 

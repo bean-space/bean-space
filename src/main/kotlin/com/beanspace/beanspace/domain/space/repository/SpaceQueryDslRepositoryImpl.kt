@@ -17,8 +17,6 @@ import com.querydsl.core.types.dsl.PathBuilder
 import com.querydsl.core.util.StringUtils
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
@@ -33,20 +31,36 @@ class SpaceQueryDslRepositoryImpl(
     private val image = QImage.image
     private val wishlist = QWishlist.wishlist
 
-    override fun findByStatus(pageable: Pageable, spaceStatus: SpaceStatus): Page<Space> {
+    override fun findByStatus(pageable: Pageable, spaceStatus: SpaceStatus): Pair<Map<Space?, List<String>>, Long> {
+        val conditions = BooleanBuilder()
+            .and(eqStatus(spaceStatus))
+
         val totalCount = queryFactory.select(space.count())
             .from(space)
-            .where(eqStatus(spaceStatus))
-            .fetchOne() ?: 0L
+            .where(conditions)
+            .fetchOne() ?: return Pair(emptyMap(), 0)
 
-        val contents = queryFactory.selectFrom(space)
-            .where(eqStatus(spaceStatus))
+        val paginatedSpaceId = queryFactory
+            .select(space.id).distinct()
+            .from(space)
+            .where(conditions)
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong())
             .orderBy(*getOrderSpecifier(pageable, space))
             .fetch()
 
-        return PageImpl(contents, pageable, totalCount)
+        val result = queryFactory.select(space, image.imageUrl)
+            .from(space)
+            .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
+            .where(space.id.`in`(paginatedSpaceId))
+            .orderBy(*getOrderSpecifier(pageable, space), image.orderIndex.asc())
+            .fetch()
+
+        val contents = result.groupBy { it.get(QSpace.space) }
+            .mapKeys { (space, _) -> space }
+            .mapValues { it.value.map { tuple -> tuple.get(QImage.image.imageUrl) ?: "" } }
+
+        return Pair(contents, totalCount)
     }
 
     override fun search(
