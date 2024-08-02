@@ -9,6 +9,7 @@ import com.beanspace.beanspace.domain.exception.ModelNotFoundException
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -27,7 +28,16 @@ class AdminService(
             "ACTIVE" -> SpaceStatus.ACTIVE
             else -> throw IllegalArgumentException("해당하는 상태의 요청이 없습니다.")
         }
-        return spaceRepository.findByStatus(pageable, spaceStatus).map { RequestAddSpaceResponse.from(it) }
+
+        val (contents, totalCount) = spaceRepository.findByStatus(pageable, spaceStatus)
+
+        if (contents.isEmpty() || totalCount == 0L) {
+            return Page.empty()
+        }
+
+        val response = contents.map { RequestAddSpaceResponse.from(it.key!!, it.value) }
+
+        return PageImpl(response, pageable, totalCount)
     }
 
     fun updateSpaceStatus(spaceId: Long, request: UpdateSpaceStatus) {
