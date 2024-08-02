@@ -112,9 +112,6 @@ class CouponConcurrencyTest @Autowired constructor(
 
                     val couponUserSize = userCouponRepository.findAll().size
                     val stock = couponRepository.findByIdOrNull(coupon.id!!)?.stock
-                    println("userCouponRepository.size: $couponUserSize")
-                    println("couponRepository.stock: $stock")
-                    println("successCnt: $successCnt")
 
                     successCnt shouldBe couponQuantity
                     exceptionCnt shouldBe 0
@@ -163,11 +160,6 @@ class CouponConcurrencyTest @Autowired constructor(
 
                     val couponUserSize = userCouponRepository.findAll().size
                     val stock = couponRepository.findByIdOrNull(coupon.id!!)?.stock
-                    println("userCouponRepository.size: $couponUserSize")
-                    println("couponRepository.stock: $stock")
-                    println("successCnt: $successCnt")
-                    println("exceptionCnt: $exceptionCnt")
-
 
                     successCnt shouldBe couponQuantity
                     exceptionCnt shouldBe exceptionQuantity
