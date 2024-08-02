@@ -73,14 +73,16 @@ class MemberService(
 
     fun getMemberReservationList(principal: UserPrincipal): List<MemberReservationResponse> {
         val today = LocalDate.now()
-        val startOfYear = today.withDayOfYear(1)
-        val endOfYear = today.withDayOfYear(today.lengthOfYear())
+        val oneYearAgo = today.minusYears(1)
 
-        val reservations = reservationRepository.findByMemberIdAndCheckOutBetween(principal.id, startOfYear, endOfYear)
+        val reservations = reservationRepository.findByMemberIdAndCheckOutAfter(principal.id, oneYearAgo)
+        val reservationIds = reservations.map { it.id!! }
+        val reservationIdsWithReviews = reviewRepository.findByReservationIdIn(reservationIds)
+            .map { it.reservation.id!! }
 
-        return reservations.map { reservation ->
-            val isReviewed = reviewRepository.existsByReservationId(reservation.id)
-            MemberReservationResponse.from(reservation, isReviewed)
+        return reservations.map {
+            val isReviewed = reservationIdsWithReviews.contains(it.id!!)
+            MemberReservationResponse.from(it, isReviewed)
         }
     }
 

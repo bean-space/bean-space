@@ -16,9 +16,8 @@ interface ReservationRepository : JpaRepository<Reservation, Long> {
         today: LocalDate
     ): List<Reservation>
 
-    fun findByMemberIdAndCheckOutBetween(
+    fun findByMemberIdAndCheckOutAfter(
         memberId: Long,
-        checkIn: LocalDate,
-        checkOut: LocalDate
+        date: LocalDate
     ): List<Reservation>
 }
