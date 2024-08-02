@@ -3,8 +3,8 @@ package com.beanspace.beanspace.api.member
 import com.beanspace.beanspace.api.auth.dto.LoginResponse
 import com.beanspace.beanspace.api.coupon.dto.UserCouponResponse
 import com.beanspace.beanspace.api.member.dto.MemberProfileResponse
+import com.beanspace.beanspace.api.member.dto.MemberReservationResponse
 import com.beanspace.beanspace.api.member.dto.UpdateProfileRequest
-import com.beanspace.beanspace.api.reservation.dto.ReservationResponse
 import com.beanspace.beanspace.api.space.dto.WishListedSpaceResponse
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import jakarta.validation.Valid
@@ -47,7 +47,7 @@ class MemberController(
     @GetMapping("/reservations")
     fun getMemberReservationList(
         @AuthenticationPrincipal principal: UserPrincipal,
-    ): ResponseEntity<List<ReservationResponse>> {
+    ): ResponseEntity<List<MemberReservationResponse>> {
         return ResponseEntity
             .ok(memberService.getMemberReservationList(principal))
     }

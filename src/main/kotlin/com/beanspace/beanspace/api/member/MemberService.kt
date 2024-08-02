@@ -3,14 +3,15 @@ package com.beanspace.beanspace.api.member
 import com.beanspace.beanspace.api.auth.dto.LoginResponse
 import com.beanspace.beanspace.api.coupon.dto.UserCouponResponse
 import com.beanspace.beanspace.api.member.dto.MemberProfileResponse
+import com.beanspace.beanspace.api.member.dto.MemberReservationResponse
 import com.beanspace.beanspace.api.member.dto.UpdateProfileRequest
-import com.beanspace.beanspace.api.reservation.dto.ReservationResponse
 import com.beanspace.beanspace.api.space.dto.WishListedSpaceResponse
 import com.beanspace.beanspace.domain.coupon.repository.UserCouponRepository
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
 import com.beanspace.beanspace.domain.member.model.MemberRole
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
 import com.beanspace.beanspace.domain.reservation.repository.ReservationRepository
+import com.beanspace.beanspace.domain.space.repository.ReviewRepository
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import com.beanspace.beanspace.infra.security.jwt.JwtPlugin
@@ -25,6 +26,7 @@ class MemberService(
     private val userCouponRepository: UserCouponRepository,
     private val spaceRepository: SpaceRepository,
     private val reservationRepository: ReservationRepository,
+    private val reviewRepository: ReviewRepository,
     private val jwtPlugin: JwtPlugin
 ) {
 
@@ -69,11 +71,21 @@ class MemberService(
             ?: throw ModelNotFoundException("Member", principal.id)
     }
 
-    fun getMemberReservationList(principal: UserPrincipal): List<ReservationResponse> {
+    fun getMemberReservationList(principal: UserPrincipal): List<MemberReservationResponse> {
         val today = LocalDate.now()
-        return reservationRepository.findByMemberIdAndCheckOutGreaterThanEqual(principal.id, today)
-            .map { ReservationResponse.from(it) }
+        val oneYearAgo = today.minusYears(1)
+
+        val reservations = reservationRepository.findByMemberIdAndCheckOutAfter(principal.id, oneYearAgo)
+        val reservationIds = reservations.map { it.id!! }
+        val reservationIdsWithReviews = reviewRepository.findByReservationIdIn(reservationIds)
+            .map { it.reservation.id!! }
+
+        return reservations.map {
+            val isReviewed = reservationIdsWithReviews.contains(it.id!!)
+            MemberReservationResponse.from(it, isReviewed)
+        }
     }
+
 
     fun getWishListedSpaceList(userPrincipal: UserPrincipal): List<WishListedSpaceResponse> {
         return spaceRepository.getWishListedSpaceList(userPrincipal.id)

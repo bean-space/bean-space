@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query
 interface ReviewRepository : JpaRepository<Review, Long> {
     fun findAllBySpaceId(spaceId: Long, pageable: Pageable): Page<Review>
     fun existsByReservation(reservation: Reservation): Boolean
+    fun findByReservationIdIn(reservationIds: List<Long>): List<Review>
 
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.space.id = ?1")
     fun getAverageRating(spaceId: Long): Double?

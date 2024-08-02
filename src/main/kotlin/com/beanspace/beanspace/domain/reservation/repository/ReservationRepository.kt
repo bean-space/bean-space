@@ -16,8 +16,8 @@ interface ReservationRepository : JpaRepository<Reservation, Long> {
         today: LocalDate
     ): List<Reservation>
 
-    fun findByMemberIdAndCheckOutGreaterThanEqual(
+    fun findByMemberIdAndCheckOutAfter(
         memberId: Long,
-        checkOut: LocalDate
+        date: LocalDate
     ): List<Reservation>
 }
