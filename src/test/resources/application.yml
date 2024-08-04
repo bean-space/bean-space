@@ -1,0 +1,56 @@
+spring:
+  config:
+    import: optional:application-secret.yml
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:test;MODE=MySQL
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        highlight_sql: true
+        use_sql_comments: true
+        ddl-auto: create-drop
+        default_batch_fetch_size: 100
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: debug
+
+redisson:
+  single-server-config:
+    address: redis://${spring.data.redis.host}:${spring.data.redis.port}
+
+auth:
+  jwt:
+    issuer: BeanSpace
+    secret: 67q4Ws52Fd31307YPO5o6c28FNWbAWaZ
+    accessTokenExpirationHour: 10
+
+cloud:
+  aws:
+    s3:
+      bucket: test
+    region:
+      static: test
+    credentials:
+      access-key: test
+      secret-key: test
+    stack:
+      auto: false
+oauth2:
+  kakao:
+    client_id: "test"
+    redirect_url: "http://localhost:8080/oauth2/login/callback"
+    auth_server_base_url: "https://kauth.kakao.com"
+    resource_server_base_url: "https://kapi.kakao.com"
