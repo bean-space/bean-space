@@ -1,6 +1,5 @@
 package com.beanspace.beanspace.domain.review.repository
 
-import com.appmattus.kotlinfixture.config.range
 import com.appmattus.kotlinfixture.kotlinFixture
 import com.beanspace.beanspace.domain.member.model.Member
 import com.beanspace.beanspace.domain.member.model.MemberRole
@@ -42,6 +41,11 @@ class ReviewRepositoryTest @Autowired constructor(
             spaceRepository.deleteAll()
             memberRepository.deleteAll()
         }
+
+        afterContainer {
+            reviewRepository.deleteAll()
+        }
+
         given("Space에 대한 Review가 여러개 있을 때") {
             `when`("getAverageRating() 실행하면") {
                 then("rating의 평균값을 반환한다.") {
@@ -58,8 +62,8 @@ class ReviewRepositoryTest @Autowired constructor(
                     val space = spaceRepository.saveAndFlush(spaceFixture)
 
                     val baseDate = LocalDate.of(2024, 3, 1)
-                    val reservationFixtures = getReservationFixtures(5, guest, space, baseDate)
-                    val reservationList = reservationRepository.saveAllAndFlush(reservationFixtures)
+                    val reservationList =
+                        reservationRepository.saveAllAndFlush(getReservationFixtures(5, guest, space, baseDate))
 
                     val reviewList =
                         reservationList.map {
@@ -106,7 +110,7 @@ class ReviewRepositoryTest @Autowired constructor(
                 val checkOut = checkIn.plusDays(2) // checkIn 2일 뒤 체크아웃
 
                 fixture<Reservation> {
-                    property(Reservation::cost) { fixture<Long> { factory<Long> { range(100000L..10000000L) } } }
+                    property(Reservation::cost) { 100000L }
                     property(Reservation::checkIn) { checkIn }
                     property(Reservation::checkOut) { checkOut }
                     property(Reservation::reservationPeople) { 2 }
