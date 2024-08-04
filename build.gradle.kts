@@ -44,7 +44,7 @@ dependencies {
     implementation("com.amazonaws:aws-java-sdk-s3:1.12.741")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.redisson:redisson-spring-boot-starter:3.33.0")
-
+    implementation("mysql:mysql-connector-java:8.0.32")
 
     runtimeOnly("com.h2database:h2")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
@@ -63,7 +63,8 @@ dependencies {
     testImplementation("com.appmattus.fixture:fixture:1.2.0")
     testImplementation("com.appmattus.fixture:fixture-kotest:1.2.0")
     testImplementation("io.mockk:mockk:$mockkVersion")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.testcontainers:testcontainers:1.20.0")
+    testImplementation("org.testcontainers:junit-jupiter:1.20.0")
 }
 
 kotlin {
