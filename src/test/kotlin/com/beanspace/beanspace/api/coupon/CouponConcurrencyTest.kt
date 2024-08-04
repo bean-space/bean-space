@@ -13,12 +13,18 @@ import io.kotest.matchers.types.shouldBeTypeOf
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
+import org.testcontainers.containers.GenericContainer
+import org.testcontainers.utility.DockerImageName
 import java.time.LocalDateTime
 import java.util.concurrent.CyclicBarrier
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 @SpringBootTest
+@ActiveProfiles("test")
 class CouponConcurrencyTest @Autowired constructor(
     private val couponService: CouponService,
     private val couponRepository: CouponRepository,
@@ -218,6 +224,26 @@ class CouponConcurrencyTest @Autowired constructor(
     }
 }) {
     companion object {
+
+        private val redisContainer = GenericContainer(DockerImageName.parse("redis:6-alpine"))
+            .withExposedPorts(6379)
+
+        init {
+            redisContainer.start()
+            System.setProperty("spring.data.redis.host", redisContainer.host)
+            System.setProperty("spring.data.redis.port", redisContainer.firstMappedPort.toString())
+            System.setProperty("testcontainers.reuse.enable", "true")
+            System.setProperty("testcontainers.reuse.logging", "true")
+        }
+
+        @JvmStatic
+        @DynamicPropertySource
+        fun properties(registry: DynamicPropertyRegistry) {
+            registry.add("spring.data.redis.host") { redisContainer.host }
+            registry.add("spring.data.redis.port") { redisContainer.firstMappedPort }
+            registry.add("redisson.single-server-config.address") { "redis://${redisContainer.host}:${redisContainer.firstMappedPort}" }
+        }
+
         val fixture = kotlinFixture()
 
         fun getMember(): Member {

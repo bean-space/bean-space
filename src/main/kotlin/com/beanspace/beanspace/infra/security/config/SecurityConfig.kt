@@ -30,8 +30,12 @@ class SecurityConfig(
                 cors.configurationSource {
                     val configuration = CorsConfiguration()
                     configuration.allowedOrigins =
-                        listOf("http://localhost:5173", "https://bean-space-front.vercel.app/")
-                    configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        listOf(
+                            "http://localhost:5173",
+                            "https://bean-space-front.vercel.app/",
+                            "https://www.thebean.space/"
+                        )
+                    configuration.allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                     configuration.allowedHeaders = listOf("*")
                     configuration.allowCredentials = true
                     configuration
