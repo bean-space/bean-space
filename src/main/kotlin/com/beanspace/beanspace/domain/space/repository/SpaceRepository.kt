@@ -9,4 +9,5 @@ interface SpaceRepository : JpaRepository<Space, Long>, SpaceQueryDslRepository 
     fun findByIdAndStatus(id: Long, status: SpaceStatus): Space?
     fun existsByIdAndStatus(id: Long, status: SpaceStatus): Boolean
     fun findAllByHostAndIsDeleted(host: Member, isDeleted: Boolean): List<Space>
+    fun findAllByHostId(hostId: Long): List<Space>
 }
