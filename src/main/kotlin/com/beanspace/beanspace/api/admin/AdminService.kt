@@ -64,7 +64,7 @@ class AdminService(
     }
 
     fun getCouponList(): List<CouponResponse> {
-        return couponRepository.findAll().map { CouponResponse.from(it) }
+        return couponRepository.findAllByOrderByIssueStartAtDesc().map { CouponResponse.from(it) }
     }
 
     @Transactional

@@ -8,6 +8,7 @@ data class ReviewResponse(
     var content: String,
     var rating: Int,
     val createdAt: LocalDateTime,
+    val reviewerId: Long,
     val reviewerName: String,
     val reviewerProfileUrl: String? = null,
     var imageUrlList: List<String>? = null
@@ -19,6 +20,7 @@ data class ReviewResponse(
                 content = review.content,
                 rating = review.rating,
                 createdAt = review.createdAt!!,
+                reviewerId = review.member.id!!,
                 reviewerName = review.member.nickname,
                 reviewerProfileUrl = review.member.profileImageUrl,
                 imageUrlList = imageUrlList

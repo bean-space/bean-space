@@ -2,6 +2,7 @@ package com.beanspace.beanspace.api.host
 
 import com.beanspace.beanspace.api.host.dto.AddSpaceRequest
 import com.beanspace.beanspace.api.host.dto.UpdateSpaceRequest
+import com.beanspace.beanspace.api.reservation.dto.ReservationResponse
 import com.beanspace.beanspace.api.space.dto.SpaceResponse
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
 import com.beanspace.beanspace.domain.exception.NoPermissionException
@@ -9,16 +10,19 @@ import com.beanspace.beanspace.domain.image.model.Image
 import com.beanspace.beanspace.domain.image.model.ImageType
 import com.beanspace.beanspace.domain.image.repository.ImageRepository
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
+import com.beanspace.beanspace.domain.reservation.repository.ReservationRepository
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 @Service
 class HostService(
     private val spaceRepository: SpaceRepository,
     private val memberRepository: MemberRepository,
     private val imageRepository: ImageRepository,
+    private val reservationRepository: ReservationRepository,
 ) {
 
     @Transactional
@@ -98,5 +102,14 @@ class HostService(
                 }
             }
             ?: listOf()
+    }
+
+    fun getReservationList(hostId: Long): List<ReservationResponse> {
+        val date = LocalDate.now().minusMonths(6)
+        return spaceRepository.findAllByHostId(hostId)
+            .map { it.id!! }
+            .let { reservationRepository.findAllBySpaceIdInAndCheckOutAfter(it, date) }
+            .map { ReservationResponse.from(it) }
+            .sortedBy { it.checkIn }
     }
 }
