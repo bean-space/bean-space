@@ -13,7 +13,7 @@ import jakarta.persistence.Id
 class Member(
 
     @Column
-    val phoneNumber: String,
+    var phoneNumber: String,
 
     @Column
     var password: String,
@@ -51,4 +51,13 @@ class Member(
     fun updateRoleToHost() {
         this.role = MemberRole.HOST
     }
+
+    fun updateSocialUserInfo(phoneNumber: String, email: String) {
+        this.phoneNumber = phoneNumber
+        this.email = email
+    }
+
+    fun isSocialUser() = providerId != null
+
+    fun isPhoneNumberEmpty() = phoneNumber == "EMPTY"
 }
