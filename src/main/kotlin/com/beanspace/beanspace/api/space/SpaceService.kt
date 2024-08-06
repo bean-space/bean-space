@@ -4,7 +4,7 @@ import com.beanspace.beanspace.api.space.dto.AddReviewRequest
 import com.beanspace.beanspace.api.space.dto.HostResponse
 import com.beanspace.beanspace.api.space.dto.ReviewResponse
 import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
-import com.beanspace.beanspace.api.space.dto.SpaceResponse
+import com.beanspace.beanspace.api.space.dto.SpaceResponseWithoutAddress
 import com.beanspace.beanspace.api.space.dto.UpdateReviewRequest
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
 import com.beanspace.beanspace.domain.exception.NoPermissionException
@@ -43,7 +43,7 @@ class SpaceService(
         checkOut: LocalDate?,
         headCount: Int?,
         pageable: Pageable
-    ): Page<SpaceResponse> {
+    ): Page<SpaceResponseWithoutAddress> {
         val (contents, totalCount) = spaceRepository.search(
             sido = sido,
             checkIn = checkIn,
@@ -55,7 +55,7 @@ class SpaceService(
         if (contents.isEmpty() || totalCount == 0L) {
             return Page.empty()
         }
-        val response = contents.map { SpaceResponse.from(it.key!!, it.value) }
+        val response = contents.map { SpaceResponseWithoutAddress.from(it.key!!, it.value) }
 
         return PageImpl(response, pageable, totalCount)
     }
@@ -75,7 +75,7 @@ class SpaceService(
         ).flatMap { it.checkIn.datesUntil(it.checkOut).toList() }.filter { it.isAfter(today) }
 
         return SpaceDetailResponse.from(
-            spaceResponse = SpaceResponse.from(space, spaceImageList.map { it.imageUrl }),
+            spaceResponseWithoutAddress = SpaceResponseWithoutAddress.from(space, spaceImageList.map { it.imageUrl }),
             averageRating = averageRating,
             hostResponse = HostResponse(
                 nickname = space.host.nickname,
