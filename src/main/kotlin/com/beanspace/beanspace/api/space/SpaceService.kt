@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.text.DecimalFormat
 import java.time.LocalDate
-import java.util.regex.Pattern
 
 @Service
 class SpaceService(
@@ -119,7 +118,6 @@ class SpaceService(
 
     @Transactional
     fun addReview(spaceId: Long, request: AddReviewRequest, reviewerId: Long): Unit {
-        validateRequest(request)
         val member = memberRepository.findByIdOrNull(reviewerId) ?: throw ModelNotFoundException(
             model = "Member",
             id = reviewerId
@@ -151,7 +149,6 @@ class SpaceService(
 
     @Transactional
     fun updateReview(spaceId: Long, reviewId: Long, request: UpdateReviewRequest, userPrincipal: UserPrincipal) {
-        validateRequest(request)
         val member = memberRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException(
             model = "Member",
             id = userPrincipal.id
@@ -187,41 +184,5 @@ class SpaceService(
 
         reviewRepository.delete(review)
             .also { imageRepository.deleteByTypeAndContentId(ImageType.REVIEW, reviewId) }
-    }
-}
-
-
-private fun validateRequest(request: Any) {
-    when (request) {
-        is AddReviewRequest -> {
-            validateReview(request.content)
-            validateRating(request.rating)
-            validateImageUrlList(request.imageUrlList)
-        }
-
-        is UpdateReviewRequest -> {
-            validateReview(request.content)
-            validateRating(request.rating)
-            validateImageUrlList(request.imageUrlList)
-        }
-
-        else -> throw IllegalArgumentException("잘못된 요청 입니다.")
-    }
-}
-
-private fun validateReview(content: String) {
-    if (!Pattern.matches("^.{1,3000}$", content)) {
-        throw IllegalArgumentException("리뷰는 1 ~ 3000까지 입력 가능합니다.")
-    }
-}
-
-private fun validateRating(rating: Int) {
-    if (rating < 1 || rating > 5)
-        throw IllegalArgumentException("별점은 1 ~ 5까지 입력 가능합니다.")
-}
-
-private fun validateImageUrlList(imageUrlList: List<String>) {
-    if (imageUrlList.size > 3) {
-        throw IllegalArgumentException("리뷰 이미지는 최대 3개까지 가능합니다.")
     }
 }

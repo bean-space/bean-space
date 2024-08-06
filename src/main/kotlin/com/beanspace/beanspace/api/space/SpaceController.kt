@@ -1,11 +1,8 @@
 package com.beanspace.beanspace.api.space
 
-import com.beanspace.beanspace.api.space.dto.AddReviewRequest
-import com.beanspace.beanspace.api.space.dto.ReviewResponse
-import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
-import com.beanspace.beanspace.api.space.dto.SpaceResponse
-import com.beanspace.beanspace.api.space.dto.UpdateReviewRequest
+import com.beanspace.beanspace.api.space.dto.*
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
+import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -14,15 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 
 @RestController
@@ -56,7 +45,7 @@ class SpaceController(private val spaceService: SpaceService) {
     @PostMapping("/{spaceId}/reviews")
     fun addReview(
         @PathVariable spaceId: Long,
-        @RequestBody request: AddReviewRequest,
+        @Valid @RequestBody request: AddReviewRequest,
         @AuthenticationPrincipal userPrincipal: UserPrincipal
     ): ResponseEntity<Unit> {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -75,7 +64,7 @@ class SpaceController(private val spaceService: SpaceService) {
     fun updateReview(
         @PathVariable spaceId: Long,
         @PathVariable reviewId: Long,
-        @RequestBody request: UpdateReviewRequest,
+        @Valid @RequestBody request: UpdateReviewRequest,
         @AuthenticationPrincipal userPrincipal: UserPrincipal
     ): ResponseEntity<Unit> {
         spaceService.updateReview(
