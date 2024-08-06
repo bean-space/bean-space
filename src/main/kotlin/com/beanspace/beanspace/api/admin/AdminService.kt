@@ -78,6 +78,12 @@ class AdminService(
     fun updateCoupon(couponId: Long, request: CouponRequest): CouponResponse {
         val coupon = couponRepository.findByIdOrNull(couponId) ?: throw ModelNotFoundException("Coupon", couponId)
 
+        val today = LocalDateTime.now()
+
+        check(today.isBefore(coupon.issueStartAt)) {
+            throw IllegalStateException("발급 중이거나 완료된 쿠폰은 수정할 수 없습니다.")
+        }
+
         validateRequest(request)
 
         coupon.update(
@@ -96,6 +102,12 @@ class AdminService(
     @Transactional
     fun deleteCoupon(couponId: Long) {
         val coupon = couponRepository.findByIdOrNull(couponId) ?: throw ModelNotFoundException("Coupon", couponId)
+
+        val today = LocalDateTime.now()
+
+        check(today.isBefore(coupon.issueStartAt)) {
+            throw IllegalStateException("발급 중이거나 완료된 쿠폰은 삭제할 수 없습니다.")
+        }
 
         couponRepository.delete(coupon)
     }
