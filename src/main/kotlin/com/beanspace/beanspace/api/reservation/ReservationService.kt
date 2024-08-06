@@ -44,7 +44,9 @@ class ReservationService(
                     ?: throw ModelNotFoundException("공간", spaceId)
 
                 val guest = memberRepository.findByIdOrNull(guestId)
-                    ?: throw ModelNotFoundException("사용자", guestId)
+                    ?.also {
+                        check(it.phoneNumber != "EMPTY") { throw IllegalStateException("전화번호를 입력하지 않은 회원은 예약이 불가능합니다.") }
+                    } ?: throw ModelNotFoundException("사용자", guestId)
 
                 val userCoupon = request.userCouponId?.let {
                     val couponKey = "userCoupon:$it"
