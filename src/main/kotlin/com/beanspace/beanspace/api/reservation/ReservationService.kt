@@ -11,6 +11,7 @@ import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import org.redisson.api.RLock
 import org.redisson.api.RedissonClient
+import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -28,6 +29,8 @@ class ReservationService(
     private val redissonClient: RedissonClient,
     private val transactionTemplate: TransactionTemplate
 ) {
+
+    private val logger = LoggerFactory.getLogger(ReservationService::class.java)
 
     fun reserveSpace(guestId: Long, spaceId: Long, request: ReservationRequest): ReservationResponse {
         val key = "reservaion:$spaceId"
@@ -105,6 +108,13 @@ class ReservationService(
                     .let { ReservationResponse.from(it) }
             }
             return result ?: throw IllegalStateException("예약 처리 중 오류가 발생했습니다.")
+        } catch (e: Exception) {
+            if (lock.isHeldByCurrentThread) {
+                lock.unlock()
+            }
+            logger.error(e.message, e)
+            e.printStackTrace()
+            throw e
         } finally {
             if (lock.isHeldByCurrentThread) {
                 lock.unlock()
