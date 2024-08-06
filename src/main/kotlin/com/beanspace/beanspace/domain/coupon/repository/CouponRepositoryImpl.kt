@@ -21,7 +21,7 @@ class CouponRepositoryImpl : CustomCouponRepository, QueryDslConfig() {
             .selectFrom(coupon)
             .where(
                 coupon.issueStartAt.lt(startTime),
-                coupon.issueEndAt.gt(endTime)
+                coupon.issueEndAt.goe(endTime)
             )
             .fetch()
     }
