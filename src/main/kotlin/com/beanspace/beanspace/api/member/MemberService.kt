@@ -5,6 +5,7 @@ import com.beanspace.beanspace.api.coupon.dto.UserCouponResponse
 import com.beanspace.beanspace.api.member.dto.MemberProfileResponse
 import com.beanspace.beanspace.api.member.dto.MemberReservationResponse
 import com.beanspace.beanspace.api.member.dto.UpdateProfileRequest
+import com.beanspace.beanspace.api.member.dto.UpdateSocialUserInfoRequest
 import com.beanspace.beanspace.api.space.dto.WishListedSpaceResponse
 import com.beanspace.beanspace.domain.coupon.repository.UserCouponRepository
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
@@ -16,6 +17,7 @@ import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import com.beanspace.beanspace.infra.security.jwt.JwtPlugin
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -86,7 +88,6 @@ class MemberService(
         }
     }
 
-
     fun getWishListedSpaceList(userPrincipal: UserPrincipal): List<WishListedSpaceResponse> {
         return spaceRepository.getWishListedSpaceList(userPrincipal.id)
             .map { WishListedSpaceResponse.fromEntity(it.key!!, it.value) }
@@ -95,5 +96,15 @@ class MemberService(
     fun getCouponList(userPrincipal: UserPrincipal): List<UserCouponResponse> {
         return userCouponRepository.getMemberCouponList(userPrincipal.id)
             .map { UserCouponResponse.from(it) }
+    }
+
+    @Transactional
+    fun updateSocialUserInfo(principal: UserPrincipal, request: UpdateSocialUserInfoRequest): MemberProfileResponse {
+        return memberRepository.findByIdOrNull(principal.id)
+            ?.also { check(it.isSocialUser()) { throw AccessDeniedException("소셜 유저가 아닙니다!") } }
+            ?.also { check(it.isPhoneNumberEmpty()) { throw IllegalStateException("이미 전화번호가 있습니다") } }
+            ?.also { it.updateSocialUserInfo(request.phoneNumber, request.email) }
+            ?.let { MemberProfileResponse.fromEntity(it) }
+            ?: throw ModelNotFoundException("Member", principal.id)
     }
 }
