@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@PreAuthorize("hasAnyRole('MEMBER','HOST')")
 @RestController
 @RequestMapping("/api/v1/coupons")
 class CouponController(
@@ -23,6 +22,7 @@ class CouponController(
         return ResponseEntity.ok(couponService.getCouponList())
     }
 
+    @PreAuthorize("hasAnyRole('MEMBER','HOST')")
     @PostMapping("/{couponId}")
     fun issueCoupon(
         @AuthenticationPrincipal principal: UserPrincipal,
