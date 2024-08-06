@@ -80,12 +80,8 @@ class AdminService(
 
         val today = LocalDateTime.now()
 
-        check(today.isBefore(coupon.issueStartAt) && today.isEqual(coupon.issueStartAt)) {
-            throw IllegalStateException("발급 중인 쿠폰은 수정할 수 없습니다.")
-        }
-
-        check(today.isBefore(coupon.issueEndAt) && today.isEqual(coupon.issueEndAt)) {
-            throw IllegalStateException("발급 마감일이 지난 쿠폰은 수정할 수 없습니다.")
+        check(today.isBefore(coupon.issueStartAt)) {
+            throw IllegalStateException("발급 중이거나 완료된 쿠폰은 수정할 수 없습니다.")
         }
 
         validateRequest(request)
@@ -109,12 +105,8 @@ class AdminService(
 
         val today = LocalDateTime.now()
 
-        check(today.isBefore(coupon.issueStartAt) && today.isEqual(coupon.issueStartAt)) {
-            throw IllegalStateException("발급 중인 쿠폰은 삭제할 수 없습니다.")
-        }
-
-        check(today.isBefore(coupon.issueEndAt) && today.isEqual(coupon.issueEndAt)) {
-            throw IllegalStateException("발급 마감일이 지난 쿠폰은 삭제할 수 없습니다.")
+        check(today.isBefore(coupon.issueStartAt)) {
+            throw IllegalStateException("발급 중이거나 완료된 쿠폰은 삭제할 수 없습니다.")
         }
 
         couponRepository.delete(coupon)
