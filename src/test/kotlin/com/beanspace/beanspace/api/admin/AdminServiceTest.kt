@@ -8,6 +8,7 @@ import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.shouldBe
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -15,6 +16,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import java.time.LocalDateTime
+import kotlin.random.Random
 
 class AdminServiceTest : BehaviorSpec({
     val spaceRepository: SpaceRepository = mockk(relaxed = true)
@@ -89,55 +91,96 @@ class AdminServiceTest : BehaviorSpec({
     }
 
     context("AdminService.createCoupon()") {
+        given("쿠폰 이름의") {
+            `when`("길이가 1~30 이 아니라면") {
+                then("IllegalArgumentException이 발생한다") {
+                    val request = mockk<CouponRequest> {
+                        every { name } returns ""
+                    }
+                    val request2 = mockk<CouponRequest> {
+                        every { name } returns "쿠폰이름쿠폰이름쿠폰쿠폰이름쿠폰이름쿠폰쿠폰이름쿠폰이름쿠폰쿠폰"
+                    }
+                    val exception = shouldThrow<IllegalArgumentException> { adminService.createCoupon(request) }
+                    exception.message shouldBe "쿠폰 이름은 1 ~ 30까지 입력 가능합니다."
+
+                    val exception2 = shouldThrow<IllegalArgumentException> { adminService.createCoupon(request2) }
+                    exception2.message shouldBe "쿠폰 이름은 1 ~ 30까지 입력 가능합니다."
+                }
+            }
+        }
+
         given("할인율이") {
             `when`("0~100 범위 내에 없으면") {
                 then("IllegalArgumentException이 발생한다") {
                     val request = mockk<CouponRequest> {
+                        every { name } returns "테스트 쿠폰"
                         every { discountRate } returns 150
                     }
-                    shouldThrow<IllegalArgumentException> { adminService.createCoupon(request) }
-
+                    val exception = shouldThrow<IllegalArgumentException> { adminService.createCoupon(request) }
+                    exception.message shouldBe "할인율은 1 ~ 100까지 입력 가능합니다"
                 }
             }
         }
 
-        given("쿠폰 발급일이") {
-            `when`("쿠폰 생성일 이전이면") {
+        given("최대 할인 금액이") {
+            `when`("양의 정수가 아니라면") {
                 then("IllegalArgumentException이 발생한다") {
                     val request = mockk<CouponRequest> {
+                        every { name } returns "테스트 쿠폰"
                         every { discountRate } returns 15
-                        every { issueStartAt } returns LocalDateTime.of(2024, 7, 10, 0, 0, 0, 0)
+                        every { maxDiscount } returns Random.nextInt(Int.MIN_VALUE, 0)
                     }
-                    shouldThrow<IllegalArgumentException> { adminService.createCoupon(request) }
+                    val exception = shouldThrow<IllegalArgumentException> { adminService.createCoupon(request) }
+                    exception.message shouldBe "최대 할인 금액은 양의 정수여야 합니다."
                 }
             }
         }
 
-        given("쿠폰 발급 마감일이") {
-            `when`("쿠폰 발급일 이전이면") {
+        given("쿠폰 발급 시작 시간이") {
+            `when`("현재 시간 보다 이전이면") {
                 then("IllegalArgumentException이 발생한다") {
                     val request = mockk<CouponRequest> {
+                        every { name } returns "테스트 쿠폰"
                         every { discountRate } returns 15
-                        every { issueStartAt } returns LocalDateTime.of(2024, 7, 23, 0, 0, 0, 0)
-                        every { issueEndAt } returns LocalDateTime.of(2024, 7, 20, 0, 0, 0, 0)
+                        every { maxDiscount } returns 10000
+                        every { issueStartAt } returns LocalDateTime.now().minusDays(1)
                     }
-
-                    shouldThrow<IllegalArgumentException> { adminService.createCoupon(request) }
+                    val exception = shouldThrow<IllegalArgumentException> { adminService.createCoupon(request) }
+                    exception.message shouldBe "발급 시작 시간을 현재 시간 이후로 설정하세요."
                 }
             }
         }
 
-        given("쿠폰 만료일이") {
-            `when`("쿠폰 발급 마감일 이전이면") {
+
+        given("쿠폰 발급 마감 시간이") {
+            `when`("쿠폰 발급 시작 시간보다 이전이면") {
                 then("IllegalArgumentException이 발생한다") {
                     val request = mockk<CouponRequest> {
+                        every { name } returns "테스트 쿠폰"
                         every { discountRate } returns 15
-                        every { issueStartAt } returns LocalDateTime.of(2024, 7, 23, 0, 0, 0, 0)
-                        every { issueEndAt } returns LocalDateTime.of(2024, 7, 24, 0, 0, 0, 0)
-                        every { expirationAt } returns LocalDateTime.of(2024, 7, 19, 0, 0, 0, 0)
+                        every { maxDiscount } returns 10000
+                        every { issueStartAt } returns LocalDateTime.now().plusDays(2)
+                        every { issueEndAt } returns LocalDateTime.now().plusDays(1)
                     }
+                    val exception = shouldThrow<IllegalArgumentException> { adminService.createCoupon(request) }
+                    exception.message shouldBe "발급 마감 시간을 발급 시작 시간 이후로 설정하세요"
+                }
+            }
+        }
 
-                    shouldThrow<IllegalArgumentException> { adminService.createCoupon(request) }
+        given("쿠폰 만료 시간이") {
+            `when`("쿠폰 발급 마감 시간보다 이전이면") {
+                then("IllegalArgumentException이 발생한다") {
+                    val request = mockk<CouponRequest> {
+                        every { name } returns "테스트 쿠폰"
+                        every { discountRate } returns 15
+                        every { maxDiscount } returns 10000
+                        every { issueStartAt } returns LocalDateTime.now().plusDays(2)
+                        every { issueEndAt } returns LocalDateTime.now().plusDays(4)
+                        every { expirationAt } returns LocalDateTime.now().plusDays(3)
+                    }
+                    val exception = shouldThrow<IllegalArgumentException> { adminService.createCoupon(request) }
+                    exception.message shouldBe "쿠폰 만료 시간은 발급 마감 시간보다 빠를 수 없습니다."
                 }
             }
         }

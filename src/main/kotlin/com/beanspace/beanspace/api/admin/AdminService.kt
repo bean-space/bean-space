@@ -115,15 +115,15 @@ class AdminService(
         }
 
         check(isValidDate(LocalDateTime.now(), request.issueStartAt)) {
-            throw IllegalArgumentException("발급 시작일을 오늘 이후로 설정하세요.")
+            throw IllegalArgumentException("발급 시작 시간을 현재 시간 이후로 설정하세요.")
         }
 
         check(isValidDate(request.issueStartAt, request.issueEndAt)) {
-            throw IllegalArgumentException("발급 마감일을 시작일 이후로 설정하세요")
+            throw IllegalArgumentException("발급 마감 시간을 발급 시작 시간 이후로 설정하세요")
         }
 
         check(isValidDate(request.issueEndAt, request.expirationAt)) {
-            throw IllegalArgumentException("쿠폰 만료일은 발급 마감일보다 빠를 수 없습니다.")
+            throw IllegalArgumentException("쿠폰 만료 시간은 발급 마감 시간보다 빠를 수 없습니다.")
         }
     }
 
