@@ -1,5 +1,6 @@
 package com.beanspace.beanspace.api.space
 
+import com.beanspace.beanspace.api.space.dto.*
 import com.beanspace.beanspace.api.space.dto.AddReviewRequest
 import com.beanspace.beanspace.api.space.dto.HostResponse
 import com.beanspace.beanspace.api.space.dto.ReviewResponse

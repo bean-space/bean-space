@@ -113,22 +113,42 @@ class AdminService(
     }
 
     private fun validateRequest(request: CouponRequest) {
-        validateDiscountRate(request.discountRate)
+
+        check(isValidCouponName(request.name)) {
+            throw IllegalArgumentException("쿠폰 이름은 1 ~ 30까지 입력 가능합니다.")
+        }
+
+        check(isValidDiscountRate(request.discountRate)) {
+            throw IllegalArgumentException("할인율은 1 ~ 100까지 입력 가능합니다")
+        }
+
+        check(isValidMaxDiscount(request.maxDiscount)) {
+            throw IllegalArgumentException("최대 할인 금액은 양의 정수여야 합니다.")
+        }
 
         check(isValidDate(LocalDateTime.now(), request.issueStartAt)) {
-            throw IllegalArgumentException("발급 시작일을 오늘 이후로 설정하세요.")
+            throw IllegalArgumentException("발급 시작 시간을 현재 시간 이후로 설정하세요.")
         }
+
         check(isValidDate(request.issueStartAt, request.issueEndAt)) {
-            throw IllegalArgumentException("발급 마감일을 시작일 이후로 설정하세요")
+            throw IllegalArgumentException("발급 마감 시간을 발급 시작 시간 이후로 설정하세요")
         }
+
         check(isValidDate(request.issueEndAt, request.expirationAt)) {
-            throw IllegalArgumentException("쿠폰 만료일은 발급 마감일보다 빠를 수 없습니다.")
+            throw IllegalArgumentException("쿠폰 만료 시간은 발급 마감 시간보다 빠를 수 없습니다.")
         }
     }
 
-    private fun validateDiscountRate(discountRate: Int) {
-        if (discountRate < 1 || discountRate > 100)
-            throw IllegalArgumentException("할인율은 1 ~ 100까지 입력 가능합니다")
+    private fun isValidCouponName(name: String): Boolean {
+        return Regex("^.{1,30}$") matches name
+    }
+
+    private fun isValidDiscountRate(discountRate: Int): Boolean {
+        return (discountRate in 1..100)
+    }
+
+    private fun isValidMaxDiscount(maxDiscount: Int): Boolean {
+        return (maxDiscount > 0)
     }
 
     private fun isValidDate(earlyDate: LocalDateTime, lateDate: LocalDateTime): Boolean {
