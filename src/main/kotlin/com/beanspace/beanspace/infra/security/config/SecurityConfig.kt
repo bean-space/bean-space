@@ -50,6 +50,7 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.GET, "/api/v1/spaces", "/api/v1/spaces/**", "/api/v1/coupons")
                     .permitAll()
                     .requestMatchers(
+                        "/healthcheck",
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
                         "/api/v1/auth/sign-up",
