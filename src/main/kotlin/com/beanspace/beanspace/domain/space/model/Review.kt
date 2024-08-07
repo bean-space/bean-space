@@ -12,8 +12,11 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
+import org.hibernate.annotations.SQLRestriction
+import java.time.LocalDateTime
 
 @Entity
+@SQLRestriction("is_deleted = false")
 class Review(
     @Column
     var content: String,
@@ -23,6 +26,9 @@ class Review(
 
     @Column
     var isDeleted: Boolean = false,
+
+    @Column
+    var deletedAt: LocalDateTime? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -44,5 +50,10 @@ class Review(
     fun update(content: String, rating: Int) {
         this.content = content
         this.rating = rating
+    }
+
+    fun delete() {
+        isDeleted = true
+        deletedAt = LocalDateTime.now()
     }
 }

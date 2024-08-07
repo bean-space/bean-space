@@ -31,7 +31,7 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NoPermissionException::class)
-    fun handleAccessDeniedException(e: NoPermissionException): ResponseEntity<ErrorResponse> {
+    fun handleNoPermissionException(e: NoPermissionException): ResponseEntity<ErrorResponse> {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ErrorResponse("403", e.message))
     }
 
