@@ -3,7 +3,7 @@ package com.beanspace.beanspace.api.space
 import com.beanspace.beanspace.api.space.dto.AddReviewRequest
 import com.beanspace.beanspace.api.space.dto.ReviewResponse
 import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
-import com.beanspace.beanspace.api.space.dto.SpaceResponse
+import com.beanspace.beanspace.api.space.dto.SpaceResponseWithoutAddress
 import com.beanspace.beanspace.api.space.dto.UpdateReviewRequest
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import org.springframework.data.domain.Page
@@ -36,7 +36,7 @@ class SpaceController(private val spaceService: SpaceService) {
         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") checkOut: LocalDate?,
         @RequestParam(required = false) headCount: Int?,
         @PageableDefault(page = 0, size = 10, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable,
-    ): ResponseEntity<Page<SpaceResponse>> {
+    ): ResponseEntity<Page<SpaceResponseWithoutAddress>> {
         return ResponseEntity.ok(
             spaceService.getSpaceList(
                 sido = sido,
