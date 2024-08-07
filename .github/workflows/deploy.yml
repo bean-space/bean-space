@@ -1,0 +1,67 @@
+name: deploy
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Clean
+        run: ./gradlew clean
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker Image & Push to Docker Hub
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: itssu/bean-space:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: ssh to ec2
+        uses: appleboy/ssh-action@master
+        with:
+          key: ${{ secrets.AWS_EC2_SSH_PRIVATE_KEY }}
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USER }}
+          script: |
+            docker pull itssu/bean-space:latest
+            docker rm -f bean-space
+            docker rmi $(docker images -f "dangling=true" -q)
+            docker run -d -p 5000:8080 --name bean-space \
+            -e RDS_URL=${{ secrets.RDS_URL }} \
+            -e RDS_USERNAME=${{ secrets.RDS_USERNAME }} \
+            -e RDS_PASSWORD=${{ secrets.RDS_PASSWORD }} \
+            -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            -e JWT_EXPIRATION_HOUR=${{ secrets.JWT_EXPIRATION_HOUR }} \
+            -e AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }} \
+            -e AWS_S3_ACCESS_KEY=${{ secrets.AWS_S3_ACCESS_KEY }} \
+            -e AWS_S3_SECRET_KEY=${{ secrets.AWS_S3_SECRET_KEY }} \
+            -e OAUTH_KAKAO_CLIENT_ID=${{ secrets.OAUTH_KAKAO_CLIENT_ID }} \
+            -e OAUTH_KAKAO_REDIRECT_URL=${{ secrets.OAUTH_KAKAO_REDIRECT_URL }} \
+            -e AWS_REDIS_HOST=${{ secrets.AWS_REDIS_HOST }} itssu/bean-space:latest
