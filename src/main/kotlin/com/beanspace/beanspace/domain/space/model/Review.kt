@@ -16,7 +16,7 @@ import org.hibernate.annotations.SQLRestriction
 import java.time.LocalDateTime
 
 @Entity
-@SQLRestriction("isDeleted = false")
+@SQLRestriction("is_deleted = false")
 class Review(
     @Column
     var content: String,
