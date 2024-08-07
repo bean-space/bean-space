@@ -56,9 +56,6 @@ class CouponService(
                     .let { userCouponRepository.save(it) }
             }
         } catch (e: Exception) {
-            if (lock.isHeldByCurrentThread) {
-                lock.unlock()
-            }
             logger.error(e.message, e)
             throw e
         } finally {

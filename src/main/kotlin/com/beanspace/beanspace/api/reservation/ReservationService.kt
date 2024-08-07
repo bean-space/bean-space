@@ -111,11 +111,7 @@ class ReservationService(
             }
             return result ?: throw IllegalStateException("예약 처리 중 오류가 발생했습니다.")
         } catch (e: Exception) {
-            if (lock.isHeldByCurrentThread) {
-                lock.unlock()
-            }
             logger.error(e.message, e)
-            e.printStackTrace()
             throw e
         } finally {
             if (lock.isHeldByCurrentThread) {
