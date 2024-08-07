@@ -3,20 +3,20 @@ package com.beanspace.beanspace.api.space.dto
 import java.time.LocalDate
 
 data class SpaceDetailResponse(
-    val space: SpaceResponse,
+    val space: SpaceResponseWithoutAddress,
     val averageRating: Double,
     val host: HostResponse,
     val reservedDateList: List<LocalDate>,
 ) {
     companion object {
         fun from(
-            spaceResponse: SpaceResponse,
+            spaceResponseWithoutAddress: SpaceResponseWithoutAddress,
             averageRating: Double,
             hostResponse: HostResponse,
             reservedDateList: List<LocalDate>,
         ): SpaceDetailResponse {
             return SpaceDetailResponse(
-                space = spaceResponse,
+                space = spaceResponseWithoutAddress,
                 averageRating = averageRating,
                 host = hostResponse,
                 reservedDateList = reservedDateList

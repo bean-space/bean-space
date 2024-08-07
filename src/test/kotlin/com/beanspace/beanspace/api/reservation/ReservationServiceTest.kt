@@ -72,7 +72,10 @@ class ReservationServiceTest : BehaviorSpec({
         given("예약하려는 공간이") {
             `when`("예약자가 제공하는 공간이면") {
                 then("IllegalArgumentException 발생") {
-                    val guest = mockk<Member> { every { id } returns 1L }
+                    val guest = mockk<Member> {
+                        every { id } returns 1L
+                        every { phoneNumber } returns "01000000000"
+                    }
                     val space = mockk<Space> {
                         every { id } returns 1L
                         every { host } returns guest
@@ -92,7 +95,10 @@ class ReservationServiceTest : BehaviorSpec({
         given("체크인 날짜가") {
             `when`("당일이면") {
                 then("IllegalArgumentException 발생") {
-                    val guest = mockk<Member> { every { id } returns 1L }
+                    val guest = mockk<Member> {
+                        every { id } returns 1L
+                        every { phoneNumber } returns "01000000000"
+                    }
                     val space = mockk<Space> {
                         every { id } returns 1L
                         every { host } returns mockk<Member> { every { id } returns 2L }
@@ -116,7 +122,10 @@ class ReservationServiceTest : BehaviorSpec({
         given("체크아웃 날짜가") {
             `when`("체크인 날짜 이전이면") {
                 then("IllegalArgumentException 발생") {
-                    val guest = mockk<Member> { every { id } returns 1L }
+                    val guest = mockk<Member> {
+                        every { id } returns 1L
+                        every { phoneNumber } returns "01000000000"
+                    }
                     val space = mockk<Space> {
                         every { id } returns 1L
                         every { host } returns mockk<Member> { every { id } returns 2L }
@@ -138,7 +147,10 @@ class ReservationServiceTest : BehaviorSpec({
 
             `when`("당일로부터 6개월 이후면") {
                 then("IllegalArgumentException 발생") {
-                    val guest = mockk<Member> { every { id } returns 1L }
+                    val guest = mockk<Member> {
+                        every { id } returns 1L
+                        every { phoneNumber } returns "01000000000"
+                    }
                     val space = mockk<Space> {
                         every { id } returns 1L
                         every { host } returns mockk<Member> { every { id } returns 2L }
@@ -162,7 +174,10 @@ class ReservationServiceTest : BehaviorSpec({
         given("예약하려는 날짜가") {
             `when`("이미 예약이 되어있으면") {
                 then("IllegalArgumentException 발생") {
-                    val guest = mockk<Member> { every { id } returns 1L }
+                    val guest = mockk<Member> {
+                        every { id } returns 1L
+                        every { phoneNumber } returns "01000000000"
+                    }
                     val space = mockk<Space> {
                         every { id } returns 1L
                         every { host } returns mockk<Member> { every { id } returns 2L }
@@ -195,7 +210,10 @@ class ReservationServiceTest : BehaviorSpec({
         given("예약인원이") {
             `when`("공간의 기본 인원수와 최대 인원수 사이가 아니면") {
                 then("IllegalArgumentException 발생") {
-                    val guest = mockk<Member> { every { id } returns 1L }
+                    val guest = mockk<Member> {
+                        every { id } returns 1L
+                        every { phoneNumber } returns "01000000000"
+                    }
 
                     val space = mockk<Space> {
                         every { id } returns 1L
@@ -223,7 +241,10 @@ class ReservationServiceTest : BehaviorSpec({
         given("사용하려는 쿠폰이") {
             `when`("이미 사용된 쿠폰이라면") {
                 then("IllegalStateException 발생") {
-                    val guest = mockk<Member> { every { id } returns 1L }
+                    val guest = mockk<Member> {
+                        every { id } returns 1L
+                        every { phoneNumber } returns "01000000000"
+                    }
                     val space = mockk<Space> { every { id } returns 1L }
                     val request = mockk<ReservationRequest> { every { userCouponId } returns 1L }
                     val userCoupon = mockk<UserCoupon> { every { isCouponUnused() } returns false }
@@ -240,7 +261,10 @@ class ReservationServiceTest : BehaviorSpec({
 
             `when`("유효기간이 지난 쿠폰이라면") {
                 then("IllegalStateException 발생") {
-                    val guest = mockk<Member> { every { id } returns 1L }
+                    val guest = mockk<Member> {
+                        every { id } returns 1L
+                        every { phoneNumber } returns "01000000000"
+                    }
                     val space = mockk<Space> { every { id } returns 1L }
                     val request = mockk<ReservationRequest> { every { userCouponId } returns 1L }
                     val userCoupon = mockk<UserCoupon> {
@@ -264,7 +288,10 @@ class ReservationServiceTest : BehaviorSpec({
         given("기본인원: 2명, 기본 요금: 30000원, 추가요금: 10000원인 공간을 4명이 2박을 예약할때") {
             `when`("적용한 쿠폰이 없다면") {
                 then("결제금액은 (30000 + 10000 x 2) x 2 = 100000원 이어야한다.") {
-                    val guest = mockk<Member> { every { id } returns 1L }
+                    val guest = mockk<Member> {
+                        every { id } returns 1L
+                        every { phoneNumber } returns "01000000000"
+                    }
 
                     val space = mockk<Space> {
                         every { id } returns 1L
@@ -317,7 +344,10 @@ class ReservationServiceTest : BehaviorSpec({
 
             `when`("할인율이 30%, 최대할인 금액이 40000원인 쿠폰을 적용하면") {
                 then("결제금액은 100000 - 30000 = 70000원 이어야 한다.") {
-                    val guest = mockk<Member> { every { id } returns 1L }
+                    val guest = mockk<Member> {
+                        every { id } returns 1L
+                        every { phoneNumber } returns "01000000000"
+                    }
 
                     val space = mockk<Space> {
                         every { id } returns 1L
@@ -381,7 +411,10 @@ class ReservationServiceTest : BehaviorSpec({
 
             `when`("할인율이 30%, 최대 할인 금액이 20000원인 쿠폰을 적용하면") {
                 then("결제금액은 100000 - 20000 = 80000원 이어야한다.") {
-                    val guest = mockk<Member> { every { id } returns 1L }
+                    val guest = mockk<Member> {
+                        every { id } returns 1L
+                        every { phoneNumber } returns "01000000000"
+                    }
 
                     val space = mockk<Space> {
                         every { id } returns 1L
@@ -467,7 +500,7 @@ class ReservationServiceTest : BehaviorSpec({
 
                     every { reservationRepository.findByIdOrNull(1L) } returns mockk<Reservation> {
                         every { validateOwner(1L) } returns true
-                        every { isBeforeCancellationDeadline() } returns false
+                        every { isBeforeCancellationDeadline(any()) } returns false
                     }
 
                     shouldThrow<IllegalStateException> {
@@ -482,7 +515,7 @@ class ReservationServiceTest : BehaviorSpec({
 
                     every { reservationRepository.findByIdOrNull(1L) } returns mockk<Reservation> {
                         every { validateOwner(1L) } returns true
-                        every { isBeforeCancellationDeadline() } returns true
+                        every { isBeforeCancellationDeadline(any()) } returns true
                         every { isActiveReservation() } returns false
                     }
 
@@ -499,7 +532,7 @@ class ReservationServiceTest : BehaviorSpec({
 
                 val reservation = mockk<Reservation> {
                     every { validateOwner(1L) } returns true
-                    every { isBeforeCancellationDeadline() } returns true
+                    every { isBeforeCancellationDeadline(any()) } returns true
                     every { isActiveReservation() } returns true
                     every { cancelReservation() } returns Unit
                 }

@@ -3,6 +3,7 @@ package com.beanspace.beanspace.api.coupon
 import com.beanspace.beanspace.api.coupon.dto.CouponResponse
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -21,6 +22,7 @@ class CouponController(
         return ResponseEntity.ok(couponService.getCouponList())
     }
 
+    @PreAuthorize("hasAnyRole('MEMBER','HOST')")
     @PostMapping("/{couponId}")
     fun issueCoupon(
         @AuthenticationPrincipal principal: UserPrincipal,

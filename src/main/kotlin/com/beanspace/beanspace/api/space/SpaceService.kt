@@ -1,6 +1,12 @@
 package com.beanspace.beanspace.api.space
 
 import com.beanspace.beanspace.api.space.dto.*
+import com.beanspace.beanspace.api.space.dto.AddReviewRequest
+import com.beanspace.beanspace.api.space.dto.HostResponse
+import com.beanspace.beanspace.api.space.dto.ReviewResponse
+import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
+import com.beanspace.beanspace.api.space.dto.SpaceResponseWithoutAddress
+import com.beanspace.beanspace.api.space.dto.UpdateReviewRequest
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
 import com.beanspace.beanspace.domain.exception.NoPermissionException
 import com.beanspace.beanspace.domain.image.model.Image
@@ -22,6 +28,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.text.DecimalFormat
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Service
 class SpaceService(
@@ -38,7 +45,7 @@ class SpaceService(
         checkOut: LocalDate?,
         headCount: Int?,
         pageable: Pageable
-    ): Page<SpaceResponse> {
+    ): Page<SpaceResponseWithoutAddress> {
         val (contents, totalCount) = spaceRepository.search(
             sido = sido,
             checkIn = checkIn,
@@ -50,7 +57,7 @@ class SpaceService(
         if (contents.isEmpty() || totalCount == 0L) {
             return Page.empty()
         }
-        val response = contents.map { SpaceResponse.from(it.key!!, it.value) }
+        val response = contents.map { SpaceResponseWithoutAddress.from(it.key!!, it.value) }
 
         return PageImpl(response, pageable, totalCount)
     }
@@ -70,7 +77,7 @@ class SpaceService(
         ).flatMap { it.checkIn.datesUntil(it.checkOut).toList() }.filter { it.isAfter(today) }
 
         return SpaceDetailResponse.from(
-            spaceResponse = SpaceResponse.from(space, spaceImageList.map { it.imageUrl }),
+            spaceResponseWithoutAddress = SpaceResponseWithoutAddress.from(space, spaceImageList.map { it.imageUrl }),
             averageRating = averageRating,
             hostResponse = HostResponse(
                 nickname = space.host.nickname,
@@ -127,7 +134,7 @@ class SpaceService(
         val reservation = reservationRepository.findByIdOrNull(request.reservationId)
             ?.also { check(it.validateOwner(reviewerId)) { throw NoPermissionException() } }
             ?.also { check(it.space.id == spaceId) { throw IllegalArgumentException("해당 공간에 대한 예약이 아닙니다.") } }
-            ?.also { check(it.isReviewAllowed()) { throw IllegalStateException("아직 후기를 작성할 수 없습니다. (체크아웃 당일 12:00 부터 작성 가능)") } }
+            ?.also { check(it.isReviewAllowed(LocalDateTime.now())) { throw IllegalStateException("아직 후기를 작성할 수 없습니다. (체크아웃 당일 12:00 부터 작성 가능)") } }
             ?: throw ModelNotFoundException(model = "Reservation", id = request.reservationId)
 
         if (reviewRepository.existsByReservation(reservation)) throw IllegalStateException("해당 예약에 대한 후기를 이미 남겼습니다.")

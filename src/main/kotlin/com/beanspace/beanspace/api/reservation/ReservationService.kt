@@ -11,6 +11,7 @@ import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import org.redisson.api.RLock
 import org.redisson.api.RedissonClient
+import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -29,6 +30,8 @@ class ReservationService(
     private val transactionTemplate: TransactionTemplate
 ) {
 
+    private val logger = LoggerFactory.getLogger(ReservationService::class.java)
+
     fun reserveSpace(guestId: Long, spaceId: Long, request: ReservationRequest): ReservationResponse {
         val key = "reservaion:$spaceId"
         val lock = redissonClient.getLock(key)
@@ -44,7 +47,9 @@ class ReservationService(
                     ?: throw ModelNotFoundException("공간", spaceId)
 
                 val guest = memberRepository.findByIdOrNull(guestId)
-                    ?: throw ModelNotFoundException("사용자", guestId)
+                    ?.also {
+                        check(it.phoneNumber != "EMPTY") { throw IllegalStateException("전화번호를 입력하지 않은 회원은 예약이 불가능합니다.") }
+                    } ?: throw ModelNotFoundException("사용자", guestId)
 
                 val userCoupon = request.userCouponId?.let {
                     val couponKey = "userCoupon:$it"
@@ -105,6 +110,9 @@ class ReservationService(
                     .let { ReservationResponse.from(it) }
             }
             return result ?: throw IllegalStateException("예약 처리 중 오류가 발생했습니다.")
+        } catch (e: Exception) {
+            logger.error(e.message, e)
+            throw e
         } finally {
             if (lock.isHeldByCurrentThread) {
                 lock.unlock()
@@ -119,7 +127,7 @@ class ReservationService(
     fun cancelReservation(guestId: Long, reservationId: Long) {
         reservationRepository.findByIdOrNull(reservationId)
             ?.also { check(it.validateOwner(guestId)) { throw NoPermissionException("본인이 한 예약인지 확인해주세요.") } }
-            ?.also { check(it.isBeforeCancellationDeadline()) { throw IllegalStateException("예약 취소 가능 날짜가 지났습니다.") } }
+            ?.also { check(it.isBeforeCancellationDeadline(LocalDate.now())) { throw IllegalStateException("예약 취소 가능 날짜가 지났습니다.") } }
             ?.also { check(it.isActiveReservation()) { throw IllegalStateException("이미 취소된 예약입니다.") } }
             ?.cancelReservation()
             ?: throw ModelNotFoundException("예약", reservationId)

@@ -7,7 +7,8 @@ data class MemberProfileResponse(
     val email: String,
     val role: String,
     val nickname: String,
-    val profileImageUrl: String?
+    val profileImageUrl: String?,
+    val isPhoneNumberEmpty: Boolean
 ) {
     companion object {
         fun fromEntity(member: Member): MemberProfileResponse {
@@ -16,7 +17,8 @@ data class MemberProfileResponse(
                 email = member.email,
                 role = member.role.name,
                 nickname = member.nickname,
-                profileImageUrl = member.profileImageUrl
+                profileImageUrl = member.profileImageUrl,
+                isPhoneNumberEmpty = member.isPhoneNumberEmpty()
             )
         }
     }

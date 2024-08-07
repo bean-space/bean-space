@@ -7,6 +7,7 @@ import com.beanspace.beanspace.domain.coupon.repository.UserCouponRepository
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
 import org.redisson.api.RedissonClient
+import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
@@ -20,6 +21,8 @@ class CouponService(
     private val redissonClient: RedissonClient,
     private val transactionTemplate: TransactionTemplate
 ) {
+
+    private val logger = LoggerFactory.getLogger(CouponService::class.java)
 
     fun getCouponList(): List<CouponResponse> {
         return couponRepository.findAccessibleCoupons()
@@ -52,6 +55,9 @@ class CouponService(
                 UserCoupon(member, coupon)
                     .let { userCouponRepository.save(it) }
             }
+        } catch (e: Exception) {
+            logger.error(e.message, e)
+            throw e
         } finally {
             if (lock.isHeldByCurrentThread) {
                 lock.unlock()
