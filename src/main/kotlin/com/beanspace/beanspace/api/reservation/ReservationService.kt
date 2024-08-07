@@ -127,7 +127,7 @@ class ReservationService(
     fun cancelReservation(guestId: Long, reservationId: Long) {
         reservationRepository.findByIdOrNull(reservationId)
             ?.also { check(it.validateOwner(guestId)) { throw NoPermissionException("본인이 한 예약인지 확인해주세요.") } }
-            ?.also { check(it.isBeforeCancellationDeadline()) { throw IllegalStateException("예약 취소 가능 날짜가 지났습니다.") } }
+            ?.also { check(it.isBeforeCancellationDeadline(LocalDate.now())) { throw IllegalStateException("예약 취소 가능 날짜가 지났습니다.") } }
             ?.also { check(it.isActiveReservation()) { throw IllegalStateException("이미 취소된 예약입니다.") } }
             ?.cancelReservation()
             ?: throw ModelNotFoundException("예약", reservationId)

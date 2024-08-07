@@ -46,9 +46,7 @@ class Reservation(
 ) {
     fun validateOwner(memberId: Long) = (member.id == memberId)
 
-    fun isBeforeCancellationDeadline(): Boolean {
-        val today = LocalDate.now()
-
+    fun isBeforeCancellationDeadline(today: LocalDate): Boolean {
         // 예약 취소는 체크인 날짜 이틀 전까지 가능
         val cancellationDeadline = checkIn.minusDays(2)
 
@@ -61,7 +59,7 @@ class Reservation(
         isCancelled = true
     }
 
-    fun isReviewAllowed(): Boolean {
-        return LocalDateTime.now().isAfter(LocalDateTime.of(checkOut, LocalTime.NOON))
+    fun isReviewAllowed(now: LocalDateTime): Boolean {
+        return now.isAfter(LocalDateTime.of(checkOut, LocalTime.NOON))
     }
 }
