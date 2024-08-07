@@ -11,7 +11,9 @@ import com.beanspace.beanspace.domain.image.model.ImageType
 import com.beanspace.beanspace.domain.image.repository.ImageRepository
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
 import com.beanspace.beanspace.domain.reservation.repository.ReservationRepository
+import com.beanspace.beanspace.domain.space.repository.ReviewRepository
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
+import com.beanspace.beanspace.domain.space.repository.WishListRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -23,6 +25,8 @@ class HostService(
     private val memberRepository: MemberRepository,
     private val imageRepository: ImageRepository,
     private val reservationRepository: ReservationRepository,
+    private val reviewRepository: ReviewRepository,
+    private val wishListRepository: WishListRepository,
 ) {
 
     @Transactional
@@ -86,6 +90,9 @@ class HostService(
         spaceRepository.findByIdOrNull(spaceId)
             ?.also { check(it.hasPermission(hostId)) { throw NoPermissionException() } }
             ?.also { imageRepository.deleteByTypeAndContentId(ImageType.SPACE, spaceId) }
+            ?.also { reservationRepository.findAllBySpaceId(spaceId).onEach { it.cancelReservation() } }
+            ?.also { reviewRepository.findAllBySpaceId(spaceId).onEach { it.delete() } }
+            ?.also { wishListRepository.deleteAllBySpaceId(spaceId) }
             ?.also { it.delete() }
             ?: throw ModelNotFoundException(model = "Space", id = spaceId)
     }

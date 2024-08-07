@@ -182,12 +182,11 @@ class SpaceService(
 
     @Transactional
     fun deleteReview(spaceId: Long, reviewId: Long, userPrincipal: UserPrincipal) {
-        val review = reviewRepository.findByIdOrNull(reviewId)
+        reviewRepository.findByIdOrNull(reviewId)
             ?.also { check(it.space.id == spaceId) { throw IllegalArgumentException("해당 공간에 대한 예약이 아닙니다.") } }
             ?.also { check(it.member.id == userPrincipal.id) { throw NoPermissionException() } }
+            ?.also { it.delete() }
+            ?.also { imageRepository.deleteByTypeAndContentId(ImageType.REVIEW, reviewId) }
             ?: throw ModelNotFoundException(model = "Review", id = reviewId)
-
-        reviewRepository.delete(review)
-            .also { imageRepository.deleteByTypeAndContentId(ImageType.REVIEW, reviewId) }
     }
 }

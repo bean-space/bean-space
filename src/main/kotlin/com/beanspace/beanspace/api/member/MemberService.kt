@@ -9,6 +9,7 @@ import com.beanspace.beanspace.api.member.dto.UpdateSocialUserInfoRequest
 import com.beanspace.beanspace.api.space.dto.WishListedSpaceResponse
 import com.beanspace.beanspace.domain.coupon.repository.UserCouponRepository
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
+import com.beanspace.beanspace.domain.exception.NoPermissionException
 import com.beanspace.beanspace.domain.member.model.MemberRole
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
 import com.beanspace.beanspace.domain.reservation.repository.ReservationRepository
@@ -17,7 +18,6 @@ import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import com.beanspace.beanspace.infra.security.jwt.JwtPlugin
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate

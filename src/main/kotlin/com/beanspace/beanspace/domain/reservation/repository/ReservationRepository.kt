@@ -22,4 +22,6 @@ interface ReservationRepository : JpaRepository<Reservation, Long> {
     ): List<Reservation>
 
     fun findAllBySpaceIdInAndCheckOutAfter(spaceIds: List<Long>, checkOut: LocalDate): List<Reservation>
+
+    fun findAllBySpaceId(spaceId: Long): List<Reservation>
 }
