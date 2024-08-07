@@ -101,7 +101,7 @@ class MemberService(
     @Transactional
     fun updateSocialUserInfo(principal: UserPrincipal, request: UpdateSocialUserInfoRequest): MemberProfileResponse {
         return memberRepository.findByIdOrNull(principal.id)
-            ?.also { check(it.isSocialUser()) { throw AccessDeniedException("소셜 유저가 아닙니다!") } }
+            ?.also { check(it.isSocialUser()) { throw NoPermissionException("소셜 유저가 아닙니다!") } }
             ?.also { check(it.isPhoneNumberEmpty()) { throw IllegalStateException("이미 전화번호가 있습니다") } }
             ?.also { it.updateSocialUserInfo(request.phoneNumber, request.email) }
             ?.let { MemberProfileResponse.fromEntity(it) }
