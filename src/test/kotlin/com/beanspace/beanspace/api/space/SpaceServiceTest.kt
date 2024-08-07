@@ -216,7 +216,7 @@ class SpaceServiceTest : BehaviorSpec({
                     every { reservationRepository.findByIdOrNull(any()) } returns mockk<Reservation> {
                         every { validateOwner(1L) } returns true
                         every { space } returns spaceFixture //spaceFixture.id = 1L
-                        every { isReviewAllowed() } returns false
+                        every { isReviewAllowed(any()) } returns false
                     }
 
                     shouldThrow<IllegalStateException> {
@@ -234,7 +234,7 @@ class SpaceServiceTest : BehaviorSpec({
                     every { reservationRepository.findByIdOrNull(any()) } returns mockk<Reservation> {
                         every { validateOwner(1L) } returns true
                         every { space } returns spaceFixture //spaceFixture.id = 1L
-                        every { isReviewAllowed() } returns true
+                        every { isReviewAllowed(any()) } returns true
                     }
                     every { reviewRepository.existsByReservation(any()) } returns true
 
@@ -253,7 +253,7 @@ class SpaceServiceTest : BehaviorSpec({
                     every { reservationRepository.findByIdOrNull(any()) } returns mockk<Reservation> {
                         every { validateOwner(1L) } returns true
                         every { space } returns spaceFixture //spaceFixture.id = 1L
-                        every { isReviewAllowed() } returns true
+                        every { isReviewAllowed(any()) } returns true
                     }
                     every { reviewRepository.existsByReservation(any()) } returns false
                     every { reviewRepository.save(any()) } returns mockk<Review> {

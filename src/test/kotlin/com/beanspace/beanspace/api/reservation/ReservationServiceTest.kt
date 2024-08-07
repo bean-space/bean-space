@@ -500,7 +500,7 @@ class ReservationServiceTest : BehaviorSpec({
 
                     every { reservationRepository.findByIdOrNull(1L) } returns mockk<Reservation> {
                         every { validateOwner(1L) } returns true
-                        every { isBeforeCancellationDeadline() } returns false
+                        every { isBeforeCancellationDeadline(any()) } returns false
                     }
 
                     shouldThrow<IllegalStateException> {
@@ -515,7 +515,7 @@ class ReservationServiceTest : BehaviorSpec({
 
                     every { reservationRepository.findByIdOrNull(1L) } returns mockk<Reservation> {
                         every { validateOwner(1L) } returns true
-                        every { isBeforeCancellationDeadline() } returns true
+                        every { isBeforeCancellationDeadline(any()) } returns true
                         every { isActiveReservation() } returns false
                     }
 
@@ -532,7 +532,7 @@ class ReservationServiceTest : BehaviorSpec({
 
                 val reservation = mockk<Reservation> {
                     every { validateOwner(1L) } returns true
-                    every { isBeforeCancellationDeadline() } returns true
+                    every { isBeforeCancellationDeadline(any()) } returns true
                     every { isActiveReservation() } returns true
                     every { cancelReservation() } returns Unit
                 }

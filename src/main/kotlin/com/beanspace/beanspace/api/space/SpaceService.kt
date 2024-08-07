@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.text.DecimalFormat
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Service
 class SpaceService(
@@ -132,7 +133,7 @@ class SpaceService(
         val reservation = reservationRepository.findByIdOrNull(request.reservationId)
             ?.also { check(it.validateOwner(reviewerId)) { throw NoPermissionException() } }
             ?.also { check(it.space.id == spaceId) { throw IllegalArgumentException("해당 공간에 대한 예약이 아닙니다.") } }
-            ?.also { check(it.isReviewAllowed()) { throw IllegalStateException("아직 후기를 작성할 수 없습니다. (체크아웃 당일 12:00 부터 작성 가능)") } }
+            ?.also { check(it.isReviewAllowed(LocalDateTime.now())) { throw IllegalStateException("아직 후기를 작성할 수 없습니다. (체크아웃 당일 12:00 부터 작성 가능)") } }
             ?: throw ModelNotFoundException(model = "Reservation", id = request.reservationId)
 
         if (reviewRepository.existsByReservation(reservation)) throw IllegalStateException("해당 예약에 대한 후기를 이미 남겼습니다.")
