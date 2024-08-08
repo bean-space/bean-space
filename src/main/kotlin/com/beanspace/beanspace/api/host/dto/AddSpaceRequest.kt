@@ -31,7 +31,8 @@ data class AddSpaceRequest(
     val pricePerPerson: Int,
     val bedRoomCount: Int,
     val bedCount: Int,
-    val bathRoomCount: Int
+    val bathRoomCount: Int,
+    val offer: List<Long>?
 ) {
     companion object {
         fun toEntity(request: AddSpaceRequest, host: Member): Space {

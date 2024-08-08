@@ -11,9 +11,8 @@ import com.beanspace.beanspace.domain.image.model.ImageType
 import com.beanspace.beanspace.domain.image.repository.ImageRepository
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
 import com.beanspace.beanspace.domain.reservation.repository.ReservationRepository
-import com.beanspace.beanspace.domain.space.repository.ReviewRepository
-import com.beanspace.beanspace.domain.space.repository.SpaceRepository
-import com.beanspace.beanspace.domain.space.repository.WishListRepository
+import com.beanspace.beanspace.domain.space.model.SpaceOffer
+import com.beanspace.beanspace.domain.space.repository.*
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -27,6 +26,9 @@ class HostService(
     private val reservationRepository: ReservationRepository,
     private val reviewRepository: ReviewRepository,
     private val wishListRepository: WishListRepository,
+    private val offerRepository: OfferRepository,
+    private val spaceOfferRepository: SpaceOfferRepository
+
 ) {
 
     @Transactional
@@ -45,6 +47,14 @@ class HostService(
                     orderIndex = index
                 )
             )
+        }
+
+        val spaceOffer = request.offer
+
+        spaceOffer?.forEach {
+            offerRepository.findByIdOrNull(it)
+                ?.also { offer -> spaceOfferRepository.save(SpaceOffer(savedSpace, offer)) }
+                ?: throw ModelNotFoundException("Offer", it)
         }
 
         return SpaceResponse.from(savedSpace, imageUrlList)
@@ -80,6 +90,14 @@ class HostService(
                     )
                 }
             }
+            ?.also { spaceOfferRepository.deleteAllBySpaceId(it.id!!) }
+            ?.also {
+                request.offer?.forEach { id ->
+                    offerRepository.findByIdOrNull(id)
+                        ?.also { offer -> spaceOfferRepository.save(SpaceOffer(it, offer)) }
+                        ?: throw ModelNotFoundException("Offer", id)
+                }
+            }
             ?.let {
                 SpaceResponse.from(it, request.imageUrlList)
             } ?: throw ModelNotFoundException(model = "Space", id = spaceId)
@@ -90,6 +108,7 @@ class HostService(
         spaceRepository.findByIdOrNull(spaceId)
             ?.also { check(it.hasPermission(hostId)) { throw NoPermissionException() } }
             ?.also { imageRepository.deleteByTypeAndContentId(ImageType.SPACE, spaceId) }
+            ?.also { spaceOfferRepository.deleteAllBySpaceId(spaceId) }
             ?.also { reservationRepository.findAllBySpaceId(spaceId).onEach { it.cancelReservation() } }
             ?.also { reviewRepository.findAllBySpaceId(spaceId).onEach { it.delete() } }
             ?.also { wishListRepository.deleteAllBySpaceId(spaceId) }
