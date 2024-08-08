@@ -1,12 +1,6 @@
 package com.beanspace.beanspace.api.space
 
 import com.beanspace.beanspace.api.space.dto.*
-import com.beanspace.beanspace.api.space.dto.AddReviewRequest
-import com.beanspace.beanspace.api.space.dto.ReviewResponse
-import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
-import com.beanspace.beanspace.api.space.dto.SpaceResponseWithoutAddress
-import com.beanspace.beanspace.api.space.dto.UpdateReviewRequest
-
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
@@ -26,18 +20,32 @@ class SpaceController(private val spaceService: SpaceService) {
 
     @GetMapping
     fun getSpaceList(
+        @RequestParam(required = false) keyword: String?,
         @RequestParam(required = false) sido: String?,
         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") checkIn: LocalDate?,
         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") checkOut: LocalDate?,
         @RequestParam(required = false) headCount: Int?,
+        @RequestParam(required = false) priceMin: Int?,
+        @RequestParam(required = false) priceMax: Int?,
+        @RequestParam(required = false) bedRoomCount: Int?,
+        @RequestParam(required = false) bedCount: Int?,
+        @RequestParam(required = false) bathRoomCount: Int?,
+        @RequestParam(required = false) offer: List<Long>?,
         @PageableDefault(page = 0, size = 10, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable,
     ): ResponseEntity<Page<SpaceResponseWithoutAddress>> {
         return ResponseEntity.ok(
             spaceService.getSpaceList(
+                keyword = keyword,
                 sido = sido,
                 checkIn = checkIn,
                 checkOut = checkOut,
                 headCount = headCount,
+                priceMin = priceMin,
+                priceMax = priceMax,
+                bedRoomCount = bedRoomCount,
+                bedCount = bedCount,
+                bathRoomCount = bathRoomCount,
+                offer = offer,
                 pageable = pageable,
             )
         )
