@@ -49,3 +49,15 @@ oauth2:
     redirect_url: ${OAUTH_KAKAO_REDIRECT_URL}
     auth_server_base_url: "https://kauth.kakao.com"
     resource_server_base_url: "https://kapi.kakao.com"
+management:
+  server:
+    port: 9090
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+server:
+  tomcat:
+    mbeanregistry:
+      enabled: true

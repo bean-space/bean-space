@@ -46,6 +46,10 @@ dependencies {
     implementation("org.redisson:redisson-spring-boot-starter:3.33.0")
     implementation("mysql:mysql-connector-java:8.0.32")
 
+    //monitoring
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+
     runtimeOnly("com.h2database:h2")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
