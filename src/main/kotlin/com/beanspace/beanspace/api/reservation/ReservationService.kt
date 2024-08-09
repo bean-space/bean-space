@@ -133,25 +133,6 @@ class ReservationService(
             ?: throw ModelNotFoundException("예약", reservationId)
     }
 
-    /* 특정 공간에 대해 예약할 수 없는 날짜를 구하는 함수
-       지금은 쓸일이 없지만 나중에 쓸 수도 있을까봐 남겨두었음
-    */
-    private fun getUnavailableDatesForSpace(spaceId: Long): List<LocalDate> {
-        val existingReservations =
-            reservationRepository.findAllBySpaceIdAndIsCancelledAndCheckOutAfter(spaceId, false, LocalDate.now())
-
-        val unavailableDates = mutableListOf<LocalDate>()
-
-        for (reservation in existingReservations) {
-
-            val existingReservationDates = reservation.checkIn.datesUntil(reservation.checkOut).toList()
-
-            unavailableDates.addAll(existingReservationDates)
-        }
-
-        return unavailableDates
-    }
-
     private fun isReservationPossible(spaceId: Long, checkIn: LocalDate, checkOut: LocalDate): Boolean {
         // 취소되지 않은, 체크아웃 날짜가 오늘 이후인 예약들만 조회
         val existingReservations =
