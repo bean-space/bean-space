@@ -23,8 +23,7 @@ import java.time.LocalDate
 
 @Repository
 class SpaceQueryDslRepositoryImpl(
-    private val queryFactory: JPAQueryFactory,
-    private val searchKeywordRepository: SearchKeywordRepository
+    private val queryFactory: JPAQueryFactory
 ) : SpaceQueryDslRepository {
 
     private val space = QSpace.space
