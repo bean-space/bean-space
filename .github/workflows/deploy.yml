@@ -53,7 +53,7 @@ jobs:
             docker pull itssu/bean-space:latest
             docker rm -f bean-space
             docker rmi $(docker images -f "dangling=true" -q)
-            docker run -d -p 5000:8080 --name bean-space \
+            docker run -d -p 5000:8080 -p 9090:9090 --name bean-space \
             -e RDS_URL=${{ secrets.RDS_URL }} \
             -e RDS_USERNAME=${{ secrets.RDS_USERNAME }} \
             -e RDS_PASSWORD=${{ secrets.RDS_PASSWORD }} \
