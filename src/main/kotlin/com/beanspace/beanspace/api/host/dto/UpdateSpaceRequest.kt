@@ -24,5 +24,6 @@ data class UpdateSpaceRequest(
     val pricePerPerson: Int,
     val bedRoomCount: Int,
     val bedCount: Int,
-    val bathRoomCount: Int
+    val bathRoomCount: Int,
+    val offer: List<Long>?
 )

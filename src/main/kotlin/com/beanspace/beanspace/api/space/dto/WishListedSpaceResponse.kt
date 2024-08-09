@@ -6,7 +6,7 @@ data class WishListedSpaceResponse(
     val spaceId: Long,
     val listingName: String,
     val price: Int,
-    val sido: String,
+    val sidoAndSigungu: String,
     val imageUrlList: List<String>
 ) {
     companion object {
@@ -15,7 +15,7 @@ data class WishListedSpaceResponse(
                 spaceId = space.id!!,
                 listingName = space.listingName,
                 price = space.price,
-                sido = space.address.sido,
+                sidoAndSigungu = space.address.sidoAndSigungu,
                 imageUrlList = imageUrlList
             )
         }

@@ -1,12 +1,10 @@
 package com.beanspace.beanspace.api.space
 
-import com.beanspace.beanspace.api.space.dto.*
 import com.beanspace.beanspace.api.space.dto.AddReviewRequest
 import com.beanspace.beanspace.api.space.dto.ReviewResponse
 import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
 import com.beanspace.beanspace.api.space.dto.SpaceResponseWithoutAddress
 import com.beanspace.beanspace.api.space.dto.UpdateReviewRequest
-
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
@@ -17,7 +15,15 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 
 @RestController
@@ -26,18 +32,30 @@ class SpaceController(private val spaceService: SpaceService) {
 
     @GetMapping
     fun getSpaceList(
-        @RequestParam(required = false) sido: String?,
+        @RequestParam(required = false) keyword: String?,
         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") checkIn: LocalDate?,
         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") checkOut: LocalDate?,
         @RequestParam(required = false) headCount: Int?,
+        @RequestParam(required = false) priceMin: Int?,
+        @RequestParam(required = false) priceMax: Int?,
+        @RequestParam(required = false) bedRoomCount: Int?,
+        @RequestParam(required = false) bedCount: Int?,
+        @RequestParam(required = false) bathRoomCount: Int?,
+        @RequestParam(required = false) offer: List<Long>?,
         @PageableDefault(page = 0, size = 10, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable,
     ): ResponseEntity<Page<SpaceResponseWithoutAddress>> {
         return ResponseEntity.ok(
             spaceService.getSpaceList(
-                sido = sido,
+                keyword = keyword,
                 checkIn = checkIn,
                 checkOut = checkOut,
                 headCount = headCount,
+                priceMin = priceMin,
+                priceMax = priceMax,
+                bedRoomCount = bedRoomCount,
+                bedCount = bedCount,
+                bathRoomCount = bathRoomCount,
+                offer = offer,
                 pageable = pageable,
             )
         )

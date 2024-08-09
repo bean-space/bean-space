@@ -4,6 +4,7 @@ import com.beanspace.beanspace.domain.image.model.ImageType
 import com.beanspace.beanspace.domain.image.model.QImage
 import com.beanspace.beanspace.domain.reservation.model.QReservation
 import com.beanspace.beanspace.domain.space.model.QSpace
+import com.beanspace.beanspace.domain.space.model.QSpaceOffer
 import com.beanspace.beanspace.domain.space.model.QWishlist
 import com.beanspace.beanspace.domain.space.model.Space
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
@@ -14,7 +15,6 @@ import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.EntityPathBase
 import com.querydsl.core.types.dsl.PathBuilder
-import com.querydsl.core.util.StringUtils
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.data.domain.Pageable
@@ -30,6 +30,7 @@ class SpaceQueryDslRepositoryImpl(
     private val reservation = QReservation.reservation
     private val image = QImage.image
     private val wishlist = QWishlist.wishlist
+    private val spaceOffer = QSpaceOffer.spaceOffer
 
     override fun findByStatus(pageable: Pageable, spaceStatus: SpaceStatus): Pair<Map<Space?, List<String>>, Long> {
         val conditions = BooleanBuilder()
@@ -64,18 +65,30 @@ class SpaceQueryDslRepositoryImpl(
     }
 
     override fun search(
-        sido: String?,
+        keyword: String?,
         checkIn: LocalDate?,
         checkOut: LocalDate?,
         headCount: Int?,
+        priceMin: Int?,
+        priceMax: Int?,
+        bedRoomCount: Int?,
+        bedCount: Int?,
+        bathRoomCount: Int?,
+        offer: List<Long>?,
         pageable: Pageable
     ): Pair<Map<Space?, List<String>>, Long> {
 
         val conditions = BooleanBuilder()
             .and(eqStatus(SpaceStatus.ACTIVE))
-            .and(containsSido(sido))
+            .and(isContainsKeyword(keyword))
             .and(inAvailableDate(checkIn, checkOut))
             .and(isAvailableHeadCount(headCount))
+            .and(isGreaterOrEqualThanMinPrice(priceMin))
+            .and(isLowerOrEqualThanMaxPrice(priceMax))
+            .and(isGreaterOrEqualThanBedRoomCount(bedRoomCount))
+            .and(isGreaterOrEqualThanBedCount(bedCount))
+            .and(isGreaterOrEqualThanBathRoomCount(bathRoomCount))
+            .and(hasAllOffer(offer))
 
         val totalCount = queryFactory.select(space.count())
             .from(space)
@@ -126,11 +139,57 @@ class SpaceQueryDslRepositoryImpl(
         return contents
     }
 
+    private fun isContainsKeyword(keyword: String?): BooleanExpression? {
+        return keyword?.let { fullKeyword ->
+            val keywords = fullKeyword.split(" ").filter { it.isNotBlank() }
+
+            keywords.map {
+                space.listingName.containsIgnoreCase(it)
+                    .or(space.address.sidoAndSigungu.contains(it))
+            }.reduce { a, b -> a.and(b) }
+        }
+    }
+
     private fun isAvailableHeadCount(headCount: Int?): BooleanExpression? {
         return if (headCount != null && headCount > 0) space.maxPeople.goe(headCount) else null
     }
 
-    private fun inAvailableDate(start: LocalDate?, end: LocalDate?): BooleanExpression? {
+    private fun isGreaterOrEqualThanMinPrice(priceMin: Int?): BooleanExpression? {
+        return if (priceMin != null && priceMin > 0) space.price.goe(priceMin) else null
+    }
+
+    private fun isLowerOrEqualThanMaxPrice(priceMax: Int?): BooleanExpression? {
+        return if (priceMax != null && priceMax > 0) space.price.loe(priceMax) else null
+    }
+
+    private fun isGreaterOrEqualThanBedRoomCount(bedRoomCount: Int?): BooleanExpression? {
+        return if (bedRoomCount != null) space.bedRoomCount.goe(bedRoomCount) else null
+    }
+
+    private fun isGreaterOrEqualThanBedCount(bedCount: Int?): BooleanExpression? {
+        return if (bedCount != null) space.bedCount.goe(bedCount) else null
+    }
+
+    private fun isGreaterOrEqualThanBathRoomCount(bathRoomCount: Int?): BooleanExpression? {
+        return if (bathRoomCount != null) space.bathRoomCount.goe(bathRoomCount) else null
+    }
+
+    private fun hasAllOffer(offer: List<Long>?): BooleanExpression? {
+        return if (!offer.isNullOrEmpty()) {
+            val offerCount = offer.size.toLong()
+            JPAExpressions
+                .select(spaceOffer.space.id)
+                .from(spaceOffer)
+                .where(spaceOffer.offer.id.`in`(offer))
+                .groupBy(spaceOffer.space.id)
+                .having(spaceOffer.offer.id.countDistinct().eq(offerCount))
+                .exists()
+        } else {
+            null
+        }
+    }
+
+    private fun inAvailableDate(start: LocalDate?, end: LocalDate?): BooleanExpression {
         val startCondition =
             if (start != null) reservation.checkIn.loe(start).and(reservation.checkOut.gt(start)) else null
         val endCondition = if (end != null) reservation.checkIn.lt(end).and(reservation.checkOut.goe(end)) else null
@@ -143,10 +202,6 @@ class SpaceQueryDslRepositoryImpl(
 
     private fun eqStatus(spaceStatus: SpaceStatus?): BooleanExpression? {
         return if (spaceStatus != null) space.status.eq(spaceStatus) else null
-    }
-
-    private fun containsSido(sido: String?): BooleanExpression? {
-        return if (!StringUtils.isNullOrEmpty(sido)) space.address.sido.contains(sido) else null
     }
 
     private fun getOrderSpecifier(pageable: Pageable, path: EntityPathBase<*>): Array<OrderSpecifier<*>> {

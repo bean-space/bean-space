@@ -1,6 +1,5 @@
 package com.beanspace.beanspace.api.space
 
-import com.beanspace.beanspace.api.space.dto.*
 import com.beanspace.beanspace.api.space.dto.AddReviewRequest
 import com.beanspace.beanspace.api.space.dto.HostResponse
 import com.beanspace.beanspace.api.space.dto.ReviewResponse
@@ -14,9 +13,12 @@ import com.beanspace.beanspace.domain.image.model.ImageType
 import com.beanspace.beanspace.domain.image.repository.ImageRepository
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
 import com.beanspace.beanspace.domain.reservation.repository.ReservationRepository
+import com.beanspace.beanspace.domain.space.model.SearchKeyword
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.beanspace.beanspace.domain.space.model.Wishlist
 import com.beanspace.beanspace.domain.space.repository.ReviewRepository
+import com.beanspace.beanspace.domain.space.repository.SearchKeywordRepository
+import com.beanspace.beanspace.domain.space.repository.SpaceOfferRepository
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import com.beanspace.beanspace.domain.space.repository.WishListRepository
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
@@ -38,21 +40,37 @@ class SpaceService(
     private val reservationRepository: ReservationRepository,
     private val reviewRepository: ReviewRepository,
     private val memberRepository: MemberRepository,
+    private val searchKeywordRepository: SearchKeywordRepository,
+    private val spaceOfferRepository: SpaceOfferRepository
 ) {
     fun getSpaceList(
-        sido: String?,
+        keyword: String?,
         checkIn: LocalDate?,
         checkOut: LocalDate?,
         headCount: Int?,
+        priceMin: Int?,
+        priceMax: Int?,
+        bedRoomCount: Int?,
+        bedCount: Int?,
+        bathRoomCount: Int?,
+        offer: List<Long>?,
         pageable: Pageable
     ): Page<SpaceResponseWithoutAddress> {
         val (contents, totalCount) = spaceRepository.search(
-            sido = sido,
+            keyword = keyword,
             checkIn = checkIn,
             checkOut = checkOut,
             headCount = headCount,
+            priceMin = priceMin,
+            priceMax = priceMax,
+            bedRoomCount = bedRoomCount,
+            bedCount = bedCount,
+            bathRoomCount = bathRoomCount,
+            offer = offer,
             pageable = pageable
         )
+
+        keyword?.also { searchKeywordRepository.save(SearchKeyword(it)) }
 
         if (contents.isEmpty() || totalCount == 0L) {
             return Page.empty()
@@ -68,7 +86,10 @@ class SpaceService(
         if (space.status != SpaceStatus.ACTIVE) throw ModelNotFoundException(model = "Space", id = spaceId)
 
         val spaceImageList = imageRepository.findAllByContentIdAndTypeOrderByOrderIndexAsc(spaceId, ImageType.SPACE)
+
         val averageRating = DecimalFormat("#.#").format(reviewRepository.getAverageRating(spaceId) ?: 0.0).toDouble()
+
+        val offerList = spaceOfferRepository.findAllBySpaceId(spaceId).map { it.offer.id!! }
 
         val reservedDateList = reservationRepository.findAllBySpaceIdAndIsCancelledAndCheckOutAfter(
             spaceId,
@@ -83,6 +104,7 @@ class SpaceService(
                 nickname = space.host.nickname,
                 profileImageUrl = space.host.profileImageUrl
             ),
+            offerList = offerList,
             reservedDateList = reservedDateList,
         )
     }
@@ -124,7 +146,7 @@ class SpaceService(
     }
 
     @Transactional
-    fun addReview(spaceId: Long, request: AddReviewRequest, reviewerId: Long): Unit {
+    fun addReview(spaceId: Long, request: AddReviewRequest, reviewerId: Long) {
         val member = memberRepository.findByIdOrNull(reviewerId) ?: throw ModelNotFoundException(
             model = "Member",
             id = reviewerId
