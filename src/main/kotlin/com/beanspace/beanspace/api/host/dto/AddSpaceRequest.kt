@@ -25,7 +25,7 @@ data class AddSpaceRequest(
     val zipCode: String,
     val streetNameAddress: String,
     val detailedAddress: String,
-    val sido: String,
+    val sidoAndSigungu: String,
     val defaultPeople: Int,
     val maxPeople: Int,
     val pricePerPerson: Int,
@@ -43,7 +43,7 @@ data class AddSpaceRequest(
                     zipCode = request.zipCode,
                     streetNameAddress = request.streetNameAddress,
                     detailedAddress = request.detailedAddress,
-                    sido = request.sido
+                    sidoAndSigungu = request.sidoAndSigungu
                 ),
                 content = request.content,
                 defaultPeople = request.defaultPeople,

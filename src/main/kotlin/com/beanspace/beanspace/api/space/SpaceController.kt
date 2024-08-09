@@ -1,6 +1,10 @@
 package com.beanspace.beanspace.api.space
 
-import com.beanspace.beanspace.api.space.dto.*
+import com.beanspace.beanspace.api.space.dto.AddReviewRequest
+import com.beanspace.beanspace.api.space.dto.ReviewResponse
+import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
+import com.beanspace.beanspace.api.space.dto.SpaceResponseWithoutAddress
+import com.beanspace.beanspace.api.space.dto.UpdateReviewRequest
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
@@ -11,7 +15,15 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 
 @RestController
@@ -21,7 +33,6 @@ class SpaceController(private val spaceService: SpaceService) {
     @GetMapping
     fun getSpaceList(
         @RequestParam(required = false) keyword: String?,
-        @RequestParam(required = false) sido: String?,
         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") checkIn: LocalDate?,
         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") checkOut: LocalDate?,
         @RequestParam(required = false) headCount: Int?,
@@ -36,7 +47,6 @@ class SpaceController(private val spaceService: SpaceService) {
         return ResponseEntity.ok(
             spaceService.getSpaceList(
                 keyword = keyword,
-                sido = sido,
                 checkIn = checkIn,
                 checkOut = checkOut,
                 headCount = headCount,

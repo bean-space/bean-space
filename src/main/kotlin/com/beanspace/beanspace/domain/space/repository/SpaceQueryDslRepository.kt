@@ -9,7 +9,6 @@ interface SpaceQueryDslRepository {
     fun findByStatus(pageable: Pageable, spaceStatus: SpaceStatus): Pair<Map<Space?, List<String>>, Long>
     fun search(
         keyword: String? = null,
-        sido: String? = null,
         checkIn: LocalDate? = null,
         checkOut: LocalDate? = null,
         headCount: Int? = null,

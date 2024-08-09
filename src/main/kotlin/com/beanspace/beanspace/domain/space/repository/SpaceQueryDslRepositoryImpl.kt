@@ -3,7 +3,11 @@ package com.beanspace.beanspace.domain.space.repository
 import com.beanspace.beanspace.domain.image.model.ImageType
 import com.beanspace.beanspace.domain.image.model.QImage
 import com.beanspace.beanspace.domain.reservation.model.QReservation
-import com.beanspace.beanspace.domain.space.model.*
+import com.beanspace.beanspace.domain.space.model.QSpace
+import com.beanspace.beanspace.domain.space.model.QSpaceOffer
+import com.beanspace.beanspace.domain.space.model.QWishlist
+import com.beanspace.beanspace.domain.space.model.Space
+import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.types.Expression
 import com.querydsl.core.types.Order
@@ -11,7 +15,6 @@ import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.EntityPathBase
 import com.querydsl.core.types.dsl.PathBuilder
-import com.querydsl.core.util.StringUtils
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.data.domain.Pageable
@@ -63,7 +66,6 @@ class SpaceQueryDslRepositoryImpl(
 
     override fun search(
         keyword: String?,
-        sido: String?,
         checkIn: LocalDate?,
         checkOut: LocalDate?,
         headCount: Int?,
@@ -79,7 +81,6 @@ class SpaceQueryDslRepositoryImpl(
         val conditions = BooleanBuilder()
             .and(eqStatus(SpaceStatus.ACTIVE))
             .and(isContainsKeyword(keyword))
-            .and(containsSido(sido))
             .and(inAvailableDate(checkIn, checkOut))
             .and(isAvailableHeadCount(headCount))
             .and(isGreaterOrEqualThanMinPrice(priceMin))
@@ -139,7 +140,10 @@ class SpaceQueryDslRepositoryImpl(
     }
 
     private fun isContainsKeyword(keyword: String?): BooleanExpression? {
-        return if (keyword != null) space.listingName.containsIgnoreCase(keyword) else null
+        return keyword?.let {
+            space.listingName.containsIgnoreCase(it)
+                .or(space.address.sidoAndSigungu.contains(it))
+        }
     }
 
     private fun isAvailableHeadCount(headCount: Int?): BooleanExpression? {
@@ -194,10 +198,6 @@ class SpaceQueryDslRepositoryImpl(
 
     private fun eqStatus(spaceStatus: SpaceStatus?): BooleanExpression? {
         return if (spaceStatus != null) space.status.eq(spaceStatus) else null
-    }
-
-    private fun containsSido(sido: String?): BooleanExpression? {
-        return if (!StringUtils.isNullOrEmpty(sido)) space.address.sido.contains(sido) else null
     }
 
     private fun getOrderSpecifier(pageable: Pageable, path: EntityPathBase<*>): Array<OrderSpecifier<*>> {

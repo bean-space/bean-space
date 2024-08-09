@@ -1,6 +1,11 @@
 package com.beanspace.beanspace.api.space
 
-import com.beanspace.beanspace.api.space.dto.*
+import com.beanspace.beanspace.api.space.dto.AddReviewRequest
+import com.beanspace.beanspace.api.space.dto.HostResponse
+import com.beanspace.beanspace.api.space.dto.ReviewResponse
+import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
+import com.beanspace.beanspace.api.space.dto.SpaceResponseWithoutAddress
+import com.beanspace.beanspace.api.space.dto.UpdateReviewRequest
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
 import com.beanspace.beanspace.domain.exception.NoPermissionException
 import com.beanspace.beanspace.domain.image.model.Image
@@ -11,7 +16,11 @@ import com.beanspace.beanspace.domain.reservation.repository.ReservationReposito
 import com.beanspace.beanspace.domain.space.model.SearchKeyword
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.beanspace.beanspace.domain.space.model.Wishlist
-import com.beanspace.beanspace.domain.space.repository.*
+import com.beanspace.beanspace.domain.space.repository.ReviewRepository
+import com.beanspace.beanspace.domain.space.repository.SearchKeywordRepository
+import com.beanspace.beanspace.domain.space.repository.SpaceOfferRepository
+import com.beanspace.beanspace.domain.space.repository.SpaceRepository
+import com.beanspace.beanspace.domain.space.repository.WishListRepository
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -36,7 +45,6 @@ class SpaceService(
 ) {
     fun getSpaceList(
         keyword: String?,
-        sido: String?,
         checkIn: LocalDate?,
         checkOut: LocalDate?,
         headCount: Int?,
@@ -50,7 +58,6 @@ class SpaceService(
     ): Page<SpaceResponseWithoutAddress> {
         val (contents, totalCount) = spaceRepository.search(
             keyword = keyword,
-            sido = sido,
             checkIn = checkIn,
             checkOut = checkOut,
             headCount = headCount,
@@ -139,7 +146,7 @@ class SpaceService(
     }
 
     @Transactional
-    fun addReview(spaceId: Long, request: AddReviewRequest, reviewerId: Long): Unit {
+    fun addReview(spaceId: Long, request: AddReviewRequest, reviewerId: Long) {
         val member = memberRepository.findByIdOrNull(reviewerId) ?: throw ModelNotFoundException(
             model = "Member",
             id = reviewerId
