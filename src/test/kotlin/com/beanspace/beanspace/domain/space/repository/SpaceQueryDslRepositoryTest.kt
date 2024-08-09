@@ -17,7 +17,6 @@ import io.kotest.matchers.ints.shouldBeLessThanOrEqual
 import io.kotest.matchers.maps.shouldNotContainValue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.kotest.matchers.string.shouldContain
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
@@ -66,9 +65,9 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
             }
         }
 
-        given("sido로 search()시") {
+        given("keyword로 search()시") {
             `when`("특정 키워드를 보내면") {
-                then("Space.adress.sido가 키워드를 포함한 Space만 반환된다.") {
+                then("Space.adress.sidoAndSigungu나 Space.listingName에 키워드를 포함한 Space만 반환된다.") {
 
                     val host = memberRepository.saveAndFlush(defaultHost)
 
@@ -76,16 +75,24 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
                         generateSpaceFixtures(numberOfFixtures = 50, host = host, status = SpaceStatus.ACTIVE)
                     spaceRepository.saveAllAndFlush(spaceFixtures)
 
-                    val keyword = "충청"
+                    val keyword = "경기 펜트하우스"
 
-                    val (contents, totalCount) = spaceRepository.search(sido = keyword, pageable = defaultPageable)
+                    val (contents, totalCount) = spaceRepository.search(keyword = keyword, pageable = defaultPageable)
 
                     contents.size shouldBeLessThanOrEqual defaultPageable.pageSize
-                    contents.forEach {
-                        it.key?.address!!.sido shouldContain keyword
+                    contents.forEach { space ->
+                        keyword.split(" ").filter { it.isNotBlank() }.forEach { subKeyword ->
+                            (space.key?.address?.sidoAndSigungu?.contains(subKeyword) ?: false ||
+                                space.key?.listingName?.contains(subKeyword) ?: false) shouldBe true
+                        }
                     }
 
-                    totalCount shouldBe spaceFixtures.filter { it.address.sido.contains(keyword) }.size
+                    totalCount shouldBe spaceFixtures.filter { space ->
+                        keyword.split(" ").filter { it.isNotBlank() }.all { subKeyword ->
+                            space.address.sidoAndSigungu.contains(subKeyword) ||
+                                space.listingName.contains(subKeyword)
+                        }
+                    }.size
                 }
             }
         }
@@ -331,7 +338,28 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
         fun generateSpaceFixtures(numberOfFixtures: Int, host: Member, status: SpaceStatus): List<Space> {
             return (1..numberOfFixtures).map {
                 fixture<Space> {
-                    property(Address::sido) { fixture(listOf("사울특별시", "경기도", "제주도", "충청북도", "충청남도")) }
+                    property(Space::listingName) {
+                        fixture(
+                            listOf(
+                                "경기에 있는 집",
+                                "서울에 있는 집",
+                                "고급 펜트하우스",
+                                "펜션",
+                                "아파트"
+                            )
+                        )
+                    }
+                    property(Address::sidoAndSigungu) {
+                        fixture(
+                            listOf(
+                                "서울 구로구",
+                                "경기 평택시",
+                                "경기 의정부시",
+                                "경기 시흥시",
+                                "경기 파주시"
+                            )
+                        )
+                    }
                     property(Space::defaultPeople) { fixture<Int> { factory<Int> { range(2..4) } } }
                     property(Space::maxPeople) { fixture<Int> { factory<Int> { range(4..8) } } }
                     property(Space::status) { status }

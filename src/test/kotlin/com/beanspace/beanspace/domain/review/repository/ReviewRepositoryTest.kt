@@ -53,7 +53,7 @@ class ReviewRepositoryTest @Autowired constructor(
                     val guest = memberRepository.saveAndFlush(defaultGuest)
 
                     val spaceFixture = fixture<Space> {
-                        property(Address::sido) { "경기도" }
+                        property(Address::sidoAndSigungu) { "경기 평택시" }
                         property(Space::defaultPeople) { 2 }
                         property(Space::maxPeople) { 4 }
                         property(Space::status) { SpaceStatus.ACTIVE }

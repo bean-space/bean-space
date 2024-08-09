@@ -23,7 +23,8 @@ import java.time.LocalDate
 
 @Repository
 class SpaceQueryDslRepositoryImpl(
-    private val queryFactory: JPAQueryFactory
+    private val queryFactory: JPAQueryFactory,
+    private val searchKeywordRepository: SearchKeywordRepository
 ) : SpaceQueryDslRepository {
 
     private val space = QSpace.space
@@ -140,9 +141,13 @@ class SpaceQueryDslRepositoryImpl(
     }
 
     private fun isContainsKeyword(keyword: String?): BooleanExpression? {
-        return keyword?.let {
-            space.listingName.containsIgnoreCase(it)
-                .or(space.address.sidoAndSigungu.contains(it))
+        return keyword?.let { fullKeyword ->
+            val keywords = fullKeyword.split(" ").filter { it.isNotBlank() }
+
+            keywords.map {
+                space.listingName.containsIgnoreCase(it)
+                    .or(space.address.sidoAndSigungu.contains(it))
+            }.reduce { a, b -> a.and(b) }
         }
     }
 

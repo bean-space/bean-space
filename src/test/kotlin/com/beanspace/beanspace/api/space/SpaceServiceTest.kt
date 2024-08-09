@@ -19,6 +19,8 @@ import com.beanspace.beanspace.domain.space.model.Review
 import com.beanspace.beanspace.domain.space.model.Space
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.beanspace.beanspace.domain.space.repository.ReviewRepository
+import com.beanspace.beanspace.domain.space.repository.SearchKeywordRepository
+import com.beanspace.beanspace.domain.space.repository.SpaceOfferRepository
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import com.beanspace.beanspace.domain.space.repository.WishListRepository
 import io.kotest.assertions.throwables.shouldThrow
@@ -41,6 +43,8 @@ class SpaceServiceTest : BehaviorSpec({
     val reservationRepository: ReservationRepository = mockk(relaxed = true)
     val reviewRepository: ReviewRepository = mockk(relaxed = true)
     val memberRepository: MemberRepository = mockk(relaxed = true)
+    val searchKeywordRepository: SearchKeywordRepository = mockk(relaxed = true)
+    val spaceOfferRepository: SpaceOfferRepository = mockk(relaxed = true)
 
     val spaceService = SpaceService(
         spaceRepository = spaceRepository,
@@ -48,7 +52,9 @@ class SpaceServiceTest : BehaviorSpec({
         imageRepository = imageRepository,
         reservationRepository = reservationRepository,
         reviewRepository = reviewRepository,
-        memberRepository = memberRepository
+        memberRepository = memberRepository,
+        searchKeywordRepository = searchKeywordRepository,
+        spaceOfferRepository = spaceOfferRepository
     )
 
     afterContainer { clearAllMocks() }
@@ -299,7 +305,7 @@ class SpaceServiceTest : BehaviorSpec({
             }
         }
 
-        private val sidoFixture = fixture(listOf("사울특별시", "경기도", "제주도", "충청북도", "충청남도"))
+        private val sidoAndSigunguFixture = fixture(listOf("서울 구로구", "경기 평택시", "경기 의정부시", "경기 시흥시", "경기 파주시"))
 
         val defaultGuest = fixture<Member> {
             property(Member::id) { 1L }
@@ -315,7 +321,7 @@ class SpaceServiceTest : BehaviorSpec({
             return (1..numberOfFixtures).map { i ->
                 fixture<Space> {
                     property(Space::id) { i.toLong() }
-                    property(Address::sido) { sidoFixture }
+                    property(Address::sidoAndSigungu) { sidoAndSigunguFixture }
                     property(Space::defaultPeople) { minFixture }
                     property(Space::maxPeople) { maxFixture }
                     property(Space::status) { status }
