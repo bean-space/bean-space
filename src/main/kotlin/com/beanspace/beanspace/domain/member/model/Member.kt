@@ -52,9 +52,8 @@ class Member(
         this.role = MemberRole.HOST
     }
 
-    fun updateSocialUserInfo(phoneNumber: String, email: String) {
+    fun updateSocialUserInfo(phoneNumber: String) {
         this.phoneNumber = phoneNumber
-        this.email = email
     }
 
     fun isSocialUser() = providerId != null

@@ -16,7 +16,7 @@ data class UpdateProfileRequest(
 
     @field:NotBlank(message = "이메일을 입력해주세요.")
     @field:Pattern(
-        regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$",
+        regexp = "(^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$|^EMPTY$)",
         message = "올바른 이메일 형식을 입력해주세요."
     )
     val email: String,
