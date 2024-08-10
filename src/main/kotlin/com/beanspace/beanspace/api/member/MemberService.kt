@@ -103,7 +103,7 @@ class MemberService(
         return memberRepository.findByIdOrNull(principal.id)
             ?.also { check(it.isSocialUser()) { throw NoPermissionException("소셜 유저가 아닙니다!") } }
             ?.also { check(it.isPhoneNumberEmpty()) { throw IllegalStateException("이미 전화번호가 있습니다") } }
-            ?.also { it.updateSocialUserInfo(request.phoneNumber) }
+            ?.also { it.updateSocialUserInfo(request.phoneNumber, request.email) }
             ?.let { MemberProfileResponse.fromEntity(it) }
             ?: throw ModelNotFoundException("Member", principal.id)
     }
