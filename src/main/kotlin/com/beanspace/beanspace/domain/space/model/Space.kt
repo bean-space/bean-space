@@ -13,11 +13,10 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
-import org.hibernate.annotations.SQLRestriction
 import java.time.LocalDateTime
 
 @Entity
-@SQLRestriction("is_deleted = false")
+
 class Space(
     @Column
     var listingName: String,

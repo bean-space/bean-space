@@ -83,7 +83,11 @@ class SpaceService(
     fun getSpace(spaceId: Long, today: LocalDate): SpaceDetailResponse {
         val space =
             spaceRepository.findByIdOrNull(spaceId) ?: throw ModelNotFoundException(model = "Space", id = spaceId)
-        if (space.status != SpaceStatus.ACTIVE) throw ModelNotFoundException(model = "Space", id = spaceId)
+
+        if (space.status != SpaceStatus.ACTIVE || space.isDeleted) throw ModelNotFoundException(
+            model = "Space",
+            id = spaceId
+        )
 
         val spaceImageList = imageRepository.findAllByContentIdAndTypeOrderByOrderIndexAsc(spaceId, ImageType.SPACE)
 

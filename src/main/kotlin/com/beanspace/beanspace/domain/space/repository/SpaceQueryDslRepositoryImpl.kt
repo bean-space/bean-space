@@ -35,6 +35,7 @@ class SpaceQueryDslRepositoryImpl(
     override fun findByStatus(pageable: Pageable, spaceStatus: SpaceStatus): Pair<Map<Space?, List<String>>, Long> {
         val conditions = BooleanBuilder()
             .and(eqStatus(spaceStatus))
+            .and(space.isDeleted.eq(false))
 
         val totalCount = queryFactory.select(space.count())
             .from(space)
@@ -89,6 +90,7 @@ class SpaceQueryDslRepositoryImpl(
             .and(isGreaterOrEqualThanBedCount(bedCount))
             .and(isGreaterOrEqualThanBathRoomCount(bathRoomCount))
             .and(hasAllOffer(offer))
+            .and(space.isDeleted.eq(false))
 
         val totalCount = queryFactory.select(space.count())
             .from(space)
