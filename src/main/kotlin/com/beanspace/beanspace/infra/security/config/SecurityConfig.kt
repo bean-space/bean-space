@@ -47,7 +47,13 @@ class SecurityConfig(
             .headers { header -> header.frameOptions { it.disable() } }
             .authorizeHttpRequests {
                 it
-                    .requestMatchers(HttpMethod.GET, "/api/v1/spaces", "/api/v1/spaces/**", "/api/v1/coupons")
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/v1/spaces",
+                        "/api/v1/spaces/**",
+                        "/api/v1/coupons",
+                        "/api/v1/spaces/offer"
+                    )
                     .permitAll()
                     .requestMatchers(
                         "/healthcheck",

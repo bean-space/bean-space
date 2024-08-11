@@ -16,7 +16,6 @@ import jakarta.persistence.ManyToOne
 import java.time.LocalDateTime
 
 @Entity
-
 class Space(
     @Column
     var listingName: String,
