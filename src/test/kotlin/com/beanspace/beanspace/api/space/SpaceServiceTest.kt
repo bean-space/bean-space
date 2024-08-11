@@ -329,6 +329,7 @@ class SpaceServiceTest : BehaviorSpec({
                     property(Space::maxPeople) { maxFixture }
                     property(Space::status) { status }
                     property(Space::host) { host }
+                    property(Space::isDeleted) { false }
                 }
             }
         }

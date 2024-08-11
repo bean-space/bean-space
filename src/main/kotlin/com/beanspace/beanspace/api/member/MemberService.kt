@@ -62,6 +62,10 @@ class MemberService(
                 check(it.role == MemberRole.MEMBER)
                 { throw IllegalArgumentException("이미 요청한 역할을 갖고 있습니다.") }
             }
+            ?.also {
+                check(it.isPhoneNumberExist())
+                { throw IllegalArgumentException("호스트로 변경하려면 전화번호 정보를 입력해야합니다.") }
+            }
             ?.also { it.updateRoleToHost() }
             ?.let {
                 jwtPlugin.generateAccessToken(
