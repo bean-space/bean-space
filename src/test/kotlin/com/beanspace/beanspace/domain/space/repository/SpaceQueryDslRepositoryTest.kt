@@ -364,6 +364,7 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
                     property(Space::maxPeople) { fixture<Int> { factory<Int> { range(4..8) } } }
                     property(Space::status) { status }
                     property(Space::host) { host }
+                    property(Space::isDeleted) { false }
                 }
             }
         }
