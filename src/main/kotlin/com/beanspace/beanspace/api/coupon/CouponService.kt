@@ -6,8 +6,8 @@ import com.beanspace.beanspace.domain.coupon.repository.CouponRepository
 import com.beanspace.beanspace.domain.coupon.repository.UserCouponRepository
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.redisson.api.RedissonClient
-import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
@@ -22,7 +22,7 @@ class CouponService(
     private val transactionTemplate: TransactionTemplate
 ) {
 
-    private val logger = LoggerFactory.getLogger(CouponService::class.java)
+    private val log = KotlinLogging.logger {}
 
     fun getCouponList(): List<CouponResponse> {
         return couponRepository.findAccessibleCoupons()
@@ -35,7 +35,7 @@ class CouponService(
 
         try {
             if (!lock.tryLock(5, 10, TimeUnit.SECONDS)) throw IllegalStateException("쿠폰 발행을 다시 시도해주세요")
-
+            log.info { "LOCK COUPON KEY : $key" }
             transactionTemplate.execute {
                 val member = memberRepository.findByIdOrNull(memberId)
                     ?: throw ModelNotFoundException("멤버", memberId)
@@ -56,11 +56,12 @@ class CouponService(
                     .let { userCouponRepository.save(it) }
             }
         } catch (e: Exception) {
-            logger.error(e.message, e)
+            log.error(e) { e.message }
             throw e
         } finally {
             if (lock.isHeldByCurrentThread) {
                 lock.unlock()
+                log.info { "UNLOCK COUPON KEY : $key" }
             }
         }
     }
