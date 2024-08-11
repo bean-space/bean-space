@@ -60,4 +60,6 @@ class Member(
     fun isSocialUser() = providerId != null
 
     fun isPhoneNumberEmpty() = phoneNumber == "EMPTY"
+
+    fun isPhoneNumberExist() = phoneNumber != "EMPTY"
 }
