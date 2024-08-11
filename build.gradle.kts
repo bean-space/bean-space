@@ -20,6 +20,10 @@ configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())
     }
+    all {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+        exclude(group = "org.springframework.boot", module = "logback-classic")
+    }
 }
 
 repositories {
@@ -45,6 +49,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.redisson:redisson-spring-boot-starter:3.33.0")
     implementation("mysql:mysql-connector-java:8.0.32")
+
+    //logging
+    implementation("io.github.oshai:kotlin-logging-jvm:5.1.4")
+    implementation("org.springframework.boot:spring-boot-starter-log4j2")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
 
     //monitoring
     implementation("org.springframework.boot:spring-boot-starter-actuator")
