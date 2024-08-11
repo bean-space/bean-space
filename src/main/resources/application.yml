@@ -20,10 +20,11 @@ spring:
       host: localhost
       port: 6379
 logging:
+  config: classpath:log4j2/log4j2.yml
   level:
     org:
       hibernate:
         SQL: debug
-#    root: debug
+        root: debug
+        orm.jdbc.bind: debug
 #        type.descriptor.sql: trace
-#        orm.jdbc.bind: trace
