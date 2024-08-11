@@ -18,6 +18,7 @@ import com.beanspace.beanspace.domain.space.model.Address
 import com.beanspace.beanspace.domain.space.model.Review
 import com.beanspace.beanspace.domain.space.model.Space
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
+import com.beanspace.beanspace.domain.space.repository.OfferRepository
 import com.beanspace.beanspace.domain.space.repository.ReviewRepository
 import com.beanspace.beanspace.domain.space.repository.SearchKeywordRepository
 import com.beanspace.beanspace.domain.space.repository.SpaceOfferRepository
@@ -45,6 +46,7 @@ class SpaceServiceTest : BehaviorSpec({
     val memberRepository: MemberRepository = mockk(relaxed = true)
     val searchKeywordRepository: SearchKeywordRepository = mockk(relaxed = true)
     val spaceOfferRepository: SpaceOfferRepository = mockk(relaxed = true)
+    val offerRepository: OfferRepository = mockk(relaxed = true)
 
     val spaceService = SpaceService(
         spaceRepository = spaceRepository,
@@ -54,7 +56,8 @@ class SpaceServiceTest : BehaviorSpec({
         reviewRepository = reviewRepository,
         memberRepository = memberRepository,
         searchKeywordRepository = searchKeywordRepository,
-        spaceOfferRepository = spaceOfferRepository
+        spaceOfferRepository = spaceOfferRepository,
+        offerRepository = offerRepository
     )
 
     afterContainer { clearAllMocks() }
