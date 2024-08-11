@@ -2,6 +2,7 @@ package com.beanspace.beanspace.api.space
 
 import com.beanspace.beanspace.api.space.dto.AddReviewRequest
 import com.beanspace.beanspace.api.space.dto.HostResponse
+import com.beanspace.beanspace.api.space.dto.OfferResponse
 import com.beanspace.beanspace.api.space.dto.ReviewResponse
 import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
 import com.beanspace.beanspace.api.space.dto.SpaceResponseWithoutAddress
@@ -16,6 +17,7 @@ import com.beanspace.beanspace.domain.reservation.repository.ReservationReposito
 import com.beanspace.beanspace.domain.space.model.SearchKeyword
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.beanspace.beanspace.domain.space.model.Wishlist
+import com.beanspace.beanspace.domain.space.repository.OfferRepository
 import com.beanspace.beanspace.domain.space.repository.ReviewRepository
 import com.beanspace.beanspace.domain.space.repository.SearchKeywordRepository
 import com.beanspace.beanspace.domain.space.repository.SpaceOfferRepository
@@ -41,7 +43,8 @@ class SpaceService(
     private val reviewRepository: ReviewRepository,
     private val memberRepository: MemberRepository,
     private val searchKeywordRepository: SearchKeywordRepository,
-    private val spaceOfferRepository: SpaceOfferRepository
+    private val spaceOfferRepository: SpaceOfferRepository,
+    private val offerRepository: OfferRepository
 ) {
     fun getSpaceList(
         keyword: String?,
@@ -216,5 +219,10 @@ class SpaceService(
             ?.also { it.delete() }
             ?.also { imageRepository.deleteByTypeAndContentId(ImageType.REVIEW, reviewId) }
             ?: throw ModelNotFoundException(model = "Review", id = reviewId)
+    }
+
+    fun getOfferList(): List<OfferResponse> {
+        return offerRepository.findAll()
+            .map { OfferResponse.from(it) }
     }
 }

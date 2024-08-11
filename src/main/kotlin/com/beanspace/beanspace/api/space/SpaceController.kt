@@ -1,6 +1,7 @@
 package com.beanspace.beanspace.api.space
 
 import com.beanspace.beanspace.api.space.dto.AddReviewRequest
+import com.beanspace.beanspace.api.space.dto.OfferResponse
 import com.beanspace.beanspace.api.space.dto.ReviewResponse
 import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
 import com.beanspace.beanspace.api.space.dto.SpaceResponseWithoutAddress
@@ -124,5 +125,10 @@ class SpaceController(private val spaceService: SpaceService) {
         @AuthenticationPrincipal userPrincipal: UserPrincipal
     ): ResponseEntity<Unit> {
         return ResponseEntity.ok(spaceService.deleteFromWishList(spaceId, userPrincipal))
+    }
+
+    @GetMapping("/offer")
+    fun getOfferList(): ResponseEntity<List<OfferResponse>> {
+        return ResponseEntity.ok(spaceService.getOfferList())
     }
 }
