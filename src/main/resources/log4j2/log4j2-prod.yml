@@ -10,25 +10,23 @@ Configutation:
   Appenders:
     RollingFile:
       - name: RollingFile_Appender
-        fileName: ${log-path}/rollingfile.log
-        filePattern: "${log-path}/archive/rollingfile.log_%d{yyyy-MM-dd}-%i.gz"
+        fileName: ${log-path}/prod.log
+        filePattern: "${log-path}/prod.log_%d{yyyy-MM-dd}-%i.gz"
         PatternLayout:
-          pattern: "%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{cyan} [%thread] [traceId=%X{traceId}]) %highlight{%-5level} [%C] %style{[%t]}{yellow}- %m%n"
+          pattern: "%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{cyan} %style{[%t]}{yellow} %style{[traceId=%X{traceId}]}{blue} %highlight{%-5level} [%C] - %m%n"
         Policies:
           TimeBasedTriggeringPolicy:
             Interval: 1
             modulate: true
-          SizeBasedTriggeringPolicy:
-            size: "10 MB"
         DefaultRollOverStrategy:
           max: 10
           Delete:
-            basePath: "${log-path}/archive"
+            basePath: "${log-path}"
             maxDepth: "1"
             IfLastModified:
               age: "P14D"
             IfAccumulatedFileCount:
-              exceeds: 140
+              exceeds: 30
   Loggers:
     Root:
       level: info
