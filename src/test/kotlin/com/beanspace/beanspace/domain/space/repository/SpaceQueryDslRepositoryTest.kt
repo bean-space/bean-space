@@ -286,7 +286,7 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
                     )
                     spaceRepository.saveAllAndFlush(spaceFixture)
 
-                    val pageable = PageRequest.of(0, pageSize)
+                    val pageable = PageRequest.of(0, pageSize).withSort(Sort.by(Sort.Direction.DESC, "createdAt"))
 
                     val (contents, totalCount) = spaceRepository.search(pageable = pageable)
 
@@ -303,8 +303,8 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
                         generateSpaceFixtures(numberOfFixtures = 50, host = host, status = SpaceStatus.ACTIVE)
                     spaceRepository.saveAllAndFlush(spaceFixture)
 
-                    val page1 = PageRequest.of(0, 12)
-                    val page2 = PageRequest.of(1, 12)
+                    val page1 = PageRequest.of(0, 12).withSort(Sort.by(Sort.Direction.DESC, "createdAt"))
+                    val page2 = PageRequest.of(1, 12).withSort(Sort.by(Sort.Direction.DESC, "createdAt"))
 
                     val (contents1, _) = spaceRepository.search(pageable = page1)
                     val (contents2, _) = spaceRepository.search(pageable = page2)

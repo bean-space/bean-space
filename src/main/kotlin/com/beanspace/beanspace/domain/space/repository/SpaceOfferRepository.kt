@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface SpaceOfferRepository : JpaRepository<SpaceOffer, Long> {
     fun deleteAllBySpaceId(spaceId: Long)
-    fun findAllBySpaceId(spaceId: Long): List<SpaceOffer>
+    fun findAllBySpaceIdOrderById(spaceId: Long): List<SpaceOffer>
 }

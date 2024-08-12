@@ -3,23 +3,27 @@ package com.beanspace.beanspace.domain.space.repository
 import com.beanspace.beanspace.domain.image.model.ImageType
 import com.beanspace.beanspace.domain.image.model.QImage
 import com.beanspace.beanspace.domain.reservation.model.QReservation
+import com.beanspace.beanspace.domain.space.model.QReview
 import com.beanspace.beanspace.domain.space.model.QSpace
 import com.beanspace.beanspace.domain.space.model.QSpaceOffer
 import com.beanspace.beanspace.domain.space.model.QWishlist
 import com.beanspace.beanspace.domain.space.model.Space
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.querydsl.core.BooleanBuilder
+import com.querydsl.core.Tuple
 import com.querydsl.core.types.Expression
 import com.querydsl.core.types.Order
 import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.EntityPathBase
+import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.core.types.dsl.PathBuilder
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Repository
 class SpaceQueryDslRepositoryImpl(
@@ -31,6 +35,7 @@ class SpaceQueryDslRepositoryImpl(
     private val image = QImage.image
     private val wishlist = QWishlist.wishlist
     private val spaceOffer = QSpaceOffer.spaceOffer
+    private val review = QReview.review
 
     override fun findByStatus(pageable: Pageable, spaceStatus: SpaceStatus): Pair<Map<Space?, List<String>>, Long> {
         val conditions = BooleanBuilder()
@@ -48,14 +53,14 @@ class SpaceQueryDslRepositoryImpl(
             .where(conditions)
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong())
-            .orderBy(*getOrderSpecifier(pageable, space))
+            .orderBy(getOrderSpecifier(pageable, space))
             .fetch()
 
         val result = queryFactory.select(space, image.imageUrl)
             .from(space)
             .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
             .where(space.id.`in`(paginatedSpaceId))
-            .orderBy(*getOrderSpecifier(pageable, space), image.orderIndex.asc())
+            .orderBy(getOrderSpecifier(pageable, space), image.orderIndex.asc())
             .fetch()
 
         val contents = result.groupBy { it.get(QSpace.space) }
@@ -77,7 +82,7 @@ class SpaceQueryDslRepositoryImpl(
         bathRoomCount: Int?,
         offer: List<Long>?,
         pageable: Pageable
-    ): Pair<Map<Space?, List<String>>, Long> {
+    ): Pair<Map<Space?, Pair<List<String>, Double?>>, Long> {
 
         val conditions = BooleanBuilder()
             .and(eqStatus(SpaceStatus.ACTIVE))
@@ -97,25 +102,98 @@ class SpaceQueryDslRepositoryImpl(
             .where(conditions)
             .fetchOne() ?: return Pair(emptyMap(), 0)
 
-        val paginatedSpaceId = queryFactory
-            .select(space.id).distinct()
-            .from(space)
-            .where(conditions)
-            .offset(pageable.offset)
-            .limit(pageable.pageSize.toLong())
-            .orderBy(*getOrderSpecifier(pageable, space))
-            .fetch()
+        val sortProperty = pageable.sort.toList().map { it.property }[0]
 
-        val result = queryFactory.select(space, image.imageUrl)
-            .from(space)
-            .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
-            .where(space.id.`in`(paginatedSpaceId))
-            .orderBy(*getOrderSpecifier(pageable, space), image.orderIndex.asc())
-            .fetch()
+        val rating = Expressions.numberPath(Double::class.java, "rating")
+
+        val result: List<Tuple> = when (sortProperty) {
+            "popular" -> {
+                val count = Expressions.numberPath(Long::class.java, "count")
+
+                val paginatedSpaceId = queryFactory
+                    .select(space.id, reservation.id.count().`as`(count)).distinct()
+                    .from(space)
+                    .leftJoin(reservation)
+                    .on(
+                        reservation.space.id.eq(space.id)
+                            .and(reservation.createdAt.goe(LocalDateTime.now().minusDays(7)))
+                    )
+                    .where(conditions)
+                    .groupBy(space.id)
+                    .orderBy(count.desc())
+                    .offset(pageable.offset)
+                    .limit(pageable.pageSize.toLong())
+                    .fetch()
+                    .map { it.get(space.id) }
+
+                queryFactory.select(
+                    space,
+                    image.imageUrl,
+                    reservation.id.count().`as`(count),
+                    review.rating.avg().`as`(rating)
+                )
+                    .from(space)
+                    .leftJoin(reservation).on(reservation.space.id.eq(space.id))
+                    .leftJoin(review).on(review.space.id.eq(space.id))
+                    .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
+                    .where(space.id.`in`(paginatedSpaceId))
+                    .groupBy(space.id, image.imageUrl)
+                    .orderBy(count.desc(), image.orderIndex.asc())
+                    .fetch()
+            }
+
+            "rating" -> {
+                val paginatedSpaceId = queryFactory
+                    .select(space.id, review.rating.avg().`as`(rating)).distinct()
+                    .from(space)
+                    .leftJoin(review).on(review.space.id.eq(space.id))
+                    .where(conditions)
+                    .groupBy(space.id)
+                    .orderBy(rating.desc())
+                    .offset(pageable.offset)
+                    .limit(pageable.pageSize.toLong())
+                    .fetch()
+                    .map { it.get(space.id) }
+
+                queryFactory.select(space, image.imageUrl, review.rating.avg().`as`(rating))
+                    .from(space)
+                    .leftJoin(review).on(review.space.id.eq(space.id))
+                    .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
+                    .where(space.id.`in`(paginatedSpaceId))
+                    .groupBy(space.id, image.imageUrl)
+                    .orderBy(rating.desc(), image.orderIndex.asc())
+                    .fetch()
+            }
+
+            else -> {
+                val paginatedSpaceId = queryFactory
+                    .select(space.id).distinct()
+                    .from(space)
+                    .where(conditions)
+                    .offset(pageable.offset)
+                    .limit(pageable.pageSize.toLong())
+                    .orderBy(getOrderSpecifier(pageable, space))
+                    .fetch()
+
+                queryFactory.select(space, image.imageUrl, review.rating.avg().`as`(rating))
+                    .from(space)
+                    .leftJoin(review).on(review.space.id.eq(space.id))
+                    .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
+                    .where(space.id.`in`(paginatedSpaceId))
+                    .groupBy(space.id, image.imageUrl)
+                    .orderBy(getOrderSpecifier(pageable, space), image.orderIndex.asc())
+                    .fetch()
+            }
+        }
 
         val contents = result.groupBy { it.get(QSpace.space) }
             .mapKeys { (space, _) -> space }
-            .mapValues { it.value.map { tuple -> tuple.get(QImage.image.imageUrl) ?: "" } }
+            .mapValues { (_, tuples) ->
+                Pair(
+                    tuples.map { tuple -> tuple.get(QImage.image.imageUrl) ?: "" },
+                    tuples.firstOrNull()?.get(rating)
+                )
+            }
 
         return Pair(contents, totalCount)
     }
@@ -179,13 +257,14 @@ class SpaceQueryDslRepositoryImpl(
     private fun hasAllOffer(offer: List<Long>?): BooleanExpression? {
         return if (!offer.isNullOrEmpty()) {
             val offerCount = offer.size.toLong()
-            JPAExpressions
-                .select(spaceOffer.space.id)
-                .from(spaceOffer)
-                .where(spaceOffer.offer.id.`in`(offer))
-                .groupBy(spaceOffer.space.id)
-                .having(spaceOffer.offer.id.countDistinct().eq(offerCount))
-                .exists()
+            space.id.`in`(
+                JPAExpressions
+                    .select(spaceOffer.space.id)
+                    .from(spaceOffer)
+                    .where(spaceOffer.offer.id.`in`(offer))
+                    .groupBy(spaceOffer.space.id)
+                    .having(spaceOffer.offer.id.countDistinct().eq(offerCount))
+            )
         } else {
             null
         }
@@ -206,7 +285,7 @@ class SpaceQueryDslRepositoryImpl(
         return if (spaceStatus != null) space.status.eq(spaceStatus) else null
     }
 
-    private fun getOrderSpecifier(pageable: Pageable, path: EntityPathBase<*>): Array<OrderSpecifier<*>> {
+    private fun getOrderSpecifier(pageable: Pageable, path: EntityPathBase<*>): OrderSpecifier<*> {
         val pathBuilder = PathBuilder(path.type, path.metadata)
 
         return pageable.sort.toList().map { order ->
@@ -214,6 +293,6 @@ class SpaceQueryDslRepositoryImpl(
                 if (order.isAscending) Order.ASC else Order.DESC,
                 pathBuilder.get(order.property) as Expression<Comparable<*>>
             )
-        }.toTypedArray()
+        }.toTypedArray()[0]
     }
 }
