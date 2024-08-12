@@ -219,6 +219,35 @@ class SpaceQueryDslRepositoryImpl(
         return contents
     }
 
+    override fun getMostPopular4SpaceList(): Map<Space?, List<String>> {
+
+        val oneWeekAgo = LocalDateTime.now().minusWeeks(1)
+
+        val mostPopular4spaceIds = queryFactory
+            .select(reservation.space.id)
+            .from(reservation)
+            .where(
+                reservation.createdAt.after(oneWeekAgo)
+                    .and(reservation.isCancelled.eq(false))
+            )
+            .groupBy(reservation.space.id)
+            .orderBy(reservation.space.id.count().desc())
+            .limit(4)
+            .fetch()
+
+        val result = queryFactory.select(space, image.imageUrl)
+            .from(space)
+            .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
+            .where(space.id.`in`(mostPopular4spaceIds))
+            .fetch()
+
+        val contents = result.groupBy { it.get(QSpace.space) }
+            .mapKeys { (space, _) -> space }
+            .mapValues { it.value.map { tuple -> tuple.get(QImage.image.imageUrl) ?: "" } }
+
+        return contents
+    }
+
     private fun isContainsKeyword(keyword: String?): BooleanExpression? {
         return keyword?.let { fullKeyword ->
             val keywords = fullKeyword.split(" ").filter { it.isNotBlank() }

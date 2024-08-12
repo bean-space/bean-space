@@ -6,7 +6,7 @@ import com.beanspace.beanspace.api.member.dto.MemberProfileResponse
 import com.beanspace.beanspace.api.member.dto.MemberReservationResponse
 import com.beanspace.beanspace.api.member.dto.UpdateProfileRequest
 import com.beanspace.beanspace.api.member.dto.UpdateSocialUserInfoRequest
-import com.beanspace.beanspace.api.space.dto.WishListedSpaceResponse
+import com.beanspace.beanspace.api.space.dto.CompactSpaceResponse
 import com.beanspace.beanspace.domain.coupon.repository.UserCouponRepository
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
 import com.beanspace.beanspace.domain.exception.NoPermissionException
@@ -92,9 +92,9 @@ class MemberService(
         }
     }
 
-    fun getWishListedSpaceList(userPrincipal: UserPrincipal): List<WishListedSpaceResponse> {
+    fun getWishListedSpaceList(userPrincipal: UserPrincipal): List<CompactSpaceResponse> {
         return spaceRepository.getWishListedSpaceList(userPrincipal.id)
-            .map { WishListedSpaceResponse.fromEntity(it.key!!, it.value) }
+            .map { CompactSpaceResponse.fromEntity(it.key!!, it.value) }
     }
 
     fun getCouponList(userPrincipal: UserPrincipal): List<UserCouponResponse> {

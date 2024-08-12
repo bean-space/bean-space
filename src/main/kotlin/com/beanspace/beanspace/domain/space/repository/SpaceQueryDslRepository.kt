@@ -22,4 +22,5 @@ interface SpaceQueryDslRepository {
     ): Pair<Map<Space?, Pair<List<String>, Double?>>, Long>
 
     fun getWishListedSpaceList(memberId: Long): Map<Space?, List<String>>
+    fun getMostPopular4SpaceList(): Map<Space?, List<String>>
 }

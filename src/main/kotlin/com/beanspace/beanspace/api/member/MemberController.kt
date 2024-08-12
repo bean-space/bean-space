@@ -6,7 +6,7 @@ import com.beanspace.beanspace.api.member.dto.MemberProfileResponse
 import com.beanspace.beanspace.api.member.dto.MemberReservationResponse
 import com.beanspace.beanspace.api.member.dto.UpdateProfileRequest
 import com.beanspace.beanspace.api.member.dto.UpdateSocialUserInfoRequest
-import com.beanspace.beanspace.api.space.dto.WishListedSpaceResponse
+import com.beanspace.beanspace.api.space.dto.CompactSpaceResponse
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -59,7 +59,7 @@ class MemberController(
     }
 
     @GetMapping("/wishlist")
-    fun getWishListedSpaceList(@AuthenticationPrincipal userPrincipal: UserPrincipal): ResponseEntity<List<WishListedSpaceResponse>> {
+    fun getWishListedSpaceList(@AuthenticationPrincipal userPrincipal: UserPrincipal): ResponseEntity<List<CompactSpaceResponse>> {
         return ResponseEntity
             .ok(memberService.getWishListedSpaceList(userPrincipal))
     }
