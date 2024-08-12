@@ -19,12 +19,14 @@ data class SpaceResponse(
     val bedCount: Int,
     val bathRoomCount: Int,
     val status: SpaceStatus,
-    val imageUrlList: List<String>
+    val imageUrlList: List<String>,
+    val offer: List<Long>?
 ) {
     companion object {
         fun from(
             space: Space,
             imageUrlList: List<String>,
+            offer: List<Long>?
         ): SpaceResponse {
             return SpaceResponse(
                 id = space.id!!,
@@ -42,7 +44,8 @@ data class SpaceResponse(
                 bedCount = space.bedCount,
                 bathRoomCount = space.bathRoomCount,
                 status = space.status,
-                imageUrlList = imageUrlList
+                imageUrlList = imageUrlList,
+                offer = offer
             )
         }
     }
