@@ -57,7 +57,8 @@ class LogFilter : OncePerRequestFilter() {
             "/swagger-ui/",
             "/v3/api-docs/",
             "/v3/api-docs/",
-            "/actuator/prometheus"
+            "/actuator/prometheus",
+            "/healthcheck"
         )
         return excludePath.any { request.requestURI.startsWith(it) }
     }
