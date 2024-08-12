@@ -19,7 +19,7 @@ interface SpaceQueryDslRepository {
         bathRoomCount: Int? = null,
         offer: List<Long>? = null,
         pageable: Pageable
-    ): Pair<Map<Space?, List<String>>, Long>
+    ): Pair<Map<Space?, Pair<List<String>, Double?>>, Long>
 
     fun getWishListedSpaceList(memberId: Long): Map<Space?, List<String>>
 }

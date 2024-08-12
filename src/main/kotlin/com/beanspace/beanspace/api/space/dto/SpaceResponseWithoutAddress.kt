@@ -16,12 +16,14 @@ data class SpaceResponseWithoutAddress(
     val bedCount: Int,
     val bathRoomCount: Int,
     val status: SpaceStatus,
-    val imageUrlList: List<String>
+    val imageUrlList: List<String>,
+    val averageRating: Double
 ) {
     companion object {
         fun from(
             space: Space,
             imageUrlList: List<String>,
+            rating: Double
         ): SpaceResponseWithoutAddress {
             return SpaceResponseWithoutAddress(
                 id = space.id!!,
@@ -36,7 +38,8 @@ data class SpaceResponseWithoutAddress(
                 bedCount = space.bedCount,
                 bathRoomCount = space.bathRoomCount,
                 status = space.status,
-                imageUrlList = imageUrlList
+                imageUrlList = imageUrlList,
+                averageRating = rating
             )
         }
     }

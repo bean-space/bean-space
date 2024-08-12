@@ -12,7 +12,11 @@ import com.beanspace.beanspace.domain.image.repository.ImageRepository
 import com.beanspace.beanspace.domain.member.repository.MemberRepository
 import com.beanspace.beanspace.domain.reservation.repository.ReservationRepository
 import com.beanspace.beanspace.domain.space.model.SpaceOffer
-import com.beanspace.beanspace.domain.space.repository.*
+import com.beanspace.beanspace.domain.space.repository.OfferRepository
+import com.beanspace.beanspace.domain.space.repository.ReviewRepository
+import com.beanspace.beanspace.domain.space.repository.SpaceOfferRepository
+import com.beanspace.beanspace.domain.space.repository.SpaceRepository
+import com.beanspace.beanspace.domain.space.repository.WishListRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -57,7 +61,7 @@ class HostService(
                 ?: throw ModelNotFoundException("Offer", it)
         }
 
-        return SpaceResponse.from(savedSpace, imageUrlList)
+        return SpaceResponse.from(savedSpace, imageUrlList, spaceOffer)
     }
 
     @Transactional
@@ -99,7 +103,7 @@ class HostService(
                 }
             }
             ?.let {
-                SpaceResponse.from(it, request.imageUrlList)
+                SpaceResponse.from(it, request.imageUrlList, request.offer)
             } ?: throw ModelNotFoundException(model = "Space", id = spaceId)
     }
 
@@ -124,7 +128,10 @@ class HostService(
                     SpaceResponse.from(
                         space,
                         imageRepository.findAllByContentIdAndTypeOrderByOrderIndexAsc(space.id!!, ImageType.SPACE)
-                            .map { image -> image.imageUrl })
+                            .map { image -> image.imageUrl },
+                        spaceOfferRepository.findAllBySpaceIdOrderById(space.id!!)
+                            .map { spaceOffer -> spaceOffer.offer.id!! }
+                    )
                 }
             }
             ?: listOf()

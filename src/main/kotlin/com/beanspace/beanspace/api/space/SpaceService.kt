@@ -78,7 +78,8 @@ class SpaceService(
         if (contents.isEmpty() || totalCount == 0L) {
             return Page.empty()
         }
-        val response = contents.map { SpaceResponseWithoutAddress.from(it.key!!, it.value) }
+        val response =
+            contents.map { SpaceResponseWithoutAddress.from(it.key!!, it.value.first, it.value.second ?: 0.0) }
 
         return PageImpl(response, pageable, totalCount)
     }
@@ -96,7 +97,7 @@ class SpaceService(
 
         val averageRating = DecimalFormat("#.#").format(reviewRepository.getAverageRating(spaceId) ?: 0.0).toDouble()
 
-        val offerList = spaceOfferRepository.findAllBySpaceId(spaceId).map { it.offer.id!! }
+        val offerList = spaceOfferRepository.findAllBySpaceIdOrderById(spaceId).map { it.offer.id!! }
 
         val reservedDateList = reservationRepository.findAllBySpaceIdAndIsCancelledAndCheckOutAfter(
             spaceId,
@@ -105,8 +106,11 @@ class SpaceService(
         ).flatMap { it.checkIn.datesUntil(it.checkOut).toList() }.filter { it.isAfter(today) }
 
         return SpaceDetailResponse.from(
-            spaceResponseWithoutAddress = SpaceResponseWithoutAddress.from(space, spaceImageList.map { it.imageUrl }),
-            averageRating = averageRating,
+            spaceResponseWithoutAddress = SpaceResponseWithoutAddress.from(
+                space,
+                spaceImageList.map { it.imageUrl },
+                averageRating
+            ),
             hostResponse = HostResponse(
                 nickname = space.host.nickname,
                 profileImageUrl = space.host.profileImageUrl
@@ -185,14 +189,14 @@ class SpaceService(
 
     @Transactional
     fun updateReview(spaceId: Long, reviewId: Long, request: UpdateReviewRequest, userPrincipal: UserPrincipal) {
-        val member = memberRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException(
+        memberRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException(
             model = "Member",
             id = userPrincipal.id
         )
-        val space =
-            spaceRepository.findByIdOrNull(spaceId) ?: throw ModelNotFoundException(model = "Space", id = spaceId)
 
-        val review = reviewRepository.findByIdOrNull(reviewId)
+        spaceRepository.findByIdOrNull(spaceId) ?: throw ModelNotFoundException(model = "Space", id = spaceId)
+
+        reviewRepository.findByIdOrNull(reviewId)
             ?.also { check(it.space.id == spaceId) { throw IllegalArgumentException("해당 공간에 대한 후기가 아닙니다.") } }
             ?.also { check(it.member.id == userPrincipal.id) { throw NoPermissionException() } }
             ?.also { it.update(request.content, request.rating) }
