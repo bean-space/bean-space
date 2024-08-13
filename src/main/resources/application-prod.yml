@@ -18,11 +18,12 @@ spring:
       host: ${AWS_REDIS_HOST}
       port: 6379
 logging:
+  config: classpath:log4j2/log4j2-prod.yml
   level:
     org:
       hibernate:
         SQL: debug
-        orm.jdbc.bind: trace
+        orm.jdbc.bind: debug
 redisson:
   single-server-config:
     address: redis://${spring.data.redis.host}:${spring.data.redis.port}

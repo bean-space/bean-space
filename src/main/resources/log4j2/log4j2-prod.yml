@@ -1,0 +1,40 @@
+Configutation:
+  name: Default
+  status: info
+
+  Properties:
+    Property:
+      name: log-path
+      value: "logs"
+
+  Appenders:
+    RollingFile:
+      - name: RollingFile_Appender
+        fileName: ${log-path}/prod.log
+        filePattern: "${log-path}/prod.log_%d{yyyy-MM-dd}-%i.gz"
+        PatternLayout:
+          pattern: "%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{cyan} %style{[%t]}{yellow} %style{[traceId=%X{traceId}]}{blue} %highlight{%-5level} [%C] - %m%n"
+        Policies:
+          TimeBasedTriggeringPolicy:
+            Interval: 1
+            modulate: true
+        DefaultRollOverStrategy:
+          max: 10
+          Delete:
+            basePath: "${log-path}"
+            maxDepth: "1"
+            IfLastModified:
+              age: "P14D"
+            IfAccumulatedFileCount:
+              exceeds: 30
+  Loggers:
+    Root:
+      level: info
+      AppenderRef:
+        - ref: RollingFile_Appender
+    Logger:
+      - name: com.beanspace.beanspace
+        additivity: false
+        level: info
+        AppenderRef:
+          - ref: RollingFile_Appender

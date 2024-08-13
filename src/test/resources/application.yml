@@ -22,6 +22,7 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
 logging:
+  config: classpath:log4j2.yml
   level:
     org:
       hibernate:

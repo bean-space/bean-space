@@ -9,9 +9,9 @@ import com.beanspace.beanspace.domain.member.repository.MemberRepository
 import com.beanspace.beanspace.domain.reservation.repository.ReservationRepository
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.redisson.api.RLock
 import org.redisson.api.RedissonClient
-import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -29,8 +29,7 @@ class ReservationService(
     private val redissonClient: RedissonClient,
     private val transactionTemplate: TransactionTemplate
 ) {
-
-    private val logger = LoggerFactory.getLogger(ReservationService::class.java)
+    private val log = KotlinLogging.logger {}
 
     fun reserveSpace(guestId: Long, spaceId: Long, request: ReservationRequest): ReservationResponse {
         val key = "reservaion:$spaceId"
@@ -42,6 +41,8 @@ class ReservationService(
             val result = transactionTemplate.execute {
 
                 if (!lock.tryLock(5, 10, TimeUnit.SECONDS)) throw IllegalStateException("이미 예약중인 숙소입니다.")
+
+                log.info { "LOCK RESERVATION KEY : $key" }
 
                 val space = spaceRepository.findByIdAndStatus(spaceId, SpaceStatus.ACTIVE)
                     ?: throw ModelNotFoundException("공간", spaceId)
@@ -59,6 +60,7 @@ class ReservationService(
                         if (!couponLock!!.tryLock(5, 10, TimeUnit.SECONDS)) {
                             throw IllegalStateException("이미 사용중인 쿠폰입니다.")
                         }
+                        log.info { "LOCK COUPON KEY : $couponKey" }
 
                         userCouponRepository.findByIdOrNull(it)
                             ?: throw ModelNotFoundException("UserCoupon", it)
@@ -111,11 +113,12 @@ class ReservationService(
             }
             return result ?: throw IllegalStateException("예약 처리 중 오류가 발생했습니다.")
         } catch (e: Exception) {
-            logger.error(e.message, e)
+            log.error(e) { e.message }
             throw e
         } finally {
             if (lock.isHeldByCurrentThread) {
                 lock.unlock()
+                log.info { "UNLOCK RESERVATION KEY : $key" }
             }
             if (couponLock?.isHeldByCurrentThread == true) {
                 couponLock!!.unlock()

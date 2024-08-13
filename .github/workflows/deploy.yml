@@ -51,17 +51,51 @@ jobs:
           username: ${{ secrets.AWS_EC2_USER }}
           script: |
             docker pull itssu/bean-space:latest
-            docker rm -f bean-space
+            docker rm -f bean-space promtail
             docker rmi $(docker images -f "dangling=true" -q)
-            docker run -d -p 5000:8080 -p 9090:9090 --name bean-space \
-            -e RDS_URL=${{ secrets.RDS_URL }} \
-            -e RDS_USERNAME=${{ secrets.RDS_USERNAME }} \
-            -e RDS_PASSWORD=${{ secrets.RDS_PASSWORD }} \
-            -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
-            -e JWT_EXPIRATION_HOUR=${{ secrets.JWT_EXPIRATION_HOUR }} \
-            -e AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }} \
-            -e AWS_S3_ACCESS_KEY=${{ secrets.AWS_S3_ACCESS_KEY }} \
-            -e AWS_S3_SECRET_KEY=${{ secrets.AWS_S3_SECRET_KEY }} \
-            -e OAUTH_KAKAO_CLIENT_ID=${{ secrets.OAUTH_KAKAO_CLIENT_ID }} \
-            -e OAUTH_KAKAO_REDIRECT_URL=${{ secrets.OAUTH_KAKAO_REDIRECT_URL }} \
-            -e AWS_REDIS_HOST=${{ secrets.AWS_REDIS_HOST }} itssu/bean-space:latest
+            
+            cat << EOF > ./docker-compose.yml
+            version: '3.9'
+
+            networks:
+              server:
+                driver: bridge
+            
+            services:
+              application:
+                container_name: application
+                image: itssu/bean-space:latest
+                ports:
+                  - 5000:8080
+                  - 9090:9090
+                volumes:
+                  - /logs:/work/logs
+                networks: 
+                  - server
+                environment:
+                  - RDS_URL=${{ secrets.RDS_URL }}
+                  - RDS_USERNAME=${{ secrets.RDS_USERNAME }}
+                  - RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}
+                  - JWT_SECRET=${{ secrets.JWT_SECRET }}
+                  - JWT_EXPIRATION_HOUR=${{ secrets.JWT_EXPIRATION_HOUR }}
+                  - AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }}
+                  - AWS_S3_ACCESS_KEY=${{ secrets.AWS_S3_ACCESS_KEY }}
+                  - AWS_S3_SECRET_KEY=${{ secrets.AWS_S3_SECRET_KEY }}
+                  - OAUTH_KAKAO_CLIENT_ID=${{ secrets.OAUTH_KAKAO_CLIENT_ID }}
+                  - OAUTH_KAKAO_REDIRECT_URL=${{ secrets.OAUTH_KAKAO_REDIRECT_URL }}
+                  - AWS_REDIS_HOST=${{ secrets.AWS_REDIS_HOST }}
+            
+              promtail:
+                image: grafana/promtail:latest
+                container_name: promtail
+                hostname: promtail
+                volumes:
+                  - ./promtail-config.yml:/etc/promtail/config.yml
+                  - /logs:/logs
+                command:
+                  - -config.file=/etc/promtail/config.yml
+                networks: 
+                  - server
+            EOF
+            
+            docker-compose up -d
