@@ -116,6 +116,7 @@ class SpaceQueryDslRepositoryImpl(
                     .leftJoin(reservation)
                     .on(
                         reservation.space.id.eq(space.id)
+                            .and(reservation.isCancelled.isFalse)
                             .and(reservation.createdAt.goe(LocalDateTime.now().minusDays(7)))
                     )
                     .where(conditions)
@@ -128,16 +129,16 @@ class SpaceQueryDslRepositoryImpl(
 
                 queryFactory.select(
                     space,
-                    image.imageUrl,
+                    image,
                     reservation.id.count().`as`(count),
                     review.rating.avg().`as`(rating)
                 )
                     .from(space)
                     .leftJoin(reservation).on(reservation.space.id.eq(space.id))
-                    .leftJoin(review).on(review.space.id.eq(space.id))
+                    .leftJoin(review).on(review.space.id.eq(space.id).and(review.isDeleted.isFalse))
                     .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
                     .where(space.id.`in`(paginatedSpaceId))
-                    .groupBy(space, image.imageUrl)
+                    .groupBy(space, image)
                     .orderBy(count.desc(), image.orderIndex.asc())
                     .fetch()
             }
@@ -146,7 +147,7 @@ class SpaceQueryDslRepositoryImpl(
                 val paginatedSpaceId = queryFactory
                     .select(space.id, review.rating.avg().`as`(rating)).distinct()
                     .from(space)
-                    .leftJoin(review).on(review.space.id.eq(space.id))
+                    .leftJoin(review).on(review.space.id.eq(space.id).and(review.isDeleted.isFalse))
                     .where(conditions)
                     .groupBy(space.id)
                     .orderBy(rating.desc())
@@ -155,12 +156,12 @@ class SpaceQueryDslRepositoryImpl(
                     .fetch()
                     .map { it.get(space.id) }
 
-                queryFactory.select(space, image.imageUrl, review.rating.avg().`as`(rating))
+                queryFactory.select(space, image, review.rating.avg().`as`(rating))
                     .from(space)
-                    .leftJoin(review).on(review.space.id.eq(space.id))
+                    .leftJoin(review).on(review.space.id.eq(space.id).and(review.isDeleted.isFalse))
                     .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
                     .where(space.id.`in`(paginatedSpaceId))
-                    .groupBy(space, image.imageUrl)
+                    .groupBy(space, image)
                     .orderBy(rating.desc(), image.orderIndex.asc())
                     .fetch()
             }
@@ -175,12 +176,12 @@ class SpaceQueryDslRepositoryImpl(
                     .orderBy(getOrderSpecifier(pageable, space))
                     .fetch()
 
-                queryFactory.select(space, image.imageUrl, review.rating.avg().`as`(rating))
+                queryFactory.select(space, image, review.rating.avg().`as`(rating))
                     .from(space)
-                    .leftJoin(review).on(review.space.id.eq(space.id))
+                    .leftJoin(review).on(review.space.id.eq(space.id).and(review.isDeleted.isFalse))
                     .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
                     .where(space.id.`in`(paginatedSpaceId))
-                    .groupBy(space, image.imageUrl)
+                    .groupBy(space, image)
                     .orderBy(getOrderSpecifier(pageable, space), image.orderIndex.asc())
                     .fetch()
             }
@@ -190,7 +191,7 @@ class SpaceQueryDslRepositoryImpl(
             .mapKeys { (space, _) -> space }
             .mapValues { (_, tuples) ->
                 Pair(
-                    tuples.map { tuple -> tuple.get(QImage.image.imageUrl) ?: "" },
+                    tuples.map { tuple -> tuple.get(QImage.image)?.imageUrl ?: "" },
                     tuples.firstOrNull()?.get(rating)
                 )
             }
