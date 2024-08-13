@@ -116,6 +116,7 @@ class SpaceQueryDslRepositoryImpl(
                     .leftJoin(reservation)
                     .on(
                         reservation.space.id.eq(space.id)
+                            .and(reservation.isCancelled.isFalse)
                             .and(reservation.createdAt.goe(LocalDateTime.now().minusDays(7)))
                     )
                     .where(conditions)
@@ -128,16 +129,16 @@ class SpaceQueryDslRepositoryImpl(
 
                 queryFactory.select(
                     space,
-                    image.imageUrl,
+                    image,
                     reservation.id.count().`as`(count),
                     review.rating.avg().`as`(rating)
                 )
                     .from(space)
                     .leftJoin(reservation).on(reservation.space.id.eq(space.id))
-                    .leftJoin(review).on(review.space.id.eq(space.id))
+                    .leftJoin(review).on(review.space.id.eq(space.id).and(review.isDeleted.isFalse))
                     .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
                     .where(space.id.`in`(paginatedSpaceId))
-                    .groupBy(space, image.imageUrl)
+                    .groupBy(space, image)
                     .orderBy(count.desc(), image.orderIndex.asc())
                     .fetch()
             }
@@ -146,7 +147,7 @@ class SpaceQueryDslRepositoryImpl(
                 val paginatedSpaceId = queryFactory
                     .select(space.id, review.rating.avg().`as`(rating)).distinct()
                     .from(space)
-                    .leftJoin(review).on(review.space.id.eq(space.id))
+                    .leftJoin(review).on(review.space.id.eq(space.id).and(review.isDeleted.isFalse))
                     .where(conditions)
                     .groupBy(space.id)
                     .orderBy(rating.desc())
@@ -155,32 +156,33 @@ class SpaceQueryDslRepositoryImpl(
                     .fetch()
                     .map { it.get(space.id) }
 
-                queryFactory.select(space, image.imageUrl, review.rating.avg().`as`(rating))
+                queryFactory.select(space, image, review.rating.avg().`as`(rating))
                     .from(space)
-                    .leftJoin(review).on(review.space.id.eq(space.id))
+                    .leftJoin(review).on(review.space.id.eq(space.id).and(review.isDeleted.isFalse))
                     .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
                     .where(space.id.`in`(paginatedSpaceId))
-                    .groupBy(space, image.imageUrl)
+                    .groupBy(space, image)
                     .orderBy(rating.desc(), image.orderIndex.asc())
                     .fetch()
             }
 
             else -> {
                 val paginatedSpaceId = queryFactory
-                    .select(space.id).distinct()
+                    .select(space).distinct()
                     .from(space)
                     .where(conditions)
                     .offset(pageable.offset)
                     .limit(pageable.pageSize.toLong())
                     .orderBy(getOrderSpecifier(pageable, space))
                     .fetch()
+                    .map { it.id }
 
-                queryFactory.select(space, image.imageUrl, review.rating.avg().`as`(rating))
+                queryFactory.select(space, image, review.rating.avg().`as`(rating))
                     .from(space)
-                    .leftJoin(review).on(review.space.id.eq(space.id))
+                    .leftJoin(review).on(review.space.id.eq(space.id).and(review.isDeleted.isFalse))
                     .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
                     .where(space.id.`in`(paginatedSpaceId))
-                    .groupBy(space, image.imageUrl)
+                    .groupBy(space, image)
                     .orderBy(getOrderSpecifier(pageable, space), image.orderIndex.asc())
                     .fetch()
             }
@@ -190,7 +192,7 @@ class SpaceQueryDslRepositoryImpl(
             .mapKeys { (space, _) -> space }
             .mapValues { (_, tuples) ->
                 Pair(
-                    tuples.map { tuple -> tuple.get(QImage.image.imageUrl) ?: "" },
+                    tuples.map { tuple -> tuple.get(QImage.image)?.imageUrl ?: "" },
                     tuples.firstOrNull()?.get(rating)
                 )
             }
@@ -235,17 +237,19 @@ class SpaceQueryDslRepositoryImpl(
             .limit(4)
             .fetch()
 
-        val result = queryFactory.select(space, image.imageUrl)
+        val result = queryFactory
+            .select(space, image.imageUrl)
             .from(space)
             .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
             .where(space.id.`in`(mostPopular4spaceIds))
             .fetch()
 
-        val contents = result.groupBy { it.get(QSpace.space) }
-            .mapKeys { (space, _) -> space }
-            .mapValues { it.value.map { tuple -> tuple.get(QImage.image.imageUrl) ?: "" } }
+        val spaceMap = result.groupBy { it.get(space) }
+            .mapValues { (_, value) -> value.mapNotNull { it.get(image.imageUrl) } }
 
-        return contents
+        return mostPopular4spaceIds.mapNotNull { id ->
+            spaceMap.entries.find { it.key?.id == id }
+        }.associate { it.toPair() }
     }
 
     private fun isContainsKeyword(keyword: String?): BooleanExpression? {
