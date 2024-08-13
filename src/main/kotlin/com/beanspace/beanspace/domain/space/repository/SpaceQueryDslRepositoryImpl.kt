@@ -168,13 +168,14 @@ class SpaceQueryDslRepositoryImpl(
 
             else -> {
                 val paginatedSpaceId = queryFactory
-                    .select(space.id).distinct()
+                    .select(space).distinct()
                     .from(space)
                     .where(conditions)
                     .offset(pageable.offset)
                     .limit(pageable.pageSize.toLong())
                     .orderBy(getOrderSpecifier(pageable, space))
                     .fetch()
+                    .map { it.id }
 
                 queryFactory.select(space, image, review.rating.avg().`as`(rating))
                     .from(space)
