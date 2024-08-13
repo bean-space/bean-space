@@ -137,7 +137,7 @@ class SpaceQueryDslRepositoryImpl(
                     .leftJoin(review).on(review.space.id.eq(space.id))
                     .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
                     .where(space.id.`in`(paginatedSpaceId))
-                    .groupBy(space.id, image.imageUrl)
+                    .groupBy(space, image.imageUrl)
                     .orderBy(count.desc(), image.orderIndex.asc())
                     .fetch()
             }
@@ -160,7 +160,7 @@ class SpaceQueryDslRepositoryImpl(
                     .leftJoin(review).on(review.space.id.eq(space.id))
                     .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
                     .where(space.id.`in`(paginatedSpaceId))
-                    .groupBy(space.id, image.imageUrl)
+                    .groupBy(space, image.imageUrl)
                     .orderBy(rating.desc(), image.orderIndex.asc())
                     .fetch()
             }
@@ -180,7 +180,7 @@ class SpaceQueryDslRepositoryImpl(
                     .leftJoin(review).on(review.space.id.eq(space.id))
                     .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
                     .where(space.id.`in`(paginatedSpaceId))
-                    .groupBy(space.id, image.imageUrl)
+                    .groupBy(space, image.imageUrl)
                     .orderBy(getOrderSpecifier(pageable, space), image.orderIndex.asc())
                     .fetch()
             }
