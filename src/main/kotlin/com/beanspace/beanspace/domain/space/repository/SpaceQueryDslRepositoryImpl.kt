@@ -236,17 +236,19 @@ class SpaceQueryDslRepositoryImpl(
             .limit(4)
             .fetch()
 
-        val result = queryFactory.select(space, image.imageUrl)
+        val result = queryFactory
+            .select(space, image.imageUrl)
             .from(space)
             .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
             .where(space.id.`in`(mostPopular4spaceIds))
             .fetch()
 
-        val contents = result.groupBy { it.get(QSpace.space) }
-            .mapKeys { (space, _) -> space }
-            .mapValues { it.value.map { tuple -> tuple.get(QImage.image.imageUrl) ?: "" } }
+        val spaceMap = result.groupBy { it.get(space) }
+            .mapValues { (_, value) -> value.mapNotNull { it.get(image.imageUrl) } }
 
-        return contents
+        return mostPopular4spaceIds.mapNotNull { id ->
+            spaceMap.entries.find { it.key?.id == id }
+        }.associate { it.toPair() }
     }
 
     private fun isContainsKeyword(keyword: String?): BooleanExpression? {
