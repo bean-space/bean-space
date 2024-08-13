@@ -137,7 +137,7 @@ class SpaceQueryDslRepositoryImpl(
                     .leftJoin(review).on(review.space.id.eq(space.id))
                     .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
                     .where(space.id.`in`(paginatedSpaceId))
-                    .groupBy(space.id, image.imageUrl)
+                    .groupBy(space, image.imageUrl)
                     .orderBy(count.desc(), image.orderIndex.asc())
                     .fetch()
             }
@@ -160,7 +160,7 @@ class SpaceQueryDslRepositoryImpl(
                     .leftJoin(review).on(review.space.id.eq(space.id))
                     .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
                     .where(space.id.`in`(paginatedSpaceId))
-                    .groupBy(space.id, image.imageUrl)
+                    .groupBy(space, image.imageUrl)
                     .orderBy(rating.desc(), image.orderIndex.asc())
                     .fetch()
             }
@@ -180,7 +180,7 @@ class SpaceQueryDslRepositoryImpl(
                     .leftJoin(review).on(review.space.id.eq(space.id))
                     .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
                     .where(space.id.`in`(paginatedSpaceId))
-                    .groupBy(space.id, image.imageUrl)
+                    .groupBy(space, image.imageUrl)
                     .orderBy(getOrderSpecifier(pageable, space), image.orderIndex.asc())
                     .fetch()
             }
@@ -210,6 +210,35 @@ class SpaceQueryDslRepositoryImpl(
             .from(space)
             .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
             .where(space.id.`in`(wishListedSpaceIds))
+            .fetch()
+
+        val contents = result.groupBy { it.get(QSpace.space) }
+            .mapKeys { (space, _) -> space }
+            .mapValues { it.value.map { tuple -> tuple.get(QImage.image.imageUrl) ?: "" } }
+
+        return contents
+    }
+
+    override fun getMostPopular4SpaceList(): Map<Space?, List<String>> {
+
+        val oneWeekAgo = LocalDateTime.now().minusWeeks(1)
+
+        val mostPopular4spaceIds = queryFactory
+            .select(reservation.space.id)
+            .from(reservation)
+            .where(
+                reservation.createdAt.after(oneWeekAgo)
+                    .and(reservation.isCancelled.eq(false))
+            )
+            .groupBy(reservation.space.id)
+            .orderBy(reservation.space.id.count().desc())
+            .limit(4)
+            .fetch()
+
+        val result = queryFactory.select(space, image.imageUrl)
+            .from(space)
+            .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
+            .where(space.id.`in`(mostPopular4spaceIds))
             .fetch()
 
         val contents = result.groupBy { it.get(QSpace.space) }

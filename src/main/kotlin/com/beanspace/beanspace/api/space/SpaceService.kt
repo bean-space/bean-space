@@ -1,8 +1,10 @@
 package com.beanspace.beanspace.api.space
 
 import com.beanspace.beanspace.api.space.dto.AddReviewRequest
+import com.beanspace.beanspace.api.space.dto.CompactSpaceResponse
 import com.beanspace.beanspace.api.space.dto.HostResponse
 import com.beanspace.beanspace.api.space.dto.OfferResponse
+import com.beanspace.beanspace.api.space.dto.PopularKeywordsResponse
 import com.beanspace.beanspace.api.space.dto.ReviewResponse
 import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
 import com.beanspace.beanspace.api.space.dto.SpaceResponseWithoutAddress
@@ -228,5 +230,16 @@ class SpaceService(
     fun getOfferList(): List<OfferResponse> {
         return offerRepository.findAll()
             .map { OfferResponse.from(it) }
+    }
+
+    fun getPopularKeywordsLastDay(): PopularKeywordsResponse {
+        val now = LocalDateTime.now()
+        val oneDayBefore = LocalDateTime.now().minusDays(1)
+        return PopularKeywordsResponse(searchKeywordRepository.getPopularKeywords(oneDayBefore, now))
+    }
+
+    fun getPopularSpacesLastWeek(): List<CompactSpaceResponse> {
+        return spaceRepository.getMostPopular4SpaceList()
+            .map { CompactSpaceResponse.fromEntity(it.key!!, it.value) }
     }
 }

@@ -1,7 +1,9 @@
 package com.beanspace.beanspace.api.space
 
 import com.beanspace.beanspace.api.space.dto.AddReviewRequest
+import com.beanspace.beanspace.api.space.dto.CompactSpaceResponse
 import com.beanspace.beanspace.api.space.dto.OfferResponse
+import com.beanspace.beanspace.api.space.dto.PopularKeywordsResponse
 import com.beanspace.beanspace.api.space.dto.ReviewResponse
 import com.beanspace.beanspace.api.space.dto.SpaceDetailResponse
 import com.beanspace.beanspace.api.space.dto.SpaceResponseWithoutAddress
@@ -130,5 +132,15 @@ class SpaceController(private val spaceService: SpaceService) {
     @GetMapping("/offer")
     fun getOfferList(): ResponseEntity<List<OfferResponse>> {
         return ResponseEntity.ok(spaceService.getOfferList())
+    }
+
+    @GetMapping("/popular-keywords")
+    fun getPopularKeywordsLastDay(): ResponseEntity<PopularKeywordsResponse> {
+        return ResponseEntity.ok(spaceService.getPopularKeywordsLastDay())
+    }
+
+    @GetMapping("/popular-spaces")
+    fun getPopularSpacesLastWeek(): ResponseEntity<List<CompactSpaceResponse>> {
+        return ResponseEntity.ok(spaceService.getPopularSpacesLastWeek())
     }
 }
