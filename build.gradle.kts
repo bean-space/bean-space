@@ -20,6 +20,10 @@ configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())
     }
+    all {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+        exclude(group = "org.springframework.boot", module = "logback-classic")
+    }
 }
 
 repositories {
@@ -29,6 +33,7 @@ repositories {
 val jjwtVersion = "0.12.6"
 val queryDslVersion = "5.0.0"
 val kotestVersion = "5.8.1"
+val mockkVersion = "1.13.8"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -38,6 +43,21 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.741")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.redisson:redisson-spring-boot-starter:3.33.0")
+    implementation("mysql:mysql-connector-java:8.0.32")
+
+    //logging
+    implementation("io.github.oshai:kotlin-logging-jvm:5.1.4")
+    implementation("org.springframework.boot:spring-boot-starter-log4j2")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
+
+    //monitoring
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 
     runtimeOnly("com.h2database:h2")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
@@ -51,8 +71,13 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
+    testImplementation("io.kotest.extensions:kotest-extensions-spring:1.1.1")
     testImplementation("org.springframework.security:spring-security-test")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("com.appmattus.fixture:fixture:1.2.0")
+    testImplementation("com.appmattus.fixture:fixture-kotest:1.2.0")
+    testImplementation("io.mockk:mockk:$mockkVersion")
+    testImplementation("org.testcontainers:testcontainers:1.20.0")
+    testImplementation("org.testcontainers:junit-jupiter:1.20.0")
 }
 
 kotlin {

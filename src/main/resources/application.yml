@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:test;MODE=MySQL
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        highlight_sql: true
+        use_sql_comments: true
+        ddl-auto: create-drop
+        default_batch_fetch_size: 100
+  data:
+    redis:
+      host: localhost
+      port: 6379
+logging:
+  config: classpath:log4j2/log4j2.yml
+  level:
+    org:
+      hibernate:
+        SQL: debug
+        root: debug
+        orm.jdbc.bind: debug
+#        type.descriptor.sql: trace
+#        orm.jdbc.bind: trace
+management:
+  server:
+    port: 9090
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+#       include: prometheus << 이렇게 해도됩니다.

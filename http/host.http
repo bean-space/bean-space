@@ -1,0 +1,50 @@
+### 공간등록
+POST http://localhost:8080/api/v1/host/spaces
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "listingName": "test room",
+  "price": 50000,
+  "zipCode": "12345",
+  "streetNameAddress": "세종로",
+  "detailedAddress": "12",
+  "sido": "세종시",
+  "content": "아주 좋은 숙소입니다. 안오시면 손해",
+  "defaultPeople": 2,
+  "maxPeople": 4,
+  "pricePerPerson": 35000,
+  "bedRoomCount": 2,
+  "bedCount": 2,
+  "bathRoomCount": 2,
+  "imageUrlList": [
+    "testsetsetsetstes",
+    "asdasdsadadsadsadas",
+    "asdasdsadasasdas"
+  ]
+}
+
+### 공간수정
+PUT http://localhost:8080/api/v1/host/spaces/1
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+  "listingName": "updated room",
+  "price": 1000000,
+  "content": "아주 좋은 숙소입니다. 안오시면 손해",
+  "defaultPeople": 2,
+  "maxPeople": 4,
+  "pricePerPerson": 50000,
+  "bedRoomCount": 3,
+  "bedCount": 3,
+  "bathRoomCount": 3,
+  "imageUrlList": [
+    "testsetsetsetstes"
+  ]
+}
+
+### 공간삭제
+DELETE http://localhost:8080/api/v1/host/spaces/1
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
