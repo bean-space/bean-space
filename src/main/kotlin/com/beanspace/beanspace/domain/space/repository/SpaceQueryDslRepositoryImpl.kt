@@ -48,7 +48,7 @@ class SpaceQueryDslRepositoryImpl(
             .fetchOne() ?: return Pair(emptyMap(), 0)
 
         val paginatedSpaceId = queryFactory
-            .select(space.id).distinct()
+            .select(space.id)
             .from(space)
             .where(conditions)
             .offset(pageable.offset)
