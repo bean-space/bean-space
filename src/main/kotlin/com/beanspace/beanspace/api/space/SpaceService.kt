@@ -172,7 +172,7 @@ class SpaceService(
             ?.also { check(it.isReviewAllowed(LocalDateTime.now())) { throw IllegalStateException("아직 후기를 작성할 수 없습니다. (체크아웃 당일 12:00 부터 작성 가능)") } }
             ?: throw ModelNotFoundException(model = "Reservation", id = request.reservationId)
 
-        if (reviewRepository.existsByReservation(reservation)) throw IllegalStateException("해당 예약에 대한 후기를 이미 남겼습니다.")
+        if (existsByReservationIncludingDeleted(reservation.id!!)) throw IllegalStateException("해당 예약에 대한 후기를 이미 남겼습니다.")
 
         reviewRepository.save(request.toEntity(member, space, reservation))
             .also {
@@ -241,5 +241,9 @@ class SpaceService(
     fun getPopularSpacesLastWeek(): List<CompactSpaceResponse> {
         return spaceRepository.getMostPopular4SpaceList()
             .map { CompactSpaceResponse.fromEntity(it.key!!, it.value) }
+    }
+
+    fun existsByReservationIncludingDeleted(reservationId: Long): Boolean {
+        return reviewRepository.countByReservationIncludingDeleted(reservationId) > 0
     }
 }
