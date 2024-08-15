@@ -26,6 +26,7 @@ import com.beanspace.beanspace.domain.space.repository.SpaceOfferRepository
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import com.beanspace.beanspace.domain.space.repository.WishListRepository
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -238,6 +239,7 @@ class SpaceService(
         return PopularKeywordsResponse(searchKeywordRepository.getPopularKeywords(oneDayBefore, now))
     }
 
+    @Cacheable(cacheNames = ["popularSpace"], key = "'lastWeek'")
     fun getPopularSpacesLastWeek(): List<CompactSpaceResponse> {
         return spaceRepository.getMostPopular4SpaceList()
             .map { CompactSpaceResponse.fromEntity(it.key!!, it.value) }
