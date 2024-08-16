@@ -4,4 +4,5 @@ import java.time.LocalDateTime
 
 interface SearchKeywordQueryDslRepository {
     fun getPopularKeywords(from: LocalDateTime, to: LocalDateTime): List<String>
+    fun deleteByCreatedAtBefore(dateTime: LocalDateTime)
 }
