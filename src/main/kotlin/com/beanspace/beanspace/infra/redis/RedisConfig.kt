@@ -47,13 +47,21 @@ class RedisConfig(
         return Redisson.create(config)
     }
 
-    @Bean()
-    fun redisCacheManager(): CacheManager {
-
+    @Bean
+    fun redisCacheManager(redisConnectionFactory: RedisConnectionFactory): CacheManager {
         val redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
-            .entryTtl(Duration.ofMinutes(60))
+            .entryTtl(Duration.ofDays(3))
 
-        return RedisCacheManager.builder(redisConnectionFactory())
-            .cacheDefaults(redisCacheConfiguration).build()
+        val cacheConfigurations = mapOf(
+            "popularSpace" to RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofDays(3))
+                .disableCachingNullValues()
+        )
+
+        return RedisCacheManager.builder(redisConnectionFactory)
+            .cacheDefaults(redisCacheConfiguration)
+            .withInitialCacheConfigurations(cacheConfigurations)
+            .transactionAware()
+            .build()
     }
 }
