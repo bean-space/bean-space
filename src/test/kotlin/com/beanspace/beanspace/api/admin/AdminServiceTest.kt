@@ -5,6 +5,7 @@ import com.beanspace.beanspace.api.coupon.dto.CouponRequest
 import com.beanspace.beanspace.domain.coupon.repository.CouponRepository
 import com.beanspace.beanspace.domain.space.model.Space
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
+import com.beanspace.beanspace.domain.space.repository.SearchKeywordRepository
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
@@ -21,10 +22,12 @@ import kotlin.random.Random
 class AdminServiceTest : BehaviorSpec({
     val spaceRepository: SpaceRepository = mockk(relaxed = true)
     val couponRepository: CouponRepository = mockk(relaxed = true)
+    val searchKeywordRepository: SearchKeywordRepository = mockk(relaxed = true)
 
     val adminService = AdminService(
         spaceRepository = spaceRepository,
-        couponRepository = couponRepository
+        couponRepository = couponRepository,
+        searchKeywordRepository = searchKeywordRepository
     )
 
     afterContainer { clearAllMocks() }
