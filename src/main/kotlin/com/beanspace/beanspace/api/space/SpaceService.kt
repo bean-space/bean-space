@@ -250,10 +250,10 @@ class SpaceService(
         return fetchPopularSpaces()
     }
 
-    @Scheduled(cron = "0 43 19 * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     @CachePut("popularSpace", key = "'lastWeek'")
     fun updatePopularSpacesCache(): List<CompactSpaceResponse> {
-        log.info { "key:'popularSpace::lastWeek', 최근 일주일 예약 많은 공간 TOP4 내역이 업데이트 되었습니다!" }
+        log.info { "Redis key:'popularSpace::lastWeek', 최근 일주일 예약 많은 공간 TOP4 내역이 업데이트 되었습니다!" }
         return fetchPopularSpaces()
     }
 
