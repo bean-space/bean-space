@@ -1,6 +1,7 @@
 package com.beanspace.beanspace.api.space.dto
 
 import com.beanspace.beanspace.domain.space.model.Space
+import java.io.Serializable
 
 data class CompactSpaceResponse(
     val spaceId: Long,
@@ -9,7 +10,7 @@ data class CompactSpaceResponse(
     val defaultPeople: Int,
     val sidoAndSigungu: String,
     val imageUrlList: List<String>
-) {
+) : Serializable {
     companion object {
         fun fromEntity(space: Space, imageUrlList: List<String>): CompactSpaceResponse {
             return CompactSpaceResponse(
