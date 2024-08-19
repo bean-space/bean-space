@@ -26,10 +26,14 @@ import com.beanspace.beanspace.domain.space.repository.SpaceOfferRepository
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import com.beanspace.beanspace.domain.space.repository.WishListRepository
 import com.beanspace.beanspace.infra.security.dto.UserPrincipal
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.cache.annotation.CachePut
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.text.DecimalFormat
@@ -48,6 +52,9 @@ class SpaceService(
     private val spaceOfferRepository: SpaceOfferRepository,
     private val offerRepository: OfferRepository
 ) {
+
+    private val log = KotlinLogging.logger {}
+
     fun getSpaceList(
         keyword: String?,
         checkIn: LocalDate?,
@@ -172,7 +179,7 @@ class SpaceService(
             ?.also { check(it.isReviewAllowed(LocalDateTime.now())) { throw IllegalStateException("아직 후기를 작성할 수 없습니다. (체크아웃 당일 12:00 부터 작성 가능)") } }
             ?: throw ModelNotFoundException(model = "Reservation", id = request.reservationId)
 
-        if (reviewRepository.existsByReservation(reservation)) throw IllegalStateException("해당 예약에 대한 후기를 이미 남겼습니다.")
+        if (existsByReservationIncludingDeleted(reservation.id!!)) throw IllegalStateException("해당 예약에 대한 후기를 이미 남겼습니다.")
 
         reviewRepository.save(request.toEntity(member, space, reservation))
             .also {
@@ -238,8 +245,24 @@ class SpaceService(
         return PopularKeywordsResponse(searchKeywordRepository.getPopularKeywords(oneDayBefore, now))
     }
 
+    @Cacheable("popularSpace", key = "'lastWeek'")
     fun getPopularSpacesLastWeek(): List<CompactSpaceResponse> {
+        return fetchPopularSpaces()
+    }
+
+    @Scheduled(cron = "0 0 0 * * *")
+    @CachePut("popularSpace", key = "'lastWeek'")
+    fun updatePopularSpacesCache(): List<CompactSpaceResponse> {
+        log.info { "Redis key:'popularSpace::lastWeek', 최근 일주일 예약 많은 공간 TOP4 내역이 업데이트 되었습니다!" }
+        return fetchPopularSpaces()
+    }
+
+    private fun fetchPopularSpaces(): List<CompactSpaceResponse> {
         return spaceRepository.getMostPopular4SpaceList()
             .map { CompactSpaceResponse.fromEntity(it.key!!, it.value) }
+    }
+
+    fun existsByReservationIncludingDeleted(reservationId: Long): Boolean {
+        return reviewRepository.countByReservationIncludingDeleted(reservationId) > 0
     }
 }

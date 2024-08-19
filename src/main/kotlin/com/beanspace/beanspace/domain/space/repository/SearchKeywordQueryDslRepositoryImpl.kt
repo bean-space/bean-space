@@ -22,4 +22,11 @@ class SearchKeywordQueryDslRepositoryImpl(
             .limit(10)
             .fetch()
     }
+
+    override fun deleteByCreatedAtBefore(dateTime: LocalDateTime) {
+        queryFactory
+            .delete(searchKeyword)
+            .where(searchKeyword.createdAt.lt(dateTime))
+            .execute()
+    }
 }

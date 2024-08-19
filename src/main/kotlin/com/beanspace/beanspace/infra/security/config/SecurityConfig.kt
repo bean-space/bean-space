@@ -64,7 +64,8 @@ class SecurityConfig(
                         "/error",
                         "/api/v1/spaces/**",
                         "/oauth2/login/**",
-                        "/actuator/prometheus"
+                        "/actuator/prometheus",
+                        "/api/v1/images/presigned-url"
                     ).permitAll()
                     .requestMatchers(PathRequest.toH2Console()).permitAll()
                     .anyRequest().authenticated()

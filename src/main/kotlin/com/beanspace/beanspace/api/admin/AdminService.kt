@@ -7,11 +7,13 @@ import com.beanspace.beanspace.api.coupon.dto.CouponResponse
 import com.beanspace.beanspace.domain.coupon.repository.CouponRepository
 import com.beanspace.beanspace.domain.exception.ModelNotFoundException
 import com.beanspace.beanspace.domain.space.model.SpaceStatus
+import com.beanspace.beanspace.domain.space.repository.SearchKeywordRepository
 import com.beanspace.beanspace.domain.space.repository.SpaceRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -19,7 +21,8 @@ import java.time.LocalDateTime
 @Service
 class AdminService(
     private val spaceRepository: SpaceRepository,
-    private val couponRepository: CouponRepository
+    private val couponRepository: CouponRepository,
+    private val searchKeywordRepository: SearchKeywordRepository,
 ) {
     fun getRequestAddSpace(pageable: Pageable, status: String): Page<RequestAddSpaceResponse> {
         val spaceStatus = when (status) {
@@ -110,6 +113,13 @@ class AdminService(
         }
 
         couponRepository.delete(coupon)
+    }
+
+    @Scheduled(cron = "0 0 3 * * *")
+    @Transactional
+    fun deleteOldKeywords() {
+        val threeDaysAgo = LocalDateTime.now().minusDays(3)
+        searchKeywordRepository.deleteByCreatedAtBefore(threeDaysAgo)
     }
 
     private fun validateRequest(request: CouponRequest) {

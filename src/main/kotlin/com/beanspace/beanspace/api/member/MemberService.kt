@@ -83,8 +83,7 @@ class MemberService(
 
         val reservations = reservationRepository.findByMemberIdAndCheckOutAfter(principal.id, oneYearAgo)
         val reservationIds = reservations.map { it.id!! }
-        val reservationIdsWithReviews = reviewRepository.findByReservationIdIn(reservationIds)
-            .map { it.reservation.id!! }
+        val reservationIdsWithReviews = reviewRepository.findReservationIdsByReservationIdIn(reservationIds)
 
         return reservations.map {
             val isReviewed = reservationIdsWithReviews.contains(it.id!!)
