@@ -121,7 +121,7 @@ class SpaceQueryDslRepositoryImpl(
                     )
                     .where(conditions)
                     .groupBy(space.id)
-                    .orderBy(count.desc())
+                    .orderBy(count.desc(), space.id.desc())
                     .offset(pageable.offset)
                     .limit(pageable.pageSize.toLong())
                     .fetch()
@@ -139,7 +139,7 @@ class SpaceQueryDslRepositoryImpl(
                     .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
                     .where(space.id.`in`(paginatedSpaceId))
                     .groupBy(space, image)
-                    .orderBy(count.desc(), image.orderIndex.asc())
+                    .orderBy(count.desc(), space.id.desc(), image.orderIndex.asc())
                     .fetch()
             }
 
@@ -150,7 +150,7 @@ class SpaceQueryDslRepositoryImpl(
                     .leftJoin(review).on(review.space.id.eq(space.id).and(review.isDeleted.isFalse))
                     .where(conditions)
                     .groupBy(space.id)
-                    .orderBy(rating.desc())
+                    .orderBy(rating.desc(), space.id.desc())
                     .offset(pageable.offset)
                     .limit(pageable.pageSize.toLong())
                     .fetch()
@@ -162,7 +162,7 @@ class SpaceQueryDslRepositoryImpl(
                     .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
                     .where(space.id.`in`(paginatedSpaceId))
                     .groupBy(space, image)
-                    .orderBy(rating.desc(), image.orderIndex.asc())
+                    .orderBy(rating.desc(), space.id.desc(), image.orderIndex.asc())
                     .fetch()
             }
 
@@ -173,7 +173,7 @@ class SpaceQueryDslRepositoryImpl(
                     .where(conditions)
                     .offset(pageable.offset)
                     .limit(pageable.pageSize.toLong())
-                    .orderBy(getOrderSpecifier(pageable, space))
+                    .orderBy(getOrderSpecifier(pageable, space), space.id.desc())
                     .fetch()
                     .map { it.id }
 
@@ -183,7 +183,7 @@ class SpaceQueryDslRepositoryImpl(
                     .leftJoin(image).on(image.contentId.eq(space.id).and(image.type.eq(ImageType.SPACE)))
                     .where(space.id.`in`(paginatedSpaceId))
                     .groupBy(space, image)
-                    .orderBy(getOrderSpecifier(pageable, space), image.orderIndex.asc())
+                    .orderBy(getOrderSpecifier(pageable, space), space.id.desc(), image.orderIndex.asc())
                     .fetch()
             }
         }
@@ -303,14 +303,14 @@ class SpaceQueryDslRepositoryImpl(
         }
     }
 
-    private fun inAvailableDate(start: LocalDate?, end: LocalDate?): BooleanExpression {
-        val startCondition =
-            if (start != null) reservation.checkIn.loe(start).and(reservation.checkOut.gt(start)) else null
-        val endCondition = if (end != null) reservation.checkIn.lt(end).and(reservation.checkOut.goe(end)) else null
-
+    private fun inAvailableDate(start: LocalDate?, end: LocalDate?): BooleanExpression? {
+        if (start == null || end == null) return null
         val unavailableSpaceIds = JPAExpressions.select(reservation.space.id)
             .from(reservation)
-            .where(BooleanBuilder().and(startCondition).or(endCondition))
+            .where(
+                reservation.isCancelled.eq(false)
+                    .and(reservation.checkIn.lt(end)).and(reservation.checkOut.gt(start))
+            )
         return space.id.notIn(unavailableSpaceIds)
     }
 
