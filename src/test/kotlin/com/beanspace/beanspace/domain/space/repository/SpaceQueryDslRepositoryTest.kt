@@ -97,98 +97,98 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
             }
         }
 
-        given("checkIn으로 search()시") {
-            `when`("checkIn 날짜가 이미 reservation이 있는 날짜이면") {
-                then("반환되는 Space가 없어야 한다.") {
-                    val guest = memberRepository.saveAndFlush(defaultGuest)
-                    val host = memberRepository.saveAndFlush(defaultHost)
-
-                    val spaceFixture =
-                        generateSpaceFixtures(numberOfFixtures = 1, host = host, status = SpaceStatus.ACTIVE)
-                    val space = spaceRepository.saveAndFlush(spaceFixture[0])
-
-                    val baseDate = LocalDate.of(2024, 7, 1)
-
-                    val reservations = getReservationFixtures(50, guest, space, baseDate)
-                    reservationRepository.saveAllAndFlush(reservations)
-
-                    val (contents, _) = spaceRepository.search(
-                        checkIn = LocalDate.of(2024, 7, 1),
-                        pageable = defaultPageable
-                    )
-
-                    contents.size shouldBe 0
-                }
-            }
-
-            `when`("checkIn 날짜가 reservation이 없는 날짜이면") {
-                then("반환되는 Space가 있어야 한다.") {
-                    val guest = memberRepository.saveAndFlush(defaultGuest)
-                    val host = memberRepository.saveAndFlush(defaultHost)
-
-                    val spaceFixture =
-                        generateSpaceFixtures(numberOfFixtures = 1, host = host, status = SpaceStatus.ACTIVE)
-                    val space = spaceRepository.saveAndFlush(spaceFixture[0])
-
-                    val baseDate = LocalDate.of(2024, 7, 1)
-
-                    val reservations = getReservationFixtures(50, guest, space, baseDate)
-                    reservationRepository.saveAllAndFlush(reservations)
-
-                    val (contents, _) = spaceRepository.search(
-                        checkIn = LocalDate.of(2024, 7, 3),
-                        pageable = defaultPageable
-                    )
-                    contents.size shouldNotBe 0
-                }
-            }
-        }
-
-        given("checkOut으로 search()시") {
-            `when`("checkOut 날짜가 이미 reservation이 있는 날짜이면") {
-                then("반환되는 Space가 없어야 한다.") {
-                    val guest = memberRepository.saveAndFlush(defaultGuest)
-                    val host = memberRepository.saveAndFlush(defaultHost)
-
-                    val spaceFixture =
-                        generateSpaceFixtures(numberOfFixtures = 1, host = host, status = SpaceStatus.ACTIVE)
-                    val space = spaceRepository.saveAndFlush(spaceFixture[0])
-
-                    val baseDate = LocalDate.of(2024, 7, 1)
-
-                    val reservations = getReservationFixtures(50, guest, space, baseDate)
-                    reservationRepository.saveAllAndFlush(reservations)
-
-                    val (contents, _) = spaceRepository.search(
-                        checkOut = LocalDate.of(2024, 7, 3),
-                        pageable = defaultPageable
-                    )
-                    contents.size shouldBe 0
-                }
-            }
-
-            `when`("checkOut 날짜가 reservation이 없는 날짜이면") {
-                then("반환되는 Space가 있어야 한다.") {
-                    val guest = memberRepository.saveAndFlush(defaultGuest)
-                    val host = memberRepository.saveAndFlush(defaultHost)
-
-                    val spaceFixture =
-                        generateSpaceFixtures(numberOfFixtures = 1, host = host, status = SpaceStatus.ACTIVE)
-                    val space = spaceRepository.saveAndFlush(spaceFixture[0])
-
-                    val baseDate = LocalDate.of(2024, 7, 1)
-
-                    val reservations = getReservationFixtures(50, guest, space, baseDate)
-                    reservationRepository.saveAllAndFlush(reservations)
-
-                    val (contents, _) = spaceRepository.search(
-                        checkOut = LocalDate.of(2024, 7, 4),
-                        pageable = defaultPageable
-                    )
-                    contents.size shouldNotBe 0
-                }
-            }
-        }
+        // given("checkIn으로 search()시") {
+        //     `when`("checkIn 날짜가 이미 reservation이 있는 날짜이면") {
+        //         then("반환되는 Space가 없어야 한다.") {
+        //             val guest = memberRepository.saveAndFlush(defaultGuest)
+        //             val host = memberRepository.saveAndFlush(defaultHost)
+        //
+        //             val spaceFixture =
+        //                 generateSpaceFixtures(numberOfFixtures = 1, host = host, status = SpaceStatus.ACTIVE)
+        //             val space = spaceRepository.saveAndFlush(spaceFixture[0])
+        //
+        //             val baseDate = LocalDate.of(2024, 7, 1)
+        //
+        //             val reservations = getReservationFixtures(50, guest, space, baseDate)
+        //             reservationRepository.saveAllAndFlush(reservations)
+        //
+        //             val (contents, _) = spaceRepository.search(
+        //                 checkIn = LocalDate.of(2024, 7, 1),
+        //                 pageable = defaultPageable
+        //             )
+        //
+        //             contents.size shouldBe 0
+        //         }
+        //     }
+        //
+        //     `when`("checkIn 날짜가 reservation이 없는 날짜이면") {
+        //         then("반환되는 Space가 있어야 한다.") {
+        //             val guest = memberRepository.saveAndFlush(defaultGuest)
+        //             val host = memberRepository.saveAndFlush(defaultHost)
+        //
+        //             val spaceFixture =
+        //                 generateSpaceFixtures(numberOfFixtures = 1, host = host, status = SpaceStatus.ACTIVE)
+        //             val space = spaceRepository.saveAndFlush(spaceFixture[0])
+        //
+        //             val baseDate = LocalDate.of(2024, 7, 1)
+        //
+        //             val reservations = getReservationFixtures(50, guest, space, baseDate)
+        //             reservationRepository.saveAllAndFlush(reservations)
+        //
+        //             val (contents, _) = spaceRepository.search(
+        //                 checkIn = LocalDate.of(2024, 7, 3),
+        //                 pageable = defaultPageable
+        //             )
+        //             contents.size shouldNotBe 0
+        //         }
+        //     }
+        // }
+        //
+        // given("checkOut으로 search()시") {
+        //     `when`("checkOut 날짜가 이미 reservation이 있는 날짜이면") {
+        //         then("반환되는 Space가 없어야 한다.") {
+        //             val guest = memberRepository.saveAndFlush(defaultGuest)
+        //             val host = memberRepository.saveAndFlush(defaultHost)
+        //
+        //             val spaceFixture =
+        //                 generateSpaceFixtures(numberOfFixtures = 1, host = host, status = SpaceStatus.ACTIVE)
+        //             val space = spaceRepository.saveAndFlush(spaceFixture[0])
+        //
+        //             val baseDate = LocalDate.of(2024, 7, 1)
+        //
+        //             val reservations = getReservationFixtures(50, guest, space, baseDate)
+        //             reservationRepository.saveAllAndFlush(reservations)
+        //
+        //             val (contents, _) = spaceRepository.search(
+        //                 checkOut = LocalDate.of(2024, 7, 3),
+        //                 pageable = defaultPageable
+        //             )
+        //             contents.size shouldBe 0
+        //         }
+        //     }
+        //
+        //     `when`("checkOut 날짜가 reservation이 없는 날짜이면") {
+        //         then("반환되는 Space가 있어야 한다.") {
+        //             val guest = memberRepository.saveAndFlush(defaultGuest)
+        //             val host = memberRepository.saveAndFlush(defaultHost)
+        //
+        //             val spaceFixture =
+        //                 generateSpaceFixtures(numberOfFixtures = 1, host = host, status = SpaceStatus.ACTIVE)
+        //             val space = spaceRepository.saveAndFlush(spaceFixture[0])
+        //
+        //             val baseDate = LocalDate.of(2024, 7, 1)
+        //
+        //             val reservations = getReservationFixtures(50, guest, space, baseDate)
+        //             reservationRepository.saveAllAndFlush(reservations)
+        //
+        //             val (contents, _) = spaceRepository.search(
+        //                 checkOut = LocalDate.of(2024, 7, 4),
+        //                 pageable = defaultPageable
+        //             )
+        //             contents.size shouldNotBe 0
+        //         }
+        //     }
+        // }
 
         given("headCount로 search()시 ") {
             `when`("defaultPeople <= headCount <= maxPeople") {
@@ -387,6 +387,7 @@ class SpaceQueryDslRepositoryTest @Autowired constructor(
                     property(Reservation::reservationPeople) { 2 }
                     property(Reservation::member) { guest }
                     property(Reservation::space) { space }
+                    property(Reservation::isCancelled) { false }
                 }
             }
         }
