@@ -10,8 +10,8 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 
 data class AddReviewRequest(
-    @field:NotBlank(message = "리뷰는 1 ~ 3000까지 입력 가능합니다.")
-    @field:Size(min = 1, max = 3000, message = "리뷰는 1 ~ 3000까지 입력 가능합니다")
+    @field:NotBlank(message = "리뷰는 10 ~ 3000까지 입력 가능합니다.")
+    @field:Size(min = 10, max = 3000, message = "리뷰는 10 ~ 3000까지 입력 가능합니다")
     val content: String,
 
     @field:Min(value = 1, message = "별점은 1개 이상으로 입력해주세요.")
