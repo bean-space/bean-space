@@ -1,5 +1,5 @@
 # 빈 공간 - Bean Space
- > 개발 기간: 2024.07 ~ 2024.08
+ > 개발 기간: 2024.07.12 ~ 2024.08.22
 
 ## 배포 주소
 - 개발 버전: https://www.thebean.space
@@ -58,15 +58,6 @@
 - **Communication** 
 
 <img src="https://img.shields.io/badge/slack-4A154B?style=for-the-badge&logo=slack&logoColor=white"> <img src="https://img.shields.io/badge/notion-000000?style=for-the-badge&logo=notion&logoColor=white">
-
-   
- ## 💻 설치 방법
-
-### 1. Install
-```bash
-git clone https://github.com/bean-space/bean-space.git
-cd bean-space 
-```
 
 ## 📂 프로젝트 구조
 
