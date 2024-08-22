@@ -5,7 +5,7 @@
 - https://thebean.space
 
 ## 😎 프론트 레포지토리
-- https://thebean.space
+- https://github.com/bean-space/bean-space-front
 
 ## 👩‍💻 팀원 소개
 
