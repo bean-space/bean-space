@@ -1,22 +1,23 @@
-# 빈 공간 - Bean Space
+# <img src="https://github.com/user-attachments/assets/ae443b93-c257-433c-ba1b-fc501ef07929" width="30" height="30"> 빈 공간 - Bean Space
  > 개발 기간: 2024.07.12 ~ 2024.08.22
 
-## 배포 주소
-- 개발 버전: https://www.thebean.space
-- 프론트 서버: https://bean-space-front.vercel.app
+## 🚀 배포 주소
+- https://thebean.space
 
-## 팀원 소개
+## 😎 프론트 레포지토리
+- https://thebean.space
+
+## 👩‍💻 팀원 소개
 
 | 이무준 | 이수진 | 박주빈 | 임상은 |
-| --- | --- | --- | ---|
-| ![image](https://github.com/user-attachments/assets/e7f0e78c-aaa6-45f6-8823-8a3d6d8cb886) | ![image](https://github.com/user-attachments/assets/3f736701-1c2e-4600-9f6f-92475c8b43c8) | ![image](https://github.com/user-attachments/assets/6679fac0-d29c-4e0b-9982-935645cd2a4d) |![image](https://github.com/user-attachments/assets/365aa961-2cf3-4f82-82f9-f969bb00d9e2)  |
+| --- | --- | --- | --- |
+| ![image](https://github.com/user-attachments/assets/3dc27d27-e1e9-4629-85a8-5482b352a11d) | ![image](https://github.com/user-attachments/assets/3f736701-1c2e-4600-9f6f-92475c8b43c8) | ![image](https://github.com/user-attachments/assets/6679fac0-d29c-4e0b-9982-935645cd2a4d) |![image](https://github.com/user-attachments/assets/365aa961-2cf3-4f82-82f9-f969bb00d9e2)  |
 | [Moo-moo-11](https://github.com/Moo-moo-11) | [devitssu](https://github.com/devitssu) | [DanDanjoo](https://github.com/DanDanjoo) | [sangeuuun](https://github.com/sangeuuun) |
-
 
 ## 📖 프로젝트 개요   
 프로젝트 주제는 숙박 예약 어플리케이션으로 여행, 출장, 휴가 등 다양한 이유로 숙박 시설을 사용하는 사람들을 위해서 국내의 숙박 시설을 한 눈에 확인하고 예약할 수 있는 서비스를 만들었습니다.
 
-## 🚀 주요 기능
+## ✨ 주요 기능
 🌟 **공간 검색 및 예약**
 - 원하는 날짜와 가격, 편의시설에 맞는 숙소를 필터링 검색
 ![image](https://github.com/user-attachments/assets/19a51490-2aad-4fd5-9d34-01cf7a9f5654)
@@ -44,20 +45,25 @@
 ## 🛠 기술 스택
 - **Front End** 
 
-<img src="https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=white"> <img src="https://img.shields.io/badge/vite-646CFF?style=for-the-badge&logo=vite&logoColor=white"> <img src="https://img.shields.io/badge/vercel-000000?style=for-the-badge&logo=vercel&logoColor=white">
+<img src="https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=white"> <img src="https://img.shields.io/badge/vite-646CFF?style=for-the-badge&logo=vite&logoColor=white"> <img src="https://img.shields.io/badge/vercel-000000?style=for-the-badge&logo=vercel&logoColor=white"> ![MUI](https://img.shields.io/badge/MUI-%230081CB.svg?style=for-the-badge&logo=mui&logoColor=white)
 
 - **Back End** 
 
-<img src="https://img.shields.io/badge/kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white"> <img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white"> <img src="https://img.shields.io/badge/gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white"> <img src="https://img.shields.io/badge/springsecurity-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white">
-
+<img src="https://img.shields.io/badge/kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white"> <img src="https://img.shields.io/badge/spring%20boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white"> <img src="https://img.shields.io/badge/gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white"> <img src="https://img.shields.io/badge/spring%20security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white"> <img src="https://img.shields.io/badge/Spring%20Data%20JPA-6DB33F?style=for-the-badge"> <img src="https://img.shields.io/badge/Query%20Dsl-0085CA?style=for-the-badge"> ![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens)
 - **DB & Infra**
 
-<img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white"> <img src="https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"> <img src="https://img.shields.io/badge/redis-FF4438?style=for-the-badge&logo=redis&logoColor=white"> <img src="https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazonwebservices&logoColor=white"> <img src="https://img.shields.io/badge/githubactions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white"> <img src="https://img.shields.io/badge/grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white"> <img src="https://img.shields.io/badge/prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white">
+<img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white"> <img src="https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"> <img src="https://img.shields.io/badge/redis-FF4438?style=for-the-badge&logo=redis&logoColor=white"> <img src="https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazonwebservices&logoColor=white"> <img src="https://img.shields.io/badge/github%20actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white"> <img src="https://img.shields.io/badge/grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white"> <img src="https://img.shields.io/badge/loki-F46800?style=for-the-badge&logoColor=white"> <img src="https://img.shields.io/badge/prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white">
 
 
 - **Communication** 
 
 <img src="https://img.shields.io/badge/slack-4A154B?style=for-the-badge&logo=slack&logoColor=white"> <img src="https://img.shields.io/badge/notion-000000?style=for-the-badge&logo=notion&logoColor=white"> <img src="https://img.shields.io/badge/git-F05032?style=for-the-badge&logo=git&logoColor=white"> <img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white">
+
+## 기술적 의사 결정
+
+
+## 트러블 슈팅
+https://itssu.notion.site/097693d907494d948e6ec2ffe1e28919
 
 ## 📂 프로젝트 구조
 
@@ -228,7 +234,7 @@
 
 ## 📌 환경설정
 - Language: Kotlin
-- IDE: Intellij
+- IDE: Intellij, VSCode
 - SDK: Eclipse Temurin 18.0.2
 
 ## 📜 라이선스
