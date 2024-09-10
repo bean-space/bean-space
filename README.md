@@ -45,7 +45,8 @@
 
 
 ## 🏗 아키텍처
-![image](https://github.com/user-attachments/assets/e3ab2671-0481-4556-8171-a0218724438d)
+![아키텍처](https://github.com/user-attachments/assets/93c5fe04-778d-4aeb-aee2-8c59f5b3a1b8)
+
 
 ## 🛠 기술 스택
 - **Front End** 
